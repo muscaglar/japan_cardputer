@@ -9,7 +9,7 @@ are printed with it. Where a correction exists, the correction is what to rely o
 | [Hardware variants and limits](hw.md) | 25 | 0 | 0 | 25 | pending |
 | [Software ecosystem and existing apps](eco.md) | 28 | 0 | 0 | 28 | pending |
 | [Cloud AI access from the device](llm.md) | 24 | 17 | 7 | 0 | done |
-| [Japanese text display and input](jp.md) | 24 | 0 | 0 | 24 | pending |
+| [Japanese text display and input](jp.md) | 24 | 18 | 6 | 0 | done |
 | [Audio and speech](audio.md) | 27 | 15 | 12 | 0 | done |
 | [Offline learning data and spaced repetition](data.md) | 28 | 19 | 9 | 0 | done |
 | [Travel practicalities in Japan](travel.md) | 26 | 20 | 6 | 0 | done |
