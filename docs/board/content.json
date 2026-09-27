@@ -1,0 +1,1119 @@
+{
+ "stops": [
+  {
+   "jp": "朝",
+   "en": "Morning",
+   "meta": "5 minutes · no connection",
+   "what": "Yesterday's caught words and today's pack come back as typed cards."
+  },
+  {
+   "jp": "昼",
+   "en": "Out and about",
+   "meta": "30 to 90 seconds at a time · no connection",
+   "what": "Catch a word. Rehearse before you walk in. One round of prices while the train comes."
+  },
+  {
+   "jp": "夜",
+   "en": "Hotel",
+   "meta": "10 minutes · online through your phone",
+   "what": "Three sentences about your day, corrected by Claude. Today's words become tomorrow's cards, with their sound."
+  }
+ ],
+ "groups": [
+  {
+   "id": "core",
+   "jp": "拾う",
+   "en": "Catch and keep",
+   "blurb": "The loop everything else hangs on. Catch words by day, review them in the gaps, write with them at night."
+  },
+  {
+   "id": "drill",
+   "jp": "すきま",
+   "en": "Dead-time drills",
+   "blurb": "Sixty to ninety seconds each, for a platform, a queue or a lift. Silent unless you plug in earphones."
+  },
+  {
+   "id": "speak",
+   "jp": "話す",
+   "en": "Opening your mouth",
+   "blurb": "The device cannot hear whether you were right. These give you the script, the push and a mirror."
+  },
+  {
+   "id": "extra",
+   "jp": "おまけ",
+   "en": "Extras",
+   "blurb": "Charming, or useful now and then. None of them should delay the core."
+  }
+ ],
+ "ideas": [
+  {
+   "id": "catcher",
+   "group": "core",
+   "jp": "ことば拾い",
+   "en": "Word catcher",
+   "screen": "catcher",
+   "tier": "strong",
+   "tierLabel": "Stage 3 · your own words",
+   "pitch": "You see or hear a word, type how it sounds, and the dictionary on the card finds it. One key saves it with the time and place. Tomorrow morning it comes back as a card.",
+   "tags": [
+    [
+     "offline",
+     "Works offline"
+    ],
+    [
+     "plain",
+     "Needs a microSD card"
+    ]
+   ],
+   "alt": "Word catcher: typed kaisatsu became かいさつ; three dictionary hits, the first is 改札, ticket gate.",
+   "stage": 3
+  },
+  {
+   "id": "queue",
+   "group": "core",
+   "jp": "90秒キュー",
+   "en": "The 90-second queue",
+   "screen": "queue",
+   "tier": "first",
+   "tierLabel": "Stage 1 · typing and cards",
+   "pitch": "Switch on and the first card is already there. Every answer is typed, so the device marks it and you cannot flatter yourself. It ends by itself after 90 seconds.",
+   "tags": [
+    [
+     "offline",
+     "Works offline"
+    ],
+    [
+     "plain",
+     "Feeds on every other idea"
+    ]
+   ],
+   "alt": "End of a 90-second session: 12 cards, 10 correct, 8 due tonight, and three items that will come back soon.",
+   "stage": 1
+  },
+  {
+   "id": "tomorrow",
+   "group": "core",
+   "jp": "あしたパック",
+   "en": "Tomorrow pack",
+   "screen": "tomorrow",
+   "tier": "strong",
+   "tierLabel": "Stage 3 · your own words",
+   "pitch": "Before the trip, your itinerary becomes one small pack per day: station names on the route, local dishes, the words on the ticket machine. You guess first, then learn, the evening before.",
+   "tags": [
+    [
+     "offline",
+     "Works offline"
+    ],
+    [
+     "plain",
+     "Needs your itinerary"
+    ]
+   ],
+   "alt": "Tomorrow pack for Kyoto to Nara: the station name 烏丸, a wrong guess からすまる and the answer からすま.",
+   "stage": 3
+  },
+  {
+   "id": "diary",
+   "group": "core",
+   "jp": "三行日記",
+   "en": "Three-line diary",
+   "screen": "diary",
+   "tier": "strong",
+   "tierLabel": "Stage 4 · evening, online",
+   "pitch": "In the hotel you type three sentences about your day. Claude returns the smallest correction that makes each one natural, with kanji and a one-line reason. Then you retype it from memory.",
+   "tags": [
+    [
+     "online",
+     "Needs a connection"
+    ],
+    [
+     "plain",
+     "You can write offline and send later"
+    ]
+   ],
+   "alt": "Diary correction: ひとが おおいでした corrected to 人が多かったです, with a one-line note on the past tense of い-adjectives.",
+   "stage": 4
+  },
+  {
+   "id": "numbers",
+   "group": "drill",
+   "jp": "いくら？",
+   "en": "Numbers by ear",
+   "screen": "numbers",
+   "tier": "first",
+   "tierLabel": "Stage 2 · sound",
+   "pitch": "A voice says a price at checkout speed and you type the digits. Prices, change, times, platforms and dates. This is the listening skill travellers overestimate most.",
+   "tags": [
+    [
+     "offline",
+     "Works offline"
+    ],
+    [
+     "sound",
+     "Sound"
+    ]
+   ],
+   "alt": "Numbers by ear: you typed 1,880 yen, the answer was 1,280 yen; にひゃく is highlighted against はっぴゃく.",
+   "stage": 2
+  },
+  {
+   "id": "staff",
+   "group": "drill",
+   "jp": "店員さん",
+   "en": "What staff ask you",
+   "screen": "staff",
+   "tier": "first",
+   "tierLabel": "Stage 2 · sound",
+   "pitch": "You rehearse your own lines, then staff answer in fast polite Japanese. This plays the questions you will really be asked at a till, a restaurant door or a hotel desk, and makes you reply.",
+   "tags": [
+    [
+     "offline",
+     "Works offline"
+    ],
+    [
+     "sound",
+     "Sound"
+    ]
+   ],
+   "alt": "Convenience store till: the clerk asks whether you want a bag; your typed reply いいえ、だいじょうぶです is marked correct.",
+   "stage": 2
+  },
+  {
+   "id": "sign",
+   "group": "drill",
+   "jp": "看板",
+   "en": "Signs",
+   "screen": "sign",
+   "tier": "first",
+   "tierLabel": "Stage 1 · typing and cards",
+   "pitch": "The few hundred words printed on ticket machines, shop doors and station walls, drawn as signs. You type the reading, then look up and see the same characters in front of you.",
+   "tags": [
+    [
+     "offline",
+     "Works offline"
+    ],
+    [
+     "plain",
+     "Silent"
+    ]
+   ],
+   "alt": "A green sign reading 精算機; the typed reading せいさんき; meaning: fare adjustment machine.",
+   "stage": 1
+  },
+  {
+   "id": "katakana",
+   "group": "drill",
+   "jp": "カタカナ",
+   "en": "Katakana sprint",
+   "screen": "katakana",
+   "tier": "first",
+   "tierLabel": "Stage 1 · typing and cards",
+   "pitch": "Menus are full of katakana. A 45-second sprint that records which look-alike characters you mix up, such as シ and ツ, and brings those back.",
+   "tags": [
+    [
+     "offline",
+     "Works offline"
+    ],
+    [
+     "plain",
+     "Silent"
+    ]
+   ],
+   "alt": "Katakana sprint: the word モーニングセット with the typed reading turning green syllable by syllable.",
+   "stage": 1
+  },
+  {
+   "id": "counters",
+   "group": "drill",
+   "jp": "数え方",
+   "en": "Counters",
+   "screen": "counters",
+   "tier": "first",
+   "tierLabel": "Stage 1 · typing and cards",
+   "pitch": "You see “beer × 3” and type how you would say it. Glasses, bottles, people, nights, minutes and days of the month, mixed in one round.",
+   "tags": [
+    [
+     "offline",
+     "Works offline"
+    ],
+    [
+     "plain",
+     "Silent"
+    ]
+   ],
+   "alt": "Counters: beer times three, answered さんばい, with the pattern for the counter 杯 listed below.",
+   "stage": 1
+  },
+  {
+   "id": "station",
+   "group": "drill",
+   "jp": "駅名",
+   "en": "Station names",
+   "screen": "station",
+   "tier": "strong",
+   "tierLabel": "Stage 3 · your own words",
+   "pitch": "Pick your line and the device shows the next station in kanji. You type the reading before the announcement gives it away, and the train marks your answer.",
+   "tags": [
+    [
+     "offline",
+     "Works offline"
+    ],
+    [
+     "plain",
+     "A GPS add-on is optional"
+    ]
+   ],
+   "alt": "Station quiz on the Yamanote line: the name plate shows 御徒町 between 上野 and 秋葉原; typed so far おかち.",
+   "stage": 3
+  },
+  {
+   "id": "rehearsal",
+   "group": "speak",
+   "jp": "稽古",
+   "en": "Rehearsal with Claude",
+   "screen": "rehearsal",
+   "tier": "strong",
+   "tierLabel": "Stage 4 · evening, online",
+   "pitch": "In the evening Claude plays the person you will meet tomorrow, a ryokan host or a ticket clerk, in polite Japanese at your level. You type your side. Afterwards it names two things to fix and adds three cards.",
+   "tags": [
+    [
+     "online",
+     "Needs a connection"
+    ],
+    [
+     "plain",
+     "Scripted scenes cover the daytime"
+    ]
+   ],
+   "alt": "Rehearsal at an izakaya door: the owner asks how many people, you answer two, the owner asks whether the counter is all right, and you are typing your reply.",
+   "stage": 4
+  },
+  {
+   "id": "missions",
+   "group": "speak",
+   "jp": "今日のミッション",
+   "en": "Missions and stamp book",
+   "screen": "missions",
+   "tier": "strong",
+   "tierLabel": "Stage 3 · your own words",
+   "pitch": "One to three small dares a day that make you speak, each with its sentence one key away. A finished mission earns a stamp, like the stamps collected at stations.",
+   "tags": [
+    [
+     "offline",
+     "Works offline"
+    ],
+    [
+     "plain",
+     "Honour system"
+    ]
+   ],
+   "alt": "Today's missions: ask station staff which platform; ask for a recommendation, done. A row of red stamps, three of twelve.",
+   "stage": 3
+  },
+  {
+   "id": "showcard",
+   "group": "speak",
+   "jp": "見せるカード",
+   "en": "Show card",
+   "screen": "show_card",
+   "tier": "strong",
+   "tierLabel": "Stage 3 · your own words",
+   "pitch": "Say it first. If that fails, the sentence fills the screen in large type to show to staff. Allergy and medical cards are fixed text checked by a native speaker, never made up on the spot.",
+   "tags": [
+    [
+     "offline",
+     "Works offline"
+    ],
+    [
+     "risk",
+     "Wording must be checked"
+    ]
+   ],
+   "alt": "Large black text on a light screen: I have a shrimp allergy. Does this contain shrimp?",
+   "stage": 3
+  },
+  {
+   "id": "echo",
+   "group": "speak",
+   "jp": "オウム返し",
+   "en": "Echo",
+   "screen": "shadowing",
+   "tier": "first",
+   "tierLabel": "Stage 2 · sound",
+   "pitch": "The model sentence plays, you repeat it, and you hear yourself straight after the model. No score is invented, because the device cannot judge pronunciation. You are the judge.",
+   "tags": [
+    [
+     "offline",
+     "Works offline"
+    ],
+    [
+     "sound",
+     "Sound and microphone"
+    ]
+   ],
+   "alt": "Echo practice on a platform announcement, with a bar for the model's 1.9 seconds and a bar for your recording in progress.",
+   "stage": 2
+  },
+  {
+   "id": "buddy",
+   "group": "extra",
+   "jp": "だるま",
+   "en": "The buddy",
+   "screen": "buddy",
+   "tier": "strong",
+   "tierLabel": "Stage 3 · your own words",
+   "pitch": "A daruma with one eye painted lives on the home screen and talks to you in short Japanese at your level. You paint the second eye when you reach the goal you set for the trip.",
+   "tags": [
+    [
+     "offline",
+     "Works offline"
+    ],
+    [
+     "plain",
+     "Its lines are reading practice"
+    ]
+   ],
+   "alt": "Home screen with a red daruma and a speech bubble: good morning, today is Kyoto.",
+   "stage": 3
+  },
+  {
+   "id": "menu",
+   "group": "extra",
+   "jp": "魚へん",
+   "en": "Menu decoder",
+   "screen": "menu",
+   "tier": "play",
+   "tierLabel": "Stage 5 · extras",
+   "pitch": "There is no camera, so you find a kanji by the part you recognise. Type sakana and every fish on the menu appears with its reading.",
+   "tags": [
+    [
+     "offline",
+     "Works offline"
+    ],
+    [
+     "plain",
+     "A phone camera is faster"
+    ]
+   ],
+   "alt": "A grid of eight fish kanji with readings; 鰤, buri, yellowtail, is selected.",
+   "stage": 5
+  },
+  {
+   "id": "snapshot",
+   "group": "extra",
+   "jp": "音のスナップ",
+   "en": "Sound snapshot",
+   "screen": "snapshot",
+   "tier": "strong",
+   "tierLabel": "Stage 4 · evening, online",
+   "pitch": "Hold a key to record eight seconds of a station announcement. In the evening it is transcribed and explained, so tomorrow you recognise it.",
+   "tags": [
+    [
+     "online",
+     "Needs a connection"
+    ],
+    [
+     "risk",
+     "Depends on the microphone"
+    ]
+   ],
+   "alt": "Recording a sound snapshot on a Shin-Osaka platform, six of eight seconds, with a level display.",
+   "stage": 4
+  },
+  {
+   "id": "remote",
+   "group": "extra",
+   "jp": "リモコン",
+   "en": "Room remote",
+   "screen": "remote",
+   "tier": "play",
+   "tierLabel": "Stage 5 · extras",
+   "pitch": "The infrared light drives the hotel air conditioner from a screen labelled only in Japanese. About ten words, learned once, and it will not work in every room.",
+   "tags": [
+    [
+     "offline",
+     "Works offline"
+    ],
+    [
+     "risk",
+     "Hit and miss"
+    ]
+   ],
+   "alt": "Six remote control buttons labelled in kanji with readings; 冷房, cooling, is selected.",
+   "stage": 5
+  }
+ ],
+ "looks": [
+  {
+   "id": "eki",
+   "jp": "駅",
+   "en": "Station sign",
+   "note": "White plate, navy field and one line colour. Reads at a glance.",
+   "alt": "Word catcher in a station signage style: navy background, white header and footer, orange line."
+  },
+  {
+   "id": "techo",
+   "jp": "手帳",
+   "en": "Pocket notebook",
+   "note": "Ruled paper and a red stamp for each word you catch.",
+   "alt": "Word catcher as a ruled notebook page with a red circular stamp."
+  },
+  {
+   "id": "denkou",
+   "jp": "電光",
+   "en": "Departure board",
+   "note": "Amber and green on black, like the boards over the platform.",
+   "alt": "Word catcher as an amber and green LED departure board."
+  },
+  {
+   "id": "rpg",
+   "jp": "ゲーム",
+   "en": "Game windows",
+   "note": "White-framed boxes, and a buddy who reports what you caught.",
+   "alt": "Word catcher as two white-framed game windows with a daruma character."
+  },
+  {
+   "id": "ai",
+   "jp": "藍",
+   "en": "Indigo",
+   "note": "Indigo cloth and cream, with stitched dividers.",
+   "alt": "Word catcher in indigo with a cream card and dashed dividers."
+  },
+  {
+   "id": "tanmatsu",
+   "jp": "端末",
+   "en": "Terminal",
+   "note": "Green on black with numbered results. At home on a tiny computer.",
+   "alt": "Word catcher as a green-on-black terminal with numbered results."
+  },
+  {
+   "id": "washi",
+   "jp": "和紙",
+   "en": "Paper and vermilion",
+   "note": "A light ground for daylight, large kanji and one red edge.",
+   "alt": "Word catcher on a light paper background with a red edge and large kanji."
+  },
+  {
+   "id": "yoru",
+   "jp": "夜",
+   "en": "Night",
+   "note": "Almost nothing on screen but the word.",
+   "alt": "Word catcher in a minimal dark style with large white kanji."
+  }
+ ],
+ "facts": [
+  {
+   "topic": "Screen",
+   "fact": "1.14 inch, 240 × 135 pixels, about 25 × 14 mm.",
+   "means": "15 × 8 Japanese characters at 16 px, or 20 × 11 at 12 px. One thought per screen, with the reading on its own line."
+  },
+  {
+   "topic": "Japanese fonts",
+   "fact": "Built into the graphics library. The full set of 9,500 kanji costs 301 KB at 12 px, 456 KB at 16 px and 726 KB at 24 px. The smaller set lacks menu kanji such as 餃 and 鮪.",
+   "means": "Three sizes of the full set fit in the 8 MB of storage. I measured these figures from the library's source."
+  },
+  {
+   "topic": "Memory",
+   "fact": "Every model has an ESP32-S3 with 8 MB of flash and no extra memory chip. About 300 KB of working memory is free, less with Wi-Fi on.",
+   "means": "The dictionary, audio and cards live on the microSD card behind indexes built on the Mac. No speech recognition and no AI model run on the device."
+  },
+  {
+   "topic": "Sound",
+   "fact": "A small speaker on every model. A headphone socket on the ADV only. Bluetooth earbuds cannot work, because the chip has Bluetooth LE only.",
+   "means": "With an ADV and wired earphones, listening drills work on a platform. Otherwise they belong in the hotel room."
+  },
+  {
+   "topic": "Microphone",
+   "fact": "Present on every model. With the standard library, microphone and speaker take turns. On the ADV some toolchain versions are reported to record silence.",
+   "means": "Record, then play back. The hardware check tests the microphone first, before anything is built on it."
+  },
+  {
+   "topic": "Clock",
+   "fact": "No clock chip. The date is lost when the device is switched off.",
+   "means": "Review scheduling takes the date from Wi-Fi when there is a connection and counts sessions when there is none."
+  },
+  {
+   "topic": "Internet",
+   "fact": "2.4 GHz Wi-Fi only. It joins networks with an ordinary password; networks with a login page do not work. An iPhone hotspot needs Maximise Compatibility switched on.",
+   "means": "The phone hotspot is the predictable route, used once a day in the evening."
+  },
+  {
+   "topic": "Radio rules in Japan",
+   "fact": "The Japanese regulator's database lists certifications for the Cardputer ADV (219-259647) and the Cardputer (219-249271). The mark is printed on the sticker of the small core module.",
+   "means": "Look for the mark on that sticker once. The firmware stays on ordinary Wi-Fi, channels 1 to 13, with transmit power turned down to the certified level."
+  },
+  {
+   "topic": "Battery",
+   "fact": "1,750 mAh in the ADV, 1,520 mAh in the others. Reports suggest six to eight hours of use. It charges only with the power switch ON, and slowly.",
+   "means": "Wi-Fi stays off by default, progress is saved after every card, and charging is an overnight job."
+  },
+  {
+   "topic": "Flying",
+   "fact": "The battery holds about 6.5 Wh, far below the 100 Wh limit for hand luggage. Under Japanese rules in force since April 2026, a power bank may not be used to charge a device during the flight.",
+   "means": "Carry it in hand luggage and charge it before boarding."
+  },
+  {
+   "topic": "Pronunciation",
+   "fact": "Clips can be generated with the pitch accent set explicitly. One cloud service scores Japanese sounds and fluency from a recording. None scores pitch.",
+   "means": "Accent is fixed and checked when the content is built. Pitch practice relies on the written line and your own ear."
+  },
+  {
+   "topic": "No camera",
+   "fact": "None of the models has one.",
+   "means": "You can look up only what you can type. For a menu full of unknown kanji the phone camera stays the right tool."
+  },
+  {
+   "topic": "Updates on the road",
+   "fact": "A launcher firmware can install a new version from the microSD card or from a phone's browser.",
+   "means": "A fix during the trip needs no laptop."
+  },
+  {
+   "topic": "Existing projects",
+   "fact": "Flashcard, dictionary, Japanese input and Claude chat firmwares exist for the Cardputer. None combines a Japanese-English dictionary, typed spaced repetition and English explanations.",
+   "means": "A fresh app that borrows proven patterns from the openly licensed ones."
+  }
+ ],
+ "questions": [
+  {
+   "id": "pitch",
+   "kind": "one",
+   "ask": "Pitch notation",
+   "place": "pron",
+   "options": [
+    [
+     "line",
+     "A · Line and hook"
+    ],
+    [
+     "colour",
+     "B · Bright is high"
+    ],
+    [
+     "number",
+     "C · Accent number"
+    ],
+    [
+     "none",
+     "No pitch marks"
+    ]
+   ]
+  },
+  {
+   "id": "romaji",
+   "kind": "one",
+   "ask": "Romaji under the kana",
+   "place": "pron",
+   "options": [
+    [
+     "always",
+     "Always shown"
+    ],
+    [
+     "peek",
+     "Hidden, one key shows it"
+    ],
+    [
+     "never",
+     "Never"
+    ]
+   ]
+  },
+  {
+   "id": "voice",
+   "kind": "one",
+   "ask": "Model voice",
+   "place": "pron",
+   "why": "Staff voices vary, so alternating trains the ear better than one voice.",
+   "options": [
+    [
+     "alternate",
+     "Alternate female and male"
+    ],
+    [
+     "female",
+     "Female"
+    ],
+    [
+     "male",
+     "Male"
+    ]
+   ]
+  },
+  {
+   "id": "theme",
+   "kind": "one",
+   "ask": "Which look is the default?",
+   "place": "look",
+   "options": [
+    [
+     "eki",
+     "駅 Station sign"
+    ],
+    [
+     "techo",
+     "手帳 Pocket notebook"
+    ],
+    [
+     "rpg",
+     "ゲーム Game windows"
+    ],
+    [
+     "washi",
+     "和紙 Paper and vermilion"
+    ]
+   ]
+  },
+  {
+   "id": "themes",
+   "kind": "many",
+   "ask": "Keep as selectable themes",
+   "place": "look",
+   "why": "All four can ship. A key on the device switches between them.",
+   "options": [
+    [
+     "eki",
+     "駅 Station sign"
+    ],
+    [
+     "techo",
+     "手帳 Pocket notebook"
+    ],
+    [
+     "rpg",
+     "ゲーム Game windows"
+    ],
+    [
+     "washi",
+     "和紙 Paper and vermilion"
+    ]
+   ]
+  },
+  {
+   "id": "model",
+   "kind": "one",
+   "ask": "Which Cardputer is it?",
+   "why": "Only the ADV has a headphone socket, which decides whether listening drills can be used in public.",
+   "options": [
+    [
+     "adv",
+     "Cardputer ADV (it has a 3.5 mm headphone socket)"
+    ],
+    [
+     "original",
+     "Original or v1.1 (no headphone socket)"
+    ],
+    [
+     "unsure",
+     "Not sure. Read it from the device when I plug it in"
+    ]
+   ],
+   "place": "form"
+  },
+  {
+   "id": "level",
+   "kind": "one",
+   "ask": "Where is your Japanese today?",
+   "options": [
+    [
+     "kana-shaky",
+     "Hiragana and katakana are shaky"
+    ],
+    [
+     "kana-ok",
+     "Kana is fine, kanji is thin"
+    ],
+    [
+     "n5-n4",
+     "Roughly JLPT N5 to N4, a few hundred kanji"
+    ],
+    [
+     "n3-up",
+     "Around N3 or above"
+    ]
+   ],
+   "text": "What did you study with, and how long ago?",
+   "placeholder": "e.g. Genki I and II, five years ago",
+   "place": "form"
+  },
+  {
+   "id": "trip",
+   "kind": "text",
+   "ask": "When do you leave, and for how long?",
+   "why": "The weeks before departure set how much gets built.",
+   "text": "Dates",
+   "placeholder": "e.g. leaving 2 November, 14 days",
+   "place": "form"
+  },
+  {
+   "id": "route",
+   "kind": "text",
+   "ask": "Where are you going?",
+   "why": "This becomes the daily packs: station names on your routes, local dishes, the right counters.",
+   "text": "Cities, train legs, anything booked",
+   "rows": 3,
+   "placeholder": "e.g. Tokyo 4 nights, Kanazawa 2, Kyoto 5, day trip to Nara",
+   "place": "form"
+  },
+  {
+   "id": "goal",
+   "kind": "many",
+   "ask": "What should improve most? Pick one or two.",
+   "options": [
+    [
+     "listen",
+     "Understanding what is said to me"
+    ],
+    [
+     "speak",
+     "Speaking at counters, restaurants and stations"
+    ],
+    [
+     "read",
+     "Reading signs and menus"
+    ],
+    [
+     "write",
+     "Writing"
+    ]
+   ],
+   "place": "form"
+  },
+  {
+   "id": "sound",
+   "kind": "one",
+   "ask": "Sound in public",
+   "why": "Trains in Japan are quiet. Bluetooth earbuds cannot work with this device; wired earphones can, on the ADV.",
+   "options": [
+    [
+     "earphones",
+     "I will carry wired earphones"
+    ],
+    [
+     "silent",
+     "Silent outside the hotel room"
+    ],
+    [
+     "speaker",
+     "Speaker, where it is polite"
+    ]
+   ],
+   "place": "form"
+  },
+  {
+   "id": "online",
+   "kind": "one",
+   "ask": "How will it get online?",
+   "why": "It needs 2.4 GHz Wi-Fi. Hotel networks with a login page will not work, so the phone is the dependable route.",
+   "options": [
+    [
+     "iphone",
+     "iPhone hotspot"
+    ],
+    [
+     "android",
+     "Android hotspot"
+    ],
+    [
+     "pocket-wifi",
+     "Rented pocket Wi-Fi"
+    ],
+    [
+     "offline",
+     "Keep it offline"
+    ]
+   ],
+   "place": "form"
+  },
+  {
+   "id": "claude",
+   "kind": "one",
+   "ask": "Claude in the evening",
+   "why": "A key on a gadget can be lost with the gadget. Either way it would be a personal key in its own workspace, with a monthly cap and an expiry date just after the trip.",
+   "options": [
+    [
+     "relay",
+     "Yes, through a small relay so no key sits on the device"
+    ],
+    [
+     "key",
+     "Yes, with a capped key on the SD card"
+    ],
+    [
+     "none",
+     "No cloud features"
+    ]
+   ],
+   "place": "form"
+  },
+  {
+   "id": "build",
+   "kind": "one",
+   "ask": "Where do we build the firmware?",
+   "why": "The firmware cannot be compiled on the machine this is being written on. Everything else can be done here: code, type checks, content, screen previews and flashing a ready build.",
+   "options": [
+    [
+     "personal",
+     "On my personal laptop"
+    ],
+    [
+     "own-terminal",
+     "I will run the build command myself"
+    ],
+    [
+     "cloud",
+     "In the cloud, from the GitHub repository"
+    ]
+   ],
+   "place": "form"
+  },
+  {
+   "id": "typing",
+   "kind": "one",
+   "ask": "How do you type Japanese today?",
+   "options": [
+    [
+     "textbook",
+     "Textbook romaji: minna gives みんな"
+    ],
+    [
+     "pc",
+     "As on a PC: minnna gives みんな"
+    ],
+    [
+     "none",
+     "Phone flick input, or I don't type Japanese"
+    ]
+   ],
+   "place": "form"
+  },
+  {
+   "id": "sdcard",
+   "kind": "one",
+   "ask": "microSD card",
+   "options": [
+    [
+     "have-small",
+     "I have one, 32 GB or smaller"
+    ],
+    [
+     "have-large",
+     "I have one, larger than 32 GB"
+    ],
+    [
+     "need",
+     "I need to buy one"
+    ]
+   ],
+   "place": "form"
+  },
+  {
+   "id": "cards",
+   "kind": "one",
+   "ask": "Do you need allergy, dietary or medical cards?",
+   "why": "These are fixed text and need checking by a native speaker. Give the details in the chat, not here.",
+   "options": [
+    [
+     "yes",
+     "Yes, details in the chat"
+    ],
+    [
+     "no",
+     "No"
+    ]
+   ],
+   "place": "form"
+  },
+  {
+   "id": "company",
+   "kind": "one",
+   "ask": "Who are you travelling with?",
+   "options": [
+    [
+     "alone",
+     "Alone"
+    ],
+    [
+     "non-speaker",
+     "With someone who does not speak Japanese"
+    ],
+    [
+     "speaker",
+     "With someone who speaks Japanese"
+    ]
+   ],
+   "place": "form"
+  },
+  {
+   "id": "addons",
+   "kind": "many",
+   "ask": "Would you buy add-ons?",
+   "options": [
+    [
+     "gps",
+     "A GPS unit, for place-stamped words and the station quiz"
+    ],
+    [
+     "earphones",
+     "Wired earphones"
+    ],
+    [
+     "none",
+     "Nothing extra"
+    ]
+   ],
+   "place": "form"
+  },
+  {
+   "id": "after",
+   "kind": "one",
+   "ask": "After the trip",
+   "options": [
+    [
+     "keep",
+     "I want to keep studying with it"
+    ],
+    [
+     "trip-only",
+     "It is for the trip"
+    ]
+   ],
+   "place": "form"
+  },
+  {
+   "id": "notes",
+   "kind": "text",
+   "ask": "Anything else",
+   "text": "Ideas of your own, things to avoid, a name for it",
+   "rows": 3,
+   "placeholder": "",
+   "place": "form"
+  }
+ ],
+ "pronunciation": {
+  "layers": [
+   {
+    "jp": "読む",
+    "en": "Written",
+    "when": "Always, in silence",
+    "what": "Every word and phrase carries a pronunciation line: kana split into beats, a line showing where the voice is high and where it falls, dots under whispered vowels, and romaji if you want it."
+   },
+   {
+    "jp": "聞く",
+    "en": "Heard",
+    "when": "Speaker, or wired earphones on an ADV",
+    "what": "Natural-speed and slow clips for every item, made on the Mac before the trip. A word you catch on the road shows its written line at once and gets its clip at the evening sync."
+   },
+   {
+    "jp": "言う",
+    "en": "Spoken",
+    "when": "Hotel room or a quiet street",
+    "what": "The device records you and plays model, you, model. In the evening a cloud service can score your sounds and fluency. No service scores pitch, so for pitch your own ear is the judge."
+   }
+  ],
+  "screens": [
+   {
+    "screen": "pron_card",
+    "title": "The pronunciation line",
+    "note": "On every card, one key away.",
+    "alt": "Pronunciation card for 大丈夫: the kana だいじょうぶ with a line over the high beats and a hook after じょ, the romaji split into five beats, and the sentence だいじょうぶです with dots under the whispered す."
+   },
+   {
+    "screen": "ear",
+    "title": "Ear training",
+    "note": "Same sounds, different pitch. You hear one and choose.",
+    "alt": "Ear training: you heard はし and chose 橋, bridge, which is correct; the pitch rises and falls after し."
+   },
+   {
+    "screen": "echo_pitch",
+    "title": "Echo",
+    "note": "Model, you, model. The text can be hidden.",
+    "alt": "Echo practice on すみません、えきは どこですか with pitch lines, a bar for the model and a bar for your recording."
+   },
+   {
+    "screen": "evening_check",
+    "title": "Evening check",
+    "note": "Online. Scores for sounds and fluency, with a hint where a beat scored low.",
+    "alt": "Evening check of おねがいします: most beats green, が amber, the final す red with the advice to whisper it."
+   }
+  ],
+  "options": [
+   {
+    "id": "line",
+    "screen": "pron_line",
+    "title": "A · Line and hook",
+    "note": "The notation of Japanese accent dictionaries. It shows the whole contour.",
+    "alt": "Option A: a line over the high beats with a hook where the pitch falls, shown on 箸, 橋, 端 and ありがとう."
+   },
+   {
+    "id": "colour",
+    "screen": "pron_colour",
+    "title": "B · Bright is high",
+    "note": "No extra marks, easy at small sizes. Depends on colour alone.",
+    "alt": "Option B: high beats in bright yellow, low beats in grey, a slash where the pitch falls."
+   },
+   {
+    "id": "number",
+    "screen": "pron_number",
+    "title": "C · Accent number",
+    "note": "Compact, as printed in dictionaries. You have to learn what the number means.",
+    "alt": "Option C: plain kana followed by the accent number in a small box."
+   }
+  ]
+ },
+ "round2": [
+  {
+   "id": "eki",
+   "jp": "駅",
+   "en": "Station sign",
+   "note": "Dark field with white plates for the header and the line you type. The sign drill looks like a station name plate."
+  },
+  {
+   "id": "techo",
+   "jp": "手帳",
+   "en": "Pocket notebook",
+   "note": "Ruled page. A highlighter marks the chosen entry and every saved word gets a red stamp."
+  },
+  {
+   "id": "rpg",
+   "jp": "ゲーム",
+   "en": "Game windows",
+   "note": "Two windows. The daruma speaks in the lower one, so every result reads as a line of dialogue."
+  },
+  {
+   "id": "washi",
+   "jp": "和紙",
+   "en": "Paper and vermilion",
+   "note": "Light and quiet, with the largest kanji of the four."
+  }
+ ],
+ "defaults": {
+  "ideas": {
+   "catcher": "yes",
+   "queue": "yes",
+   "tomorrow": "yes",
+   "diary": "yes",
+   "numbers": "yes",
+   "staff": "yes",
+   "sign": "yes",
+   "katakana": "yes",
+   "counters": "yes",
+   "station": "yes",
+   "rehearsal": "yes",
+   "missions": "yes",
+   "showcard": "yes",
+   "echo": "yes",
+   "buddy": "yes",
+   "menu": "yes",
+   "snapshot": "yes",
+   "remote": "yes"
+  },
+  "many": {
+   "themes": [
+    "eki",
+    "techo",
+    "rpg",
+    "washi"
+   ]
+  }
+ }
+}

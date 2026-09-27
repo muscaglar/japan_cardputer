@@ -1,0 +1,471 @@
+<title>Cardputer Nihongo</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&family=IBM+Plex+Mono:wght@400;500&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+/* Layout: a route map of one travel day. Each group of ideas is a railway line; each idea is a stop
+   shown as the real 240x135 screen. The pixel typeface echoes the device's bitmap fonts. */
+:root {
+  --bg: #eef1f3;
+  --surface: #ffffff;
+  --ink: #16202c;
+  --ink-2: #4d5a69;
+  --ink-3: #6f7b89;
+  --rule: #d2d8de;
+  --bezel: #0b0f14;
+  --bezel-edge: #0b0f14;
+  --focus: #0a66c2;
+  --btn: #16202c;
+  --btn-ink: #ffffff;
+  --core: #5b9a1b;  --core-tint: #e3f0d3;  --core-ink: #2f5a08;
+  --drill: #e0600f; --drill-tint: #fde6d5; --drill-ink: #8a3a05;
+  --speak: #1580c4; --speak-tint: #d8ecf9; --speak-ink: #0b4c78;
+  --extra: #c99700; --extra-tint: #faefc9; --extra-ink: #6b5000;
+  --quiet-tint: #e4e8ec; --quiet-ink: #4d5a69;
+  --font-display: "DotGothic16", "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", sans-serif;
+  --font-body: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --gutter: 20px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f141a; --surface: #171e27; --ink: #e8edf2; --ink-2: #a9b4c0; --ink-3: #8794a2; --rule: #2a3440;
+    --bezel: #000000; --bezel-edge: #3a4654; --focus: #6cb6ff; --btn: #e8edf2; --btn-ink: #0f141a;
+    --core: #8fcf4a;  --core-tint: #1d2b12;  --core-ink: #b7e685;
+    --drill: #ff8a3d; --drill-tint: #33200f; --drill-ink: #ffc199;
+    --speak: #4db2f0; --speak-tint: #10283a; --speak-ink: #a6d8fa;
+    --extra: #f0c23a; --extra-tint: #2e2608; --extra-ink: #f6dc8a;
+    --quiet-tint: #222b36; --quiet-ink: #a9b4c0;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f141a; --surface: #171e27; --ink: #e8edf2; --ink-2: #a9b4c0; --ink-3: #8794a2; --rule: #2a3440;
+  --bezel: #000000; --bezel-edge: #3a4654; --focus: #6cb6ff; --btn: #e8edf2; --btn-ink: #0f141a;
+  --core: #8fcf4a;  --core-tint: #1d2b12;  --core-ink: #b7e685;
+  --drill: #ff8a3d; --drill-tint: #33200f; --drill-ink: #ffc199;
+  --speak: #4db2f0; --speak-tint: #10283a; --speak-ink: #a6d8fa;
+  --extra: #f0c23a; --extra-tint: #2e2608; --extra-ink: #f6dc8a;
+  --quiet-tint: #222b36; --quiet-ink: #a9b4c0;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.6;
+  padding-inline: var(--gutter);
+  padding-block: 28px 120px;
+}
+.wrap { max-width: 1160px; margin-inline: auto; display: flex; flex-direction: column; gap: 56px; }
+h1, h2, h3, p, ul, ol, figure, fieldset { margin: 0; padding: 0; }
+ul, ol { list-style: none; }
+fieldset { border: 0; min-width: 0; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.jp { font-family: var(--font-display); font-weight: 400; }
+.label {
+  font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-3);
+}
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* The screen frame, used everywhere a render appears */
+.lcd {
+  background: var(--bezel); border: 1px solid var(--bezel-edge); border-radius: 8px; padding: 6px; line-height: 0;
+}
+.lcd img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; border-radius: 2px; }
+
+/* Opening */
+.top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 480px); gap: 40px; align-items: center; }
+.top-text { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.top h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(34px, 6vw, 56px); line-height: 1.08; text-wrap: balance; }
+.top h1 small { display: block; font-family: var(--font-mono); font-size: 13px; letter-spacing: 0.04em; color: var(--ink-3); margin-top: 10px; }
+.thesis { font-size: 18px; line-height: 1.55; max-width: 34em; }
+.top-note { color: var(--ink-2); max-width: 40em; }
+.hero figcaption { margin-top: 10px; color: var(--ink-2); font-size: 13px; line-height: 1.5; }
+
+/* The day as three stops on a line */
+.day { display: flex; flex-direction: column; gap: 18px; }
+.day h2, .section-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 26px; line-height: 1.2; text-wrap: balance; }
+.stops { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; position: relative; }
+.stop { position: relative; padding: 26px 24px 0 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.stop::before { content: ""; position: absolute; left: 0; right: 0; top: 7px; height: 6px; background: var(--core); }
+.stop:nth-child(2)::before { background: var(--drill); }
+.stop:nth-child(3)::before { background: var(--speak); }
+.stop-dot { position: absolute; left: 0; top: 0; width: 20px; height: 20px; border-radius: 50%; background: var(--surface); border: 4px solid var(--ink); }
+.stop-when { font-size: 18px; font-weight: 700; }
+.stop-when .jp { font-size: 22px; margin-right: 6px; }
+.stop-meta { font-family: var(--font-mono); font-size: 12px; color: var(--ink-3); }
+.stop-what { color: var(--ink-2); max-width: 30em; }
+.loop-note { color: var(--ink-2); max-width: 60em; }
+
+/* Lines of ideas */
+.section-head { display: flex; flex-direction: column; gap: 8px; }
+.section-head p { color: var(--ink-2); max-width: 62em; }
+.lines { display: flex; flex-direction: column; gap: 48px; }
+.line { display: flex; flex-direction: column; gap: 20px; --line: var(--core); --tint: var(--core-tint); --tink: var(--core-ink); }
+.line-drill { --line: var(--drill); --tint: var(--drill-tint); --tink: var(--drill-ink); }
+.line-speak { --line: var(--speak); --tint: var(--speak-tint); --tink: var(--speak-ink); }
+.line-extra { --line: var(--extra); --tint: var(--extra-tint); --tink: var(--extra-ink); }
+.line-head { display: flex; gap: 14px; align-items: stretch; }
+.line-mark { flex: none; width: 8px; border-radius: 4px; background: var(--line); }
+.line-head h2 { font-size: 20px; line-height: 1.25; font-weight: 700; }
+.line-head h2 .jp { font-size: 24px; margin-right: 8px; }
+.line-head p { color: var(--ink-2); max-width: 60em; }
+.ideas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px 32px; }
+.idea { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.idea-body { display: flex; flex-direction: column; gap: 8px; min-width: 0; flex: 1; }
+.idea h3 { font-size: 16px; line-height: 1.3; font-weight: 700; }
+.idea h3 .jp { font-size: 19px; margin-right: 6px; }
+.pitch { color: var(--ink-2); max-width: 36em; }
+.verdict { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.07em; text-transform: uppercase; }
+.verdict::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; background: currentColor; }
+.verdict-first { color: var(--core-ink); }
+.verdict-strong { color: var(--speak-ink); }
+.verdict-later { color: var(--quiet-ink); }
+.verdict-play { color: var(--extra-ink); }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag { font-size: 12px; line-height: 1.3; padding: 3px 8px; border-radius: 3px; background: var(--quiet-tint); color: var(--quiet-ink); }
+.tag-offline { background: var(--core-tint); color: var(--core-ink); }
+.tag-online { background: var(--speak-tint); color: var(--speak-ink); }
+.tag-sound { background: var(--drill-tint); color: var(--drill-ink); }
+.tag-risk { background: var(--extra-tint); color: var(--extra-ink); }
+.picks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: auto; padding-top: 6px; }
+.pick { position: relative; display: block; }
+.pick input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.pick span {
+  display: block; text-align: center; padding: 8px 6px; font-size: 13px; font-weight: 500; border: 1px solid var(--rule);
+  background: var(--surface); color: var(--ink-2); margin-left: -1px;
+}
+.pick:first-child span { border-radius: 4px 0 0 4px; margin-left: 0; }
+.pick:last-child span { border-radius: 0 4px 4px 0; }
+.pick input:checked + span { background: var(--btn); color: var(--btn-ink); border-color: var(--btn); }
+.pick input:focus-visible + span { outline: 2px solid var(--focus); outline-offset: 2px; position: relative; z-index: 1; }
+
+/* Pronunciation */
+.layers { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px 32px; }
+.layer { display: flex; flex-direction: column; gap: 4px; min-width: 0; padding-top: 14px; border-top: 6px solid var(--core); }
+.layer:nth-child(2) { border-top-color: var(--drill); }
+.layer:nth-child(3) { border-top-color: var(--speak); }
+.layer-name { font-size: 18px; font-weight: 700; }
+.layer-name .jp { font-size: 22px; margin-right: 6px; }
+.layer-when { font-family: var(--font-mono); font-size: 12px; color: var(--ink-3); }
+.layer-what { color: var(--ink-2); }
+.shots { display: grid; gap: 32px 24px; }
+.shots-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.shot { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.shot figcaption { display: flex; flex-direction: column; gap: 2px; }
+.shot figcaption span { color: var(--ink-2); font-size: 13.5px; }
+.sub { font-size: 20px; font-weight: 700; line-height: 1.3; }
+.line-title { font-size: 20px; line-height: 1.25; font-weight: 700; }
+.line-title .jp { font-size: 24px; margin-right: 8px; }
+
+/* The four looks */
+.looks2 { display: flex; flex-direction: column; gap: 36px; }
+.look2 { display: flex; flex-direction: column; gap: 12px; }
+.look2 header { display: flex; flex-direction: column; gap: 2px; }
+.look2 h3 { font-size: 18px; font-weight: 700; }
+.look2 h3 .jp { font-size: 22px; margin-right: 8px; }
+.look2 p { color: var(--ink-2); max-width: 60em; }
+.look2-shots { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+
+/* Look directions */
+.looks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 36px 32px; }
+.look { display: flex; flex-direction: column; gap: 8px; cursor: pointer; min-width: 0; }
+.look-row { display: flex; align-items: center; gap: 10px; }
+.look-row input { width: 18px; height: 18px; margin: 0; accent-color: var(--btn); flex: none; }
+.look-name { font-weight: 700; }
+.look-name .jp { font-size: 18px; margin-right: 6px; }
+.look-note { color: var(--ink-2); font-size: 13.5px; }
+
+/* Facts */
+.table-scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 640px; }
+th, td { text-align: left; vertical-align: top; padding: 12px 16px 12px 0; border-top: 1px solid var(--rule); }
+thead th { border-top: 0; font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-3); font-weight: 500; }
+tbody th { font-weight: 700; white-space: nowrap; }
+td.so { color: var(--ink-2); }
+.source-note { color: var(--ink-3); font-size: 13px; max-width: 70em; }
+
+/* Questions */
+.questions { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 32px 40px; }
+.q { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.q h3 { font-size: 16px; font-weight: 700; line-height: 1.35; }
+.why { color: var(--ink-2); font-size: 13.5px; }
+.opts { display: flex; flex-direction: column; gap: 6px; }
+.opt { display: flex; gap: 10px; align-items: flex-start; padding: 9px 12px; border: 1px solid var(--rule); border-radius: 4px; background: var(--surface); cursor: pointer; }
+.opt input { margin: 3px 0 0; width: 16px; height: 16px; accent-color: var(--btn); flex: none; }
+.opt:has(input:checked) { border-color: var(--btn); box-shadow: inset 0 0 0 1px var(--btn); }
+.free { display: flex; flex-direction: column; gap: 4px; }
+.free span { font-size: 13.5px; color: var(--ink-2); }
+textarea {
+  font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--rule); border-radius: 4px;
+  padding: 9px 12px; width: 100%; resize: vertical; min-height: 44px;
+}
+
+/* Hand-over */
+.send { display: flex; flex-direction: column; gap: 12px; }
+#answers { font-family: var(--font-mono); font-size: 13px; line-height: 1.5; min-height: 220px; white-space: pre; overflow: auto; }
+.bar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; background: var(--surface); border-top: 1px solid var(--rule);
+  padding: 10px var(--gutter) calc(10px + env(safe-area-inset-bottom, 0px));
+}
+.bar-in { max-width: 1160px; margin-inline: auto; display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.bar-status { font-family: var(--font-mono); font-size: 12.5px; color: var(--ink-2); min-width: 0; }
+.bar-status strong { color: var(--ink); font-weight: 500; }
+button {
+  font: inherit; font-weight: 700; cursor: pointer; border: 1px solid var(--btn); background: var(--btn); color: var(--btn-ink);
+  border-radius: 4px; padding: 10px 18px;
+}
+button.ghost { background: transparent; color: var(--ink); border-color: var(--rule); font-weight: 500; }
+.bar-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+#copied { font-size: 13px; color: var(--core-ink); }
+
+@media (max-width: 860px) {
+  .layers, .shots-3, .look2-shots { grid-template-columns: minmax(0, 1fr); }
+  .top { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .stops { grid-template-columns: minmax(0, 1fr); gap: 22px; }
+  .stop { padding: 0 0 0 34px; }
+  .stop::before { left: 7px; right: auto; top: 0; bottom: -22px; width: 6px; height: auto; }
+  .stop:last-child::before { bottom: 0; }
+  .wrap { gap: 44px; }
+}
+@media (max-width: 700px) {
+  .ideas, .looks { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 420px) {
+  :root { --gutter: 16px; }
+  .questions { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }
+</style>
+
+<div class="wrap">
+
+  <header class="top">
+    <div class="top-text">
+      <p class="label">M5Stack Cardputer · 240 × 135 pixels · concept board, round two</p>
+      <h1><span lang="ja">旅のことば帳</span><small>Cardputer Nihongo — working title</small></h1>
+      <p class="thesis">Your phone translates. The Cardputer takes the other job: it catches the Japanese you meet on the trip and makes you type it back until it stays.</p>
+      <p class="top-note">You chose all eighteen ideas and four looks. This round adds pronunciation, draws your four looks on three screens each, and keeps the questions that are still open. Your earlier picks are filled in.</p>
+    </div>
+    <figure class="hero">
+      <div class="lcd"><img src="{{HERO}}" width="240" height="135" alt="Pronunciation card for 大丈夫: kana with a line over the high beats and a hook where the pitch falls, romaji split into five beats, and dots under a whispered vowel."></div>
+      <figcaption>Every screen on this page is drawn with the device's own bitmap fonts, pixel for pixel, enlarged. On the device this image is 25 mm wide.</figcaption>
+    </figure>
+  </header>
+
+  <section class="day" aria-labelledby="day-h">
+    <h2 id="day-h">One day, three stops</h2>
+    <ol class="stops">{{STOPS}}</ol>
+    <p class="loop-note">The evening feeds the next morning, so the device always drills words from your own trip. It works without a connection all day and goes online once, in the evening, through your phone.</p>
+  </section>
+
+  <section aria-labelledby="pron-h" class="lines">
+    <div class="section-head">
+      <h2 id="pron-h">Pronunciation, in three layers</h2>
+      <p>Written and heard, both. The written line works in silence on a train. Sound comes from clips prepared before the trip. The microphone lets you hear yourself next to the model. The device cannot judge your pronunciation by itself, and says so.</p>
+    </div>
+    <ol class="layers">{{LAYERS}}</ol>
+    <div class="shots shots-3">{{PRON_SHOTS}}</div>
+    <div class="section-head">
+      <h3 class="sub">How should pitch be written?</h3>
+      <p>The same four words in three notations. <span class="jp" lang="ja">箸</span>, <span class="jp" lang="ja">橋</span> and <span class="jp" lang="ja">端</span> are all <span class="jp" lang="ja">はし</span>; only the pitch tells them apart.</p>
+    </div>
+    <div class="shots shots-3">{{PRON_OPTIONS}}</div>
+    <div class="questions">{{PRON_QUESTIONS}}</div>
+  </section>
+
+  <section aria-labelledby="look-h" class="lines">
+    <div class="section-head">
+      <h2 id="look-h">Your four looks, on three screens each</h2>
+      <p>Home screen, word catcher and sign drill. All four can ship as themes, with a key to switch. Choose the one the device starts in.</p>
+    </div>
+    <div class="looks2">{{ROUND2}}</div>
+    <div class="questions">{{LOOK_QUESTIONS}}</div>
+  </section>
+
+  <section aria-labelledby="q-h" class="lines">
+    <div class="section-head">
+      <h2 id="q-h">What I still need to know</h2>
+      <p>Most important first. Skip anything you would rather answer in the chat.</p>
+    </div>
+    <form id="form" class="questions" autocomplete="off">{{QUESTIONS}}</form>
+  </section>
+
+  <section aria-labelledby="ideas-h" class="lines">
+    <div class="section-head">
+      <h2 id="ideas-h">All eighteen ideas, in build order</h2>
+      <p>You want all of them, so the label on each card is now the stage in which it gets built. Silent typed drills come first because they prove the screen, the fonts and the keyboard. Change a pick if you change your mind.</p>
+    </div>
+    {{GROUPS}}
+  </section>
+
+  <section aria-labelledby="facts-h" class="lines">
+    <div class="section-head">
+      <h2 id="facts-h">What the hardware can and cannot do</h2>
+      <p>Researched from primary sources. A second, independent check of every line is still running; I will correct this table if it finds anything.</p>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th scope="col">Topic</th><th scope="col">Fact</th><th scope="col">What it means for the design</th></tr></thead>
+        <tbody>{{FACTS}}</tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="send-h" class="send">
+    <div class="section-head">
+      <h2 id="send-h">Your answers, ready to paste</h2>
+      <p>This text updates as you choose. Copy it and paste it into the terminal. Nothing is sent anywhere by this page; your choices are kept only in this browser.</p>
+    </div>
+    <textarea id="answers" readonly rows="14" aria-label="Your answers as text"></textarea>
+  </section>
+</div>
+
+<div class="bar" role="region" aria-label="Progress and copy">
+  <div class="bar-in">
+    <p class="bar-status" id="status" aria-live="polite"></p>
+    <div class="bar-actions">
+      <span id="copied" role="status" hidden>Copied. Paste it into the terminal.</span>
+      <button type="button" class="ghost" id="reset">Reset</button>
+      <button type="button" id="copy">Copy my answers</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var IDEAS = {{IDEA_IDS}};
+  var QUESTIONS = {{QUESTION_IDS}};
+  var DEFAULTS = {{DEFAULTS}};
+  var KEY = "cardputer-nihongo-board-v2";
+  var state = { ideas: DEFAULTS.ideas || {}, one: {}, many: DEFAULTS.many || {}, text: {} };
+
+  try {
+    var raw = window.localStorage.getItem(KEY);
+    if (raw) {
+      var saved = JSON.parse(raw);
+      ["ideas", "one", "many", "text"].forEach(function (k) { if (saved[k] && typeof saved[k] === "object") state[k] = saved[k]; });
+    }
+  } catch (e) { /* storage unavailable: the page works without it */ }
+
+  function persist() {
+    try { window.localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
+  }
+
+  function byId(id) { return document.getElementById(id); }
+
+  function restore() {
+    IDEAS.forEach(function (id) {
+      var v = state.ideas[id];
+      if (v) { var el = byId("idea-" + id + "-" + v); if (el) el.checked = true; }
+    });
+    QUESTIONS.forEach(function (q) {
+      var id = q[0], kind = q[1], hasText = q[2];
+      if (kind === "one" && state.one[id]) { var a = byId("q-" + id + "-" + state.one[id]); if (a) a.checked = true; }
+      if (kind === "many" && Array.isArray(state.many[id])) {
+        state.many[id].forEach(function (v) { var b = byId("q-" + id + "-" + v); if (b) b.checked = true; });
+      }
+      if (hasText && state.text[id]) { var t = byId("q-" + id + "-text"); if (t) t.value = state.text[id]; }
+    });
+  }
+
+  function read() {
+    state.ideas = {};
+    IDEAS.forEach(function (id) {
+      var el = document.querySelector('input[name="idea-' + id + '"]:checked');
+      if (el) state.ideas[id] = el.value;
+    });
+    state.one = {}; state.many = {}; state.text = {};
+    QUESTIONS.forEach(function (q) {
+      var id = q[0], kind = q[1], hasText = q[2];
+      if (kind === "one") {
+        var el = document.querySelector('input[name="q-' + id + '"]:checked');
+        if (el) state.one[id] = el.value;
+      } else if (kind === "many") {
+        var all = Array.prototype.map.call(document.querySelectorAll('input[name="q-' + id + '"]:checked'), function (e) { return e.value; });
+        if (all.length) state.many[id] = all;
+      }
+      if (hasText) {
+        var t = byId("q-" + id + "-text");
+        if (t && t.value.trim()) state.text[id] = t.value.trim();
+      }
+    });
+  }
+
+  function summary() {
+    var lines = ["CARDPUTER NIHONGO: my answers"];
+    var groups = { yes: [], maybe: [], no: [] }, unrated = [];
+    IDEAS.forEach(function (id) { var v = state.ideas[id]; if (v) groups[v].push(id); else unrated.push(id); });
+    lines.push("ideas want: " + (groups.yes.join(", ") || "-"));
+    lines.push("ideas maybe: " + (groups.maybe.join(", ") || "-"));
+    lines.push("ideas skip: " + (groups.no.join(", ") || "-"));
+    if (unrated.length) lines.push("ideas not rated: " + unrated.join(", "));
+    QUESTIONS.forEach(function (q) {
+      var id = q[0], kind = q[1];
+      var parts = [];
+      if (kind === "one" && state.one[id]) parts.push(state.one[id]);
+      if (kind === "many" && state.many[id]) parts.push(state.many[id].join(", "));
+      if (state.text[id]) parts.push('"' + state.text[id].replace(/\s+/g, " ") + '"');
+      lines.push(id + ": " + (parts.join(" | ") || "-"));
+    });
+    return lines.join("\n");
+  }
+
+  function render() {
+    var rated = Object.keys(state.ideas).length;
+    var answered = QUESTIONS.filter(function (q) {
+      return state.one[q[0]] || state.many[q[0]] || state.text[q[0]];
+    }).length;
+    var status = byId("status");
+    status.textContent = "";
+    [["ideas ", rated + "/" + IDEAS.length],
+     [" · answered ", answered + "/" + QUESTIONS.length]].forEach(function (pair) {
+      status.appendChild(document.createTextNode(pair[0]));
+      var strong = document.createElement("strong");
+      strong.textContent = pair[1];
+      status.appendChild(strong);
+    });
+    byId("answers").value = summary();
+  }
+
+  function changed() { read(); persist(); render(); byId("copied").hidden = true; }
+
+  document.addEventListener("change", changed);
+  document.addEventListener("input", function (e) { if (e.target && e.target.tagName === "TEXTAREA" && e.target.id !== "answers") changed(); });
+
+  byId("copy").addEventListener("click", function () {
+    read(); render();
+    var text = summary();
+    var done = function () { byId("copied").hidden = false; };
+    var fallback = function () {
+      var box = byId("answers");
+      box.focus(); box.select();
+      try { if (document.execCommand("copy")) { done(); return; } } catch (e) { /* ignore */ }
+      byId("copied").textContent = "Select the text in the box above and copy it.";
+      byId("copied").hidden = false;
+      box.scrollIntoView({ block: "center" });
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, fallback);
+    } else {
+      fallback();
+    }
+  });
+
+  byId("reset").addEventListener("click", function () {
+    byId("form").reset();
+    Array.prototype.forEach.call(document.querySelectorAll('.picks input, .opts input'), function (el) { el.checked = false; });
+    Array.prototype.forEach.call(document.querySelectorAll('.free textarea'), function (el) { el.value = ""; });
+    state = { ideas: DEFAULTS.ideas || {}, one: {}, many: DEFAULTS.many || {}, text: {} };
+    restore();
+    changed();
+  });
+
+  restore();
+  read();
+  render();
+})();
+</script>
