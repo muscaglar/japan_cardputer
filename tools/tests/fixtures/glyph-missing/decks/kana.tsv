@@ -1,0 +1,6 @@
+# Test fixture with deliberate mistakes. This is not content.
+# name-ja: かな
+# name-en: kana
+# kind: kana
+id	prompt	reading	accent	accepted	gloss	note	level	source
+kana-small-ke	ゖ	ゖ			small ke		1	

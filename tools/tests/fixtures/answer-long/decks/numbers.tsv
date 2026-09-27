@@ -1,0 +1,8 @@
+# Test fixture with deliberate mistakes. This is not content.
+# The readings are real, from tools/number_reading.py. The first takes 49 letters to type, the second 48.
+# name-ja: すうじ
+# name-en: numbers
+# kind: number
+id	prompt	reading	accent	accepted	gloss	note	level	source
+num-yen-9999980	¥9,999,980	きゅうひゃくきゅうじゅうきゅうまんきゅうせんきゅうひゃくはちじゅうえん			9,999,980 yen		1	generated, tools/number_reading.py
+num-yen-9999990	¥9,999,990	きゅうひゃくきゅうじゅうきゅうまんきゅうせんきゅうひゃくきゅうじゅうえん			9,999,990 yen		1	generated, tools/number_reading.py

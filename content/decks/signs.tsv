@@ -1,0 +1,166 @@
+# name-ja: かんばん
+# name-en: signs
+# kind: word
+# Words printed on signs, machines and panels. The prompt is the word as it is printed.
+# Readings and meanings: JMdict. Accents: Kanjium accent list, first number, exact entries only.
+# Level 2: every kanji is taught in primary school. Level 3: at least one is taught later.
+id	prompt	reading	accent	accepted	gloss	note	level	source
+# station
+sign-eki	駅	えき	1		station		2	JMdict
+sign-iriguchi	入口	いりぐち	0		entrance		2	JMdict
+sign-deguchi	出口	でぐち	1		exit		2	JMdict
+sign-kaisatsuguchi	改札口	かいさつぐち	4		ticket gate		2	JMdict
+sign-kitaguchi	北口	きたぐち			north exit		2	JMdict
+sign-minamiguchi	南口	みなみぐち			south exit		2	JMdict
+sign-higashiguchi	東口	ひがしぐち			east exit		2	JMdict
+sign-nishiguchi	西口	にしぐち			west exit		2	JMdict
+sign-chikatetsu	地下鉄	ちかてつ	0		underground; subway		2	JMdict
+sign-noriba	のりば	のりば			boarding place	platform, bus stop or taxi rank	1	JMdict
+sign-norikae	のりかえ	のりかえ			transfer	follow it to change lines	1	JMdict
+sign-kippuuriba	きっぷうりば	きっぷうりば			ticket office		1	JMdict
+sign-kenbaiki	券売機	けんばいき	3		ticket machine		2	JMdict
+sign-seisanki	精算機	せいさんき			fare adjustment machine	pay what is missing before the gate	2	JMdict
+sign-houmen	方面	ほうめん	3		direction	after a place name: towards it	2	JMdict
+sign-yuki	行き	ゆき	0	いき	bound for	after a place name: the last stop	2	JMdict
+sign-bansen	番線	ばんせん	0		platform number	3番線 is platform 3	2	JMdict
+sign-kakuekiteisha	各駅停車	かくえきていしゃ	5		train stopping at every station		2	JMdict
+sign-futsuu	普通	ふつう	0		ordinary; local train	stops at every station	3	JMdict
+sign-kaisoku	快速	かいそく	0		rapid train	skips some stations	2	JMdict
+sign-kyuukou	急行	きゅうこう	0		express train	skips stations; check where it stops	2	JMdict
+sign-tokkyuu	特急	とっきゅう	0		limited express	often needs an extra ticket	2	JMdict
+sign-shinkansen	新幹線	しんかんせん	3		Shinkansen; bullet train		2	JMdict
+sign-gousha	号車	ごうしゃ			car number	5号車 is car 5	2	JMdict
+sign-jiyuuseki	自由席	じゆうせき	2		unreserved seat	sit on any free seat	2	JMdict
+sign-shiteiseki	指定席	していせき	2		reserved seat	the seat number is on the ticket	2	JMdict
+sign-yuusenseki	優先席	ゆうせんせき			priority seat	give it up to those who need it	2	JMdict
+sign-joseisen-yousha	女性専用車	じょせいせんようしゃ			women-only car		2	JMdict
+sign-shihatsu	始発	しはつ	0		first train; starting here		2	JMdict
+sign-saishuu	最終	さいしゅう	0		last; last train or bus		2	JMdict
+sign-kaisou	回送	かいそう	0		not in service	do not board	2	JMdict
+sign-chien	遅延	ちえん	0		delay		3	JMdict
+sign-unkyuu	運休	うんきゅう	0		service cancelled		2	JMdict
+sign-untenmiawase	運転見合わせ	うんてんみあわせ			service suspended	no trains for the time being	2	JMdict
+sign-katamichi	片道	かたみち	0		one way		2	JMdict
+sign-oufuku	往復	おうふく	0		return; round trip		2	JMdict
+sign-unchin	運賃	うんちん	1		fare	the price of the ride	2	JMdict
+sign-otona	大人	おとな	0	だいにん	adult		2	JMdict
+sign-shounin	小人	しょうにん	0	こども	child	the child price on a fare table	2	JMdict; こども: Kanjium accent list
+sign-joushaken	乗車券	じょうしゃけん	3		fare ticket	the basic ticket for the ride	2	JMdict
+sign-tokkyuuken	特急券	とっきゅうけん			limited express ticket	needed on top of the 乗車券	2	JMdict
+sign-seiriken	整理券	せいりけん			numbered ticket	bus: take one when you board	2	JMdict
+sign-ryougae	両替	りょうがえ	0		money changing	bus: changes a note into coins	3	JMdict
+# shop door
+sign-eigyouchuu	営業中	えいぎょうちゅう			open for business		2	JMdict
+sign-junbichuu	準備中	じゅんびちゅう			in preparation	getting ready: not open yet	2	JMdict
+sign-eigyoujikan	営業時間	えいぎょうじかん			opening hours		2	JMdict
+sign-teikyuubi	定休日	ていきゅうび	3		regular closing day		2	JMdict
+sign-honjitsukyuugyou	本日休業	ほんじつきゅうぎょう			closed today		2	JMdict
+sign-jidou	自動	じどう	0		automatic	自動ドア: the door opens by itself	2	JMdict
+sign-osu	押す	おす	0		to push	doors often show only 押	3	JMdict
+sign-hiku	引く	ひく	0		to pull	doors often show only 引	2	JMdict
+sign-uketsuke	受付	うけつけ	0		reception	report here first	2	JMdict
+sign-manseki	満席	まんせき	0		all seats taken		2	JMdict
+sign-manshitsu	満室	まんしつ	0		no vacancy	every room is taken	2	JMdict
+sign-yoyakusei	予約制	よやくせい			reservation system	you need to book ahead	2	JMdict
+sign-kashikiri	貸切	かしきり	0		booked for private use	closed to other guests	2	JMdict
+sign-okaikei	お会計	おかいけい			bill; payment	pay here	2	JMdict
+sign-ryoukin	料金	りょうきん	1		charge; fee		2	JMdict
+sign-genkinnomi	現金のみ	げんきんのみ			cash only	cards are not accepted	2	JMdict 現金 and のみ; not one entry
+sign-fuka	不可	ふか	2		not allowed	カード不可: cards not accepted	2	JMdict
+sign-menzei	免税	めんぜい	0		tax exemption	tax-free sales: passport needed	3	JMdict
+sign-zeikomi	税込	ぜいこみ	0		tax included		3	JMdict
+sign-zeinuki	税抜	ぜいぬき			tax excluded	tax is added when you pay	3	JMdict
+sign-waribiki	割引	わりびき	0		discount	2割引 is 20% off	2	JMdict
+sign-hangaku	半額	はんがく	0		half price		2	JMdict
+sign-muryou	無料	むりょう	0		free of charge		2	JMdict
+sign-yuuryou	有料	ゆうりょう	0		charged; not free	the opposite of 無料	2	JMdict
+sign-kin-en	禁煙	きんえん	0		no smoking		3	JMdict
+sign-kitsuenjo	喫煙所	きつえんじょ		きつえんしょ	smoking area		3	JMdict
+sign-dosokugenkin	土足厳禁	どそくげんきん			shoes strictly prohibited	take your shoes off	2	JMdict
+sign-heiten	閉店	へいてん	0		shop closing; closed		2	JMdict
+sign-shinagire	品切れ	しなぎれ	0		out of stock		2	JMdict
+sign-mochikaeri	持ち帰り	もちかえり	0		takeaway		2	JMdict
+sign-tennai	店内	てんない	1		inside the shop	order screens: 店内 is eating in	2	JMdict
+sign-satsueikinshi	撮影禁止	さつえいきんし			no photography		3	JMdict
+sign-tachiirikinshi	立入禁止	たちいりきんし	0		no entry	関係者以外立入禁止: staff only	2	JMdict
+sign-koshouchuu	故障中	こしょうちゅう			out of order		2	JMdict
+sign-shiyouchuu	使用中	しようちゅう			in use; occupied		2	JMdict
+sign-seisouchuu	清掃中	せいそうちゅう			being cleaned		3	JMdict 清掃 and the suffix 中; not one entry
+sign-saikoubi	最後尾	さいこうび	3		end of the queue	join the queue here	3	JMdict
+sign-okotowari	お断り	おことわり			refusal	what it names is not accepted	2	JMdict
+# menu and ticket machine
+sign-shokken	食券	しょっけん	0		meal ticket	buy at the machine, hand to staff	2	JMdict
+sign-chuumon	注文	ちゅうもん	0		order	注文はこちら: order here	2	JMdict
+sign-urikire	売切	うりきれ	0		sold out		2	JMdict
+sign-teishoku	定食	ていしょく	0		set meal		2	JMdict
+sign-higawari	日替わり	ひがわり	0		changing every day	the dish of the day	3	JMdict
+sign-tanpin	単品	たんぴん	0		single item	the dish alone, not a set	2	JMdict
+sign-oomori	大盛	おおもり	0		large portion		2	JMdict
+sign-namimori	並盛	なみもり			regular portion		2	JMdict
+sign-kaedama	替玉	かえだま	0		second serving of noodles	ramen: more noodles for your soup	3	JMdict
+sign-okawari	おかわり	おかわり			second helping; refill		1	JMdict
+sign-tabehoudai	食べ放題	たべほうだい			all you can eat		2	JMdict
+sign-nomihoudai	飲み放題	のみほうだい			all you can drink		2	JMdict
+sign-otooshi	お通し	おとおし	0		appetiser	izakaya: served and charged unasked	2	JMdict
+sign-osusume	おすすめ	おすすめ			recommendation		1	JMdict
+sign-atatakai	あたたかい	あたたかい			warm; hot	vending machine: hot drink	1	JMdict
+sign-tsumetai	つめたい	つめたい			cold	vending machine: cold drink	1	JMdict
+sign-serufusaabisu	セルフサービス	セルフサービス	4		self-service	fetch it yourself, for example water	1	JMdict
+sign-otsuri	おつり	おつり			change (money back)		1	JMdict
+sign-torikeshi	取消	とりけし	0		cancel		2	JMdict
+sign-kakunin	確認	かくにん	0		confirm; check	button: confirm what you entered	2	JMdict
+sign-modoru	戻る	もどる	2		to go back	screen button: back one step	3	JMdict
+sign-yobidashi	呼出	よびだし	0		call	calls staff; in a toilet, calls help	2	JMdict
+sign-ryoushuusho	領収書	りょうしゅうしょ	0		receipt		2	JMdict
+sign-henkyakuguchi	返却口	へんきゃくぐち			return slot; tray return		3	JMdict
+# room and bath
+sign-reibou	冷房	れいぼう	0		air conditioning; cooling		3	JMdict
+sign-danbou	暖房	だんぼう	0		heating		3	JMdict
+sign-joshitsu	除湿	じょしつ	0		dehumidification		3	JMdict
+sign-unten	運転	うんてん	0		operation; running	air conditioner: 運転/停止 is on/off	2	JMdict
+sign-teishi	停止	ていし	0		stop	toilet panels often show only 止	2	JMdict
+sign-ondo	温度	おんど	1		temperature		2	JMdict
+sign-dengen	電源	でんげん	0		power	switches: 入 is on, 切 is off	2	JMdict
+sign-nagasu	流す	ながす	2		to flush		2	JMdict
+sign-dai	大	だい	1		large	toilet: full flush; menu: large	2	JMdict
+sign-shou	小	しょう	1		small	toilet: light flush; menu: small	2	JMdict
+sign-oshiri	おしり	おしり			bottom	toilet: rear wash	1	JMdict
+sign-bide	ビデ	ビデ	1		bidet	toilet: front wash	1	JMdict
+sign-otearai	お手洗い	おてあらい	3		toilet		2	JMdict
+sign-keshoushitsu	化粧室	けしょうしつ	2		toilet; powder room		3	JMdict
+sign-otoko	男	おとこ	3		man	on toilet and bath doors	2	JMdict
+sign-onna	女	おんな	3		woman	on toilet and bath doors	2	JMdict
+sign-otokoyu	男湯	おとこゆ	0		men's bath		2	JMdict
+sign-onnayu	女湯	おんなゆ	0		women's bath		2	JMdict
+sign-hijouguchi	非常口	ひじょうぐち	2		emergency exit		2	JMdict
+sign-daiyokujou	大浴場	だいよくじょう			large shared bath		2	JMdict
+sign-rotenburo	露天風呂	ろてんぶろ	0		open-air bath		3	JMdict
+sign-datsuijo	脱衣所	だついじょ	0	だついしょ	changing room		3	JMdict
+sign-kakeyu	かけ湯	かけゆ			rinse before the bath	pour hot water over yourself first	2	JMdict 掛け湯; usually printed かけ湯
+sign-irezumi	入れ墨	いれずみ	0		tattoo	many baths refuse tattoos	3	JMdict
+sign-hiraku	開く	ひらく	2	あく	to open	lift button: 開	2	JMdict
+sign-shimeru	閉める	しめる	2		to close	lift button: 閉	2	JMdict
+# street
+sign-tomare	止まれ	とまれ			stop		2	JMdict
+sign-koujichuu	工事中	こうじちゅう			under construction		2	JMdict
+sign-tsuukoudome	通行止	つうこうどめ	0		road closed		2	JMdict
+sign-kiken	危険	きけん	0		danger		2	JMdict
+sign-chuui	注意	ちゅうい	1		caution		2	JMdict
+sign-ashimoto	足元	あしもと	3		underfoot; one's step	足元注意: mind your step	2	JMdict
+sign-chuurinjou	駐輪場	ちゅうりんじょう	0		bicycle parking		3	JMdict
+sign-kuusha	空車	くうしゃ	0		vacant	taxi for hire; car park has room	2	JMdict
+sign-kouban	交番	こうばん	0		police box		2	JMdict
+sign-yakkyoku	薬局	やっきょく	0		pharmacy		2	JMdict
+sign-yuubinkyoku	郵便局	ゆうびんきょく	3		post office		2	JMdict
+sign-annaijo	案内所	あんないじょ	0		information desk		2	JMdict
+sign-hinanjo	避難所	ひなんじょ	0		evacuation shelter		3	JMdict
+sign-tsunami	津波	つなみ	0		tsunami		3	JMdict
+sign-haikanryou	拝観料	はいかんりょう	3		admission fee	the word used at temples	2	JMdict
+sign-junro	順路	じゅんろ	1		suggested route	follow it through the building	2	JMdict
+sign-kyuukanbi	休館日	きゅうかんび	3		closed day	of a museum, library or hall	2	JMdict
+sign-heijitsu	平日	へいじつ	0		weekday		2	JMdict
+sign-shukujitsu	祝日	しゅくじつ	0		public holiday	土日祝: Sat, Sun and holidays	2	JMdict
+sign-moerugomi	燃えるゴミ	もえるごみ			burnable rubbish		2	JMdict
+sign-sen-you	専用	せんよう	0		exclusive use	after a word: only for that	2	JMdict
+sign-kinshi	禁止	きんし	0		prohibited		2	JMdict
+sign-inshokukinshi	飲食禁止	いんしょくきんし			no food or drink		2	JMdict

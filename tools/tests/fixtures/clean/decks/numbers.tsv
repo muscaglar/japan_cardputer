@@ -1,0 +1,8 @@
+# Test fixture without mistakes.
+# name-ja: すうじ
+# name-en: numbers
+# kind: number
+id	prompt	reading	accent	accepted	gloss	note	level	source
+num-100	100	ひゃく			one hundred		1	JMdict
+num-300-yen	300円	さんびゃくえん			300 yen	a typed \ can show as ¥	2	JMdict
+num-9-ji	9時	くじ			nine o'clock	not きゅうじ	2	JMdict

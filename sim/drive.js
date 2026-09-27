@@ -5,6 +5,10 @@
 //   type <text>            characters, one key each (the rest of the line, spaces included)
 //   wait <milliseconds>    let time pass
 //   frame                  answers with one line: "frame <screen number> <base64 of 240x135 RGBA>"
+//   info                   answers with one line: "info <JSON>"
+//   restart                switches off and on again: the app starts anew, its files stay
+//   keep / back            keeps settings and progress aside / brings them back; answers "done 1" or "done 0"
+//   fresh                  forgets all progress and starts at day 1; answers "done 1"
 //   quit
 const path = require("path");
 const readline = require("readline");
@@ -35,6 +39,12 @@ require(path.join(path.dirname(__dirname), "build", "sim", "sim.js"))().then(sim
       const at = sim._sim_pixels();
       const pixels = Buffer.from(sim.HEAPU8.subarray(at, at + 240 * 135 * 4));
       console.log("frame " + sim._sim_screen() + " " + pixels.toString("base64"));
+    } else if (command === "info") {
+      console.log("info " + sim.UTF8ToString(sim._sim_info()));
+    } else if (command === "restart") {
+      sim._sim_restart();
+    } else if (command === "keep" || command === "back" || command === "fresh") {
+      console.log("done " + sim._sim_keep(command === "keep" ? 0 : command === "back" ? 1 : 2));
     } else if (command === "quit") {
       process.exit(0);
     } else if (command) {

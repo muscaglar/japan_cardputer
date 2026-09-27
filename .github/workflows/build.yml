@@ -135,6 +135,21 @@ jobs:
       - name: Whole kana rounds play correctly
         run: python tools/kana_round_check.py
 
+      - name: Sittings over two days play correctly
+        run: python tools/cards_check.py
+
+      - name: The deck tool catches every kind of mistake
+        run: python tools/tests/test_build_decks.py
+
+      - name: The decks are sound and the compiled deck data is up to date
+        run: |
+          python tools/fetch_reference.py
+          python tools/build_decks.py --check
+          cp content/ids.txt build/ids.txt
+          python tools/build_decks.py --out build/deck_data.cpp --ids build/ids.txt
+          diff -u lib/core/deck_data.cpp build/deck_data.cpp
+          diff -u content/ids.txt build/ids.txt
+
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
         with:

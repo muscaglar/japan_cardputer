@@ -1,0 +1,6 @@
+# Test fixture with deliberate mistakes. This is not content.
+# name-ja: 看板
+# name-en: signs
+# kind: phrase
+id	prompt	reading	accent	accepted	gloss	note	level	source
+sign-kippu	切符	きっぷ	0		ticket		2	JMdict

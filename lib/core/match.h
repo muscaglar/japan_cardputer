@@ -27,6 +27,7 @@ struct Outcome {
     Slip slip       = Slip::Other;
     std::string expected;  // the right answer nearest to what was typed, as stored in the deck
     int beat = -1;         // first beat of `expected` that differs. -1 when right.
+    bool sameSound = false;  // almost, and only the spelling differs: おお for おう
 };
 
 // typedKana is what the romaji converter produced. It may hold stray Latin letters.

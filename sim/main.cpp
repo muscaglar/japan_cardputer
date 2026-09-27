@@ -184,4 +184,34 @@ EMSCRIPTEN_KEEPALIVE int sim_screen()
     return app ? static_cast<int>(app->current()) : -1;
 }
 
+// Switching off and on again: the app starts anew, the files stay.
+EMSCRIPTEN_KEEPALIVE void sim_restart()
+{
+    delete app;
+    app = new ui::App(platform);
+    app->begin();
+}
+
+// The state of the app as one line of JSON. The text is valid until the next call.
+EMSCRIPTEN_KEEPALIVE const char* sim_info()
+{
+    static std::string text;
+    text = app ? app->describe() : std::string("{}");
+    return text.c_str();
+}
+
+// what: 0 keeps settings and progress aside, 1 brings them back, 2 forgets all progress.
+// Returns 1 when it worked.
+EMSCRIPTEN_KEEPALIVE int sim_keep(int what)
+{
+    if (!app) {
+        return 0;
+    }
+    if (what == 2) {
+        app->startFresh();
+        return 1;
+    }
+    return (what == 0 ? app->keepAside() : app->bringBack()) ? 1 : 0;
+}
+
 }  // extern "C"

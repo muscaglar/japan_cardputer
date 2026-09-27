@@ -114,11 +114,11 @@ button.plain { font: inherit; font-weight: 500; cursor: pointer; border: 1px sol
     <section>
       <h2>Try this</h2>
       <ul>
-        <li>Press any letter on the home screen to start a round of kana.</li>
-        <li>Type the reading, for example <kbd>shi</kbd> or <kbd>si</kbd> for し, then <kbd>Enter</kbd>.</li>
-        <li><kbd>Tab</kbd> in a round switches between hiragana and katakana.</li>
-        <li><kbd>Fn</kbd> + <kbd>R</kbd> shows the romaji when you are stuck.</li>
-        <li><kbd>Tab</kbd> on the home screen opens the menu. Settings has the four looks.</li>
+        <li>Press any letter on the home screen to start a sitting of cards.</li>
+        <li>A new card shows its answer. Read it and type it, for example <kbd>eki</kbd> for えき, then <kbd>Enter</kbd>.</li>
+        <li>A little later the same card comes back as a question.</li>
+        <li><kbd>Tab</kbd> shows the answer when you are stuck. <kbd>Fn</kbd> + <kbd>R</kbd> shows the romaji.</li>
+        <li><kbd>Tab</kbd> on the home screen opens the menu: single decks, the kana round, and settings with the four looks.</li>
       </ul>
     </section>
     <section>
@@ -135,10 +135,11 @@ button.plain { font: inherit; font-weight: 500; cursor: pointer; border: 1px sol
     <section>
       <h2>What it is not yet</h2>
       <ul>
-        <li>Only the kana round, the menu and the settings exist so far.</li>
-        <li>There is no sound from the speaker yet, only a beep when sound is switched on.</li>
+        <li>Text only so far. Sound comes next.</li>
+        <li>The device has no clock. After a day with answers, the next start asks whether a new day has begun.</li>
       </ul>
-      <button type="button" class="plain" id="restart">Start again from a fresh device</button>
+      <button type="button" class="plain" id="again">Switch off and on again</button>
+      <button type="button" class="plain" id="restart">Forget everything and start afresh</button>
     </section>
   </aside>
 </div>
@@ -149,7 +150,7 @@ button.plain { font: inherit; font-weight: 500; cursor: pointer; border: 1px sol
 <script>
 (function () {
   var CODE = { Char: 1, Enter: 2, Backspace: 3, Tab: 4, Up: 5, Down: 6, Left: 7, Right: 8, Esc: 9, Button: 10 };
-  var SCREENS = ["home", "menu", "kana round", "settings"];
+  var SCREENS = ["home", "menu", "kana round", "settings", "cards", "end of the sitting"];
   var ROWS = [
     [["`", "~", "esc"], ["1", "!"], ["2", "@"], ["3", "#"], ["4", "$"], ["5", "%"], ["6", "^"], ["7", "&"], ["8", "*"], ["9", "("], ["0", ")"], ["-", "_"], ["=", "+"], ["del"]],
     [["tab"], ["q"], ["w"], ["e"], ["r"], ["t"], ["y"], ["u"], ["i"], ["o"], ["p"], ["[", "{"], ["]", "}"], ["\\", "|"]],
@@ -303,6 +304,11 @@ button.plain { font: inherit; font-weight: 500; cursor: pointer; border: 1px sol
     start((Date.now() & 0x7fffffff) || 1);
     window.requestAnimationFrame(frame);
     document.addEventListener("keydown", fromKeyboard);
+    document.getElementById("again").addEventListener("click", function () {
+      sim._sim_restart();
+      paint();
+      lcd.focus({ preventScroll: true });
+    });
     document.getElementById("restart").addEventListener("click", function () {
       try {
         Object.keys(window.localStorage).forEach(function (k) { if (k.indexOf("cardputer-sim:") === 0) { window.localStorage.removeItem(k); } });

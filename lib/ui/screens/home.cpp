@@ -2,36 +2,40 @@
 
 #include "../screens.h"
 #include "../widgets.h"
+#include "buddy.h"
 
 namespace ui {
 
 namespace {
 
-struct Line {
-    const char* ja;
-    const char* en;
-};
-
-// What the buddy says. Kana only, with spaces between words, for a reader whose kana is shaky.
-const Line kGreetings[] = {
-    {"こんにちは！", "Hello!"},
-    {"きょうも がんばろう。", "Let's do our best today too."},
-    {"ゆっくりで いいよ。", "Slowly is fine."},
-    {"いっしょに やろう。", "Let's do it together."},
-    {"すこしずつ おぼえよう。", "Let's learn little by little."},
-};
-constexpr int kGreetingCount = sizeof(kGreetings) / sizeof(kGreetings[0]);
-
 class HomeScreen : public Screen {
 public:
     void enter(App& app) override
     {
-        _line    = static_cast<int>(app.platform().random() % kGreetingCount);
-        _english = false;
+        // The device has no clock. After a day on which cards were answered, the first thing at
+        // the next start is the question whether a new day has begun.
+        if (_firstEntry) {
+            _firstEntry = false;
+            _askDay     = (app.settings().answeredToday > 0);
+        }
+        const deck::BuddyLine* line = buddy::say("greeting", app.platform().random());
+        _ja                         = line ? line->ja : "こんにちは！";
+        _en                         = line ? line->en : "Hello!";
+        _english                    = false;
     }
 
     void key(App& app, const Key& key) override
     {
+        if (_askDay) {
+            if (key.code == Key::Enter || (key.code == Key::Char && (key.ch == 'y' || key.ch == 'Y'))) {
+                app.startNewDay();
+                _askDay = false;
+            } else if (key.code == Key::Escape || key.code == Key::Backspace ||
+                       (key.code == Key::Char && (key.ch == 'n' || key.ch == 'N' || key.ch == ' '))) {
+                _askDay = false;
+            }
+            return;
+        }
         if (key.code == Key::Tab) {
             app.show(ScreenId::Menu);
         } else if (key.code == Key::Char && key.ch == ' ') {
@@ -39,7 +43,7 @@ public:
         } else if (key.code == Key::Escape || key.code == Key::Backspace) {
             // nothing to go back to
         } else {
-            app.show(ScreenId::Kana);
+            app.startSitting(nullptr);
         }
     }
 
@@ -56,19 +60,29 @@ public:
         } else {
             std::snprintf(right, sizeof(right), "%s", sound);
         }
-        drawFrame(c, t, title, right, "キーで スタート", "Tab メニュー");
 
-        const Line& line  = kGreetings[_line];
-        const char* words = _english ? line.en : line.ja;
+        const char* words  = _askDay ? "あたらしい ひ？" : (_english ? _en : _ja);
+        const char* toggle = _askDay ? "new day?" : (_english ? "Space にほんご" : "Space えいご");
+        if (_askDay) {
+            drawFrame(c, t, title, right, "Enter はい", "Space いいえ");
+        } else {
+            drawFrame(c, t, title, right, "キーで スタート", "Tab メニュー");
+        }
+        const Area a = contentArea(t);
 
-        const char* toggle = _english ? "Space にほんご" : "Space えいご";
-        const Area a       = contentArea(t);
+        char waiting[48];
+        std::snprintf(waiting, sizeof(waiting), "ふくしゅう %d", app.dueToday());
+        char fresh[48];
+        std::snprintf(fresh, sizeof(fresh), "あたらしい %d", app.newAvailable());
 
         if (t.id == ThemeId::Rpg) {
-            // The buddy speaks in the lower window; the upper one is left for the day's numbers.
+            // The buddy speaks in the lower window; the upper one holds the day's numbers.
             daruma(c, 22, 114, true);
             textWrapped(c, 42, 100, 186, words, font12(), t.ink, 13, 1);
-            text(c, a.x + 2, a.y + 8, toggle, font12(), t.dim);
+            text(c, a.x + 4, a.y + 8, "きょう", font16(), t.ink);
+            text(c, a.x + 4, a.y + 32, waiting, font12(), t.ink);
+            text(c, a.x + 4, a.y + 47, fresh, font12(), t.ink);
+            textRight(c, a.x + a.w - 4, a.y + a.h - 14, toggle, font12(), t.dim);
             return;
         }
 
@@ -82,11 +96,24 @@ public:
             textWrapped(c, a.x + 56, top + 5, inner, words, font12(), t.bubbleInk, 13, 2);
         }
         text(c, a.x + 56, top + 33, toggle, font12(), t.bubbleDim);
+
+        const int row = top + 58;
+        int x         = text(c, a.x + 4, row, "きょう", font12(), t.dim);
+        x             = text(c, x + 10, row, waiting, font12(), t.ink);
+        text(c, x + 10, row, fresh, font12(), t.ink);
+    }
+
+    void describe(std::string& json) const override
+    {
+        json += _askDay ? ",\"asksForDay\":true" : ",\"asksForDay\":false";
     }
 
 private:
-    int _line     = 0;
-    bool _english = false;
+    const char* _ja  = "";
+    const char* _en  = "";
+    bool _english    = false;
+    bool _askDay     = false;
+    bool _firstEntry = true;
 };
 
 }  // namespace

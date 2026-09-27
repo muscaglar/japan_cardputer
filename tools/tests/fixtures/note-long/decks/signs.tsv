@@ -1,0 +1,10 @@
+# Test fixture with deliberate mistakes. This is not content.
+# name-ja: かんばん
+# name-en: signs
+# kind: word
+id	prompt	reading	accent	accepted	gloss	note	level	source
+sign-iriguchi	入口	いりぐち			entrance	also written 入り口, and read はいりぐち	2	JMdict
+sign-hijouguchi	非常口	ひじょうぐち			emergency exit	this note is thirty-nine letters long..	2	JMdict
+sign-kinen	禁煙	きんえん			no smoking	this note is thirty-eight letters long	2	JMdict
+sign-kippu	切符	きっぷ			ticket	きっぷうりばはきっぷをかうところですよ。	2	JMdict
+sign-deguchi	出口	でぐち			exit	でぐちはたてものからそとにでるところだ	2	JMdict

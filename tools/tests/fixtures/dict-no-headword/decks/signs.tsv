@@ -1,0 +1,8 @@
+# Test fixture with deliberate mistakes. This is not content.
+# name-ja: かんばん
+# name-en: signs
+# kind: word
+id	prompt	reading	accent	accepted	gloss	note	level	source
+sign-ichinichi-1	一日乗車券	いちにちじょうしゃけん			one-day pass		3	JMdict
+sign-ichinichi-2	一日乗車券	いちにちじょうしゃけん			one-day pass		3	
+sign-ichinichi-3	一日乗車券	いちにちじょうしゃけん			one-day pass		3	https://example.org/one-day-pass

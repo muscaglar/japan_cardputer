@@ -1,0 +1,4 @@
+# Test fixture with deliberate mistakes. This is not content.
+id	mood	ja	en
+buddy-greeting-01	greeting	きょうも いっしょに やろうね。	Let's do it together today too.
+buddy-greeting-02	greeting	きょうも いっしょに やろう。	Let's do it together today too.

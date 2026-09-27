@@ -1,0 +1,7 @@
+# Test fixture: the accent list has あ and ん as words. A kana card gets no accent from it.
+# name-ja: かな
+# name-en: kana
+# kind: kana
+id	prompt	reading	accent	accepted	gloss	note	level	source
+kana-a	あ	あ			a		1	
+kana-n	ん	ん			n		1	

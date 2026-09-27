@@ -20,8 +20,7 @@ import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from cardputer_screen import HEIGHT, WIDTH, Screen  # noqa: E402
-
-SCREENS = ["home", "menu", "kana", "settings"]
+from sim_driver import SCREENS  # noqa: E402
 
 
 def find_port():
@@ -86,6 +85,47 @@ class Device:
 
     def look(self):
         return self.info()["look"]
+
+    def open(self, entry):
+        """From the home screen: opens the menu and the entry of that name ("kana", "settings", a deck)."""
+        self.key("Tab")
+        state = self.info()
+        names = state.get("menu", [])
+        if entry not in names:
+            raise RuntimeError("the menu has no entry %r: %s" % (entry, ", ".join(names)))
+        steps = names.index(entry) - state["chosen"]
+        for _ in range(abs(steps)):
+            self.key("Down" if steps > 0 else "Up")
+        self.key("Enter")
+
+    def keep(self):
+        return self._ask("keep", "#done") == "1"
+
+    def back(self):
+        return self._ask("back", "#done") == "1"
+
+    def fresh(self):
+        """Forgets all progress and starts at day 1. The device refuses unless keep() was done."""
+        return self._ask("fresh", "#done") == "1"
+
+    def restart(self):
+        """Restarts the device and waits until the app answers again."""
+        self._ask("restart", "#ok")
+        end = time.time() + 20
+        while time.time() < end:
+            time.sleep(0.5)
+            try:
+                try:
+                    self.link.close()
+                except Exception:
+                    pass
+                self.link.open()
+                self.link.reset_input_buffer()
+                self._ask("info", "#info", timeout=1.5)
+                return
+            except Exception:
+                continue
+        raise RuntimeError("the device did not come back after the restart")
 
     def frame(self):
         """Returns (screen name, rows of (r, g, b))."""

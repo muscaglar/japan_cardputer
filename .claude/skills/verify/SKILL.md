@@ -5,7 +5,7 @@ description: How to verify changes in this repository by running them - the firm
 
 # Verifying cardputer-nihongo
 
-Four surfaces. Drive the one the change reaches.
+Five surfaces. Drive the one the change reaches.
 
 ## 1. Firmware (src/, lib/) - the device
 
@@ -107,6 +107,12 @@ python3 sim/build.py --page
 node sim/shots.js --check          # every scenario against docs/screens; prints CHANGED with a path
 ```
 
+`python3 tools/cards_check.py` plays sittings over two days in all four looks: new cards, questions,
+the four marks, the summary, a restart, the question for the new day, what is due on day 2. It asks
+the app which card it shows (`info`) and reads the picture to see that card and mark are drawn.
+Both checks also run on a device with `--device`; there they keep the owner's progress aside and
+put it back.
+
 `python3 tools/kana_round_check.py` plays whole kana rounds in all four looks. It reads each kana off
 the screen, answers some right and some wrong on purpose, and checks the marks and the final score.
 Use `tools/sim_driver.py` the same way for any check that has to react to what is on the screen.
@@ -129,7 +135,19 @@ Gotchas:
 - The browser page is plain JavaScript (`-sWASM=0`). In that build M5GFX `readPixelRGB` lost the
   green channel, so `sim/main.cpp` reads the sprite buffer itself. Do not go back to `readPixelRGB`.
 
-## 4. Concept page (docs/board/) - the browser
+## 4. Content (content/, tools/build_decks.py) - the terminal
+
+```
+python3 tools/fetch_reference.py        # once: dictionary and accent list into local/cache
+python3 tools/build_decks.py --check    # every row against format, fonts, typing and dictionary
+python3 tools/build_decks.py            # and writes lib/core/deck_data.cpp and content/ids.txt
+python3 tools/tests/test_build_decks.py # one fixture per kind of mistake
+```
+
+After a change to a table, build the simulator again and play the cards: a deck that checks clean
+can still be dull or wrong in ways only a reader sees.
+
+## 5. Concept page (docs/board/) - the browser
 
 ```
 cd docs/board && python3 -m http.server 8765 --bind 127.0.0.1

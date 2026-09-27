@@ -1,0 +1,170 @@
+# name-ja: カタカナ
+# name-en: katakana words
+# kind: word
+# Loanwords a visitor has to decode on menus, in shops, hotels and stations.
+# Readings and meanings: JMdict. Accents: Kanjium accent list, first number, exact entries only.
+id	prompt	reading	accent	accepted	gloss	note	level	source
+kata-menyuu	メニュー	メニュー	1		menu		1	JMdict
+kata-resutoran	レストラン	レストラン	1		restaurant	mostly Western-style food	1	JMdict
+kata-kafe	カフェ	カフェ	1		cafe	フェ is typed fe	1	JMdict
+kata-koohii	コーヒー	コーヒー	3		coffee	two long marks: typed ko-hi-	1	JMdict
+kata-biiru	ビール	ビール	1		beer	without the long mark: ビル, building	1	JMdict
+kata-biru	ビル	ビル	1		multi-storey building	not a bill, and not ビール (beer)	1	JMdict
+kata-wain	ワイン	ワイン	1		wine	ワ, not ウ or フ	1	JMdict
+kata-uisukii	ウイスキー	ウイスキー	3		whisky	ウ, not ワ or フ	1	JMdict
+kata-haibooru	ハイボール	ハイボール	3		whisky and soda		1	JMdict
+kata-sawaa	サワー	サワー	1		sour cocktail, often fizzy	ワ, not ウ or フ	1	JMdict
+kata-nonarukooru	ノンアルコール	ノンアルコール			alcohol-free	ノ and ン in one word	1	JMdict
+kata-juusu	ジュース	ジュース	1		soft drink; juice	any sweet soft drink, not only juice	1	JMdict
+kata-saidaa	サイダー	サイダー	1		sweet fizzy drink	not cider: a soft drink	1	JMdict
+kata-kafeore	カフェオレ	カフェオレ	0		cafe au lait	フェ is typed fe	1	JMdict
+kata-kapuchiino	カプチーノ	カプチーノ	3		cappuccino	ノ, not ソ or ン	1	JMdict
+kata-esupuresso	エスプレッソ	エスプレッソ	4		espresso	ソ, not ン or ノ	1	JMdict
+kata-afutanuunthii	アフタヌーンティー	アフタヌーンティー			afternoon tea	ヌ, not ス; ティ is typed thi	1	JMdict
+kata-hotto	ホット	ホット	1		hot; hot coffee	said alone in a cafe: hot coffee	1	JMdict
+kata-aisu	アイス	アイス	1		ice cream; iced (drink)	short for アイスクリーム; also iced	1	JMdict
+kata-aisukoohii	アイスコーヒー	アイスコーヒー	6		iced coffee		1	JMdict
+kata-amerikan	アメリカン	アメリカン	2		weak drip coffee	on a menu: not an American	1	JMdict
+kata-mooningu	モーニング	モーニング	1		breakfast set	in a cafe: not just 'morning'	1	JMdict
+kata-mooningusetto	モーニングセット	モーニングセット			breakfast set	often a drink and toast	1	JMdict
+kata-dorinku	ドリンク	ドリンク	2		drink	ク, not ケ or タ	1	JMdict
+kata-dorinkubaa	ドリンクバー	ドリンクバー			self-service drinks	made in Japan from 'drink bar'	1	JMdict
+kata-ranchi	ランチ	ランチ	1		lunch; lunch set	チ, not テ	1	JMdict
+kata-dhinaa	ディナー	ディナー	1		dinner	ディ is typed dhi	1	JMdict
+kata-setto	セット	セット	1		set; combo		1	JMdict
+kata-koosu	コース	コース	1		course meal; course; route	on a menu: a meal of several courses	1	JMdict
+kata-baikingu	バイキング	バイキング	1		buffet	not a Viking: a buffet meal	1	JMdict
+kata-byuffe	ビュッフェ	ビュッフェ	1		buffet	like バイキング; フェ is typed fe	1	JMdict
+kata-teikuauto	テイクアウト	テイクアウト	4		takeaway	テ, not チ; ク, not ケ	1	JMdict
+kata-iitoin	イートイン	イートイン			eating in (at the shop)	the opposite of テイクアウト	1	JMdict
+kata-rasutooodaa	ラストオーダー	ラストオーダー			last orders		1	JMdict
+kata-serufu	セルフ	セルフ	1		self-service	short for セルフサービス	1	JMdict
+kata-saabisu	サービス	サービス	1		free extra; discount; service	often means free, not just service	1	JMdict
+kata-pan	パン	パン	1		bread	not a pan: the word is Portuguese	1	JMdict
+kata-sandoitchi	サンドイッチ	サンドイッチ	4		sandwich	small ッ: typed sandoitchi	1	JMdict
+kata-sando	サンド	サンド	1		sandwich (short form)	not sand: short for サンドイッチ	1	JMdict
+kata-chiizu	チーズ	チーズ	1		cheese	チ, not テ	1	JMdict
+kata-sooseeji	ソーセージ	ソーセージ	1		sausage	ソ, not ン	1	JMdict
+kata-suupu	スープ	スープ	1		soup	ス, not ヌ	1	JMdict
+kata-raisu	ライス	ライス	1		rice (served on a plate)		1	JMdict
+kata-karee	カレー	カレー	0		curry; curry and rice	also short for カレーライス	1	JMdict
+kata-sarada	サラダ	サラダ	1		salad		1	JMdict
+kata-katsu	カツ	カツ	1		breaded fried cutlet	ツ, not シ	1	JMdict
+kata-hanbaagaa	ハンバーガー	ハンバーガー	3		hamburger (in a bun)		1	JMdict
+kata-hanbaagu	ハンバーグ	ハンバーグ	3		hamburger steak	not a burger: that is ハンバーガー	1	JMdict
+kata-suteeki	ステーキ	ステーキ	2		steak	テ, not チ	1	JMdict
+kata-omuraisu	オムライス	オムライス	3		fried rice in an omelette		1	JMdict
+kata-naporitan	ナポリタン	ナポリタン	2		spaghetti with ketchup	a Japanese dish	1	JMdict
+kata-korokke	コロッケ	コロッケ	1		croquette	ケ, not ク	1	JMdict
+kata-furaidopoteto	フライドポテト	フライドポテト			chips; French fries	from 'fried potato'	1	JMdict
+kata-raamen	ラーメン	ラーメン	1		ramen		1	JMdict
+kata-nuudoru	ヌードル	ヌードル	1		noodles	ヌ, not ス	1	JMdict
+kata-mayoneezu	マヨネーズ	マヨネーズ	3		mayonnaise	ヨ, not コ or ユ	1	JMdict
+kata-kechappu	ケチャップ	ケチャップ	2		ketchup	ケ, not ク; チ, not テ	1	JMdict
+kata-soosu	ソース	ソース	1		sauce; Worcestershire sauce	ソ, not ン	1	JMdict
+kata-doresshingu	ドレッシング	ドレッシング	2		salad dressing	シ, not ツ	1	JMdict
+kata-dezaato	デザート	デザート	2		dessert		1	JMdict
+kata-suiitsu	スイーツ	スイーツ			sweets; desserts	ツ, not シ	1	JMdict
+kata-keeki	ケーキ	ケーキ	1		cake	ケ, not ク or タ	1	JMdict
+kata-hottokeeki	ホットケーキ	ホットケーキ	4		pancake	an American-style pancake	1	JMdict
+kata-shuukuriimu	シュークリーム	シュークリーム	4		cream puff	not shoe cream: from French 'chou'	1	JMdict
+kata-sofutokuriimu	ソフトクリーム	ソフトクリーム	5		soft-serve ice cream	made in Japan from 'soft cream'	1	JMdict
+kata-chokoreeto	チョコレート	チョコレート	3		chocolate		1	JMdict
+kata-yooguruto	ヨーグルト	ヨーグルト	3		yoghurt	ヨ, not コ or ユ	1	JMdict
+kata-furuutsu	フルーツ	フルーツ	2		fruit	フ, not ウ or ワ; ツ, not シ	1	JMdict
+kata-kyabetsu	キャベツ	キャベツ	1		cabbage		1	JMdict
+kata-piiman	ピーマン	ピーマン	1		green pepper	from French 'piment'	1	JMdict
+kata-supuun	スプーン	スプーン	2		spoon	ス, not ヌ	1	JMdict
+kata-arerugii	アレルギー	アレルギー	2		allergy	from German 'Allergie'	1	JMdict
+kata-koppu	コップ	コップ	0		drinking glass; tumbler	a glass; カップ is a cup	1	JMdict
+kata-kauntaa	カウンター	カウンター	0		counter; bar	タ, not ク or ケ	1	JMdict
+kata-teeburu	テーブル	テーブル	0		table	テ, not チ	1	JMdict
+kata-konbini	コンビニ	コンビニ	0		convenience store	short for コンビニエンスストア	1	JMdict
+kata-suupaa	スーパー	スーパー	1		supermarket	alone: a supermarket, not 'super'	1	JMdict
+kata-depaato	デパート	デパート	2		department store	short for デパートメントストア	1	JMdict
+kata-doraggusutoa	ドラッグストア	ドラッグストア	6		pharmacy; drugstore		1	JMdict
+kata-reji	レジ	レジ	1		till; checkout	short for レジスター	1	JMdict
+kata-serufureji	セルフレジ	セルフレジ			self-checkout	made in Japan: セルフ and レジ	1	JMdict
+kata-renji	レンジ	レンジ	1		microwave oven; cooker	not レジ, the till	1	JMdict
+kata-reshiito	レシート	レシート	2		receipt		1	JMdict
+kata-kaado	カード	カード	1		card; credit or debit card		1	JMdict
+kata-kurejittokaado	クレジットカード	クレジットカード	6		credit card		1	JMdict
+kata-pointo	ポイント	ポイント	0		points (loyalty scheme); point		1	JMdict
+kata-pointokaado	ポイントカード	ポイントカード			loyalty card		1	JMdict
+kata-kyasshuresu	キャッシュレス	キャッシュレス	1		cashless		1	JMdict
+kata-saizu	サイズ	サイズ	1		size		1	JMdict
+kata-furiisaizu	フリーサイズ	フリーサイズ	4		one size fits all	not free of charge	1	JMdict
+kata-seeru	セール	セール	1		sale		1	JMdict
+kata-sain	サイン	サイン	1		signature; autograph	not a signboard: your signature	1	JMdict
+kata-pettobotoru	ペットボトル	ペットボトル			plastic bottle	not for pets: PET is the plastic	1	JMdict
+kata-biniiru	ビニール	ビニール	2		plastic; vinyl	not only vinyl: also means plastic	1	JMdict
+kata-masuku	マスク	マスク	1		face mask	マ, not ア or ム	1	JMdict
+kata-thisshu	ティッシュ	ティッシュ	1		tissue	ティ is typed thi	1	JMdict
+kata-tabako	タバコ	タバコ	0		cigarettes; tobacco	from Portuguese 'tabaco'	1	JMdict
+kata-wanpiisu	ワンピース	ワンピース	3		dress	not 'one piece' of something	1	JMdict
+kata-shatsu	シャツ	シャツ	1		shirt	シ first, then ツ	1	JMdict
+kata-hoteru	ホテル	ホテル	1		hotel	テ, not チ	1	JMdict
+kata-bijinesuhoteru	ビジネスホテル	ビジネスホテル	5		budget business hotel	cheap, basic and well located	1	JMdict
+kata-penshon	ペンション	ペンション	1		Western-style guest house	not a pension you are paid	1	JMdict
+kata-furonto	フロント	フロント	0		front desk; reception	not the front of the building	1	JMdict
+kata-chekkuin	チェックイン	チェックイン	4		check-in	チェ is typed che	1	JMdict
+kata-chekkuauto	チェックアウト	チェックアウト	4		check-out	チェ is typed che	1	JMdict
+kata-kaadokii	カードキー	カードキー			key card		1	JMdict
+kata-kyanseru	キャンセル	キャンセル	1		cancellation		1	JMdict
+kata-shinguru	シングル	シングル	1		single; single room	シ, not ツ	1	JMdict
+kata-tsuin	ツイン	ツイン	2		twin; twin room	ツ, not シ	1	JMdict
+kata-daburu	ダブル	ダブル	1		double; double room	one bed for two; ツイン is two beds	1	JMdict
+kata-beddo	ベッド	ベッド	1		bed	small ッ: typed beddo	1	JMdict
+kata-yuusuhosuteru	ユースホステル	ユースホステル	4		youth hostel	ユ, not コ or ヨ	1	JMdict
+kata-shiitsu	シーツ	シーツ	1		bed sheet	シ first, then ツ	1	JMdict
+kata-taoru	タオル	タオル	1		towel	タ, not ク or ケ	1	JMdict
+kata-surippa	スリッパ	スリッパ	1		slippers	small ッ: typed surippa	1	JMdict
+kata-shawaa	シャワー	シャワー	1		shower	ワ, not ウ or フ	1	JMdict
+kata-shanpuu	シャンプー	シャンプー	1		shampoo		1	JMdict
+kata-rinsu	リンス	リンス	1		hair conditioner; rinse	on a bottle: hair conditioner	1	JMdict
+kata-kondhishonaa	コンディショナー	コンディショナー	3		conditioner	ディ is typed dhi	1	JMdict
+kata-bodhisoopu	ボディソープ	ボディソープ			body soap	ディ is typed dhi; ソ, not ン	1	JMdict
+kata-doraiyaa	ドライヤー	ドライヤー	0		hair dryer		1	JMdict
+kata-yunittobasu	ユニットバス	ユニットバス	5		prefabricated bathroom unit	not a bus: バス here is a bath	1	JMdict
+kata-toire	トイレ	トイレ	1		toilet	short for トイレット	1	JMdict
+kata-toirettopeepaa	トイレットペーパー	トイレットペーパー	6		toilet paper		1	JMdict
+kata-eakon	エアコン	エアコン	0		air conditioner	short for エアコンディショナー	1	JMdict
+kata-rimokon	リモコン	リモコン	0		remote control	short for リモートコントロール	1	JMdict
+kata-terebi	テレビ	テレビ	1		television	short for テレビジョン	1	JMdict
+kata-konsento	コンセント	コンセント	1		power socket	not 'consent'	1	JMdict
+kata-suitchi	スイッチ	スイッチ	2		switch		1	JMdict
+kata-sutoobu	ストーブ	ストーブ	2		room heater	not a cooker: it heats the room	1	JMdict
+kata-mooningukooru	モーニングコール	モーニングコール	6		wake-up call	made in Japan from 'morning call'	1	JMdict
+kata-koinrandorii	コインランドリー	コインランドリー	4		launderette		1	JMdict
+kata-erebeetaa	エレベーター	エレベーター	3		lift		1	JMdict
+kata-esukareetaa	エスカレーター	エスカレーター	4		escalator		1	JMdict
+kata-hoomu	ホーム	ホーム	1		platform (at a station)	not 'home' here: from 'platform'	1	JMdict
+kata-hoomudoa	ホームドア	ホームドア			platform edge doors	from '(plat)form door'	1	JMdict
+kata-wanman	ワンマン	ワンマン	1		driver-only train or bus	not a one-man show: no conductor	1	JMdict
+kata-daiya	ダイヤ	ダイヤ	1		train timetable	not a diamond here: from 'diagram'	1	JMdict
+kata-chaaji	チャージ	チャージ	1		top-up; charge	adding money to a smart card	1	JMdict
+kata-chiketto	チケット	チケット	2		ticket	チ and ケ: not テ, not ク	1	JMdict
+kata-koinrokkaa	コインロッカー	コインロッカー	4		coin-operated locker	made in Japan from 'coin locker'	1	JMdict
+kata-takushii	タクシー	タクシー	1		taxi	タ, ク and シ in one word	1	JMdict
+kata-basu	バス	バス	1		bus	ス, not ヌ	1	JMdict
+kata-taaminaru	ターミナル	ターミナル	1		terminal	for buses, or at an airport	1	JMdict
+kata-rimujinbasu	リムジンバス	リムジンバス			airport bus	not a limousine: a shuttle bus	1	JMdict
+kata-rentakaa	レンタカー	レンタカー	3		hire car		1	JMdict
+kata-rentasaikuru	レンタサイクル	レンタサイクル	4		bicycle hire	made in Japan from 'rent-a-cycle'	1	JMdict
+kata-gasorinsutando	ガソリンスタンド	ガソリンスタンド	6		petrol station	made in Japan from 'gasoline stand'	1	JMdict
+kata-baiku	バイク	バイク	1		motorbike	usually a motorbike, not a bicycle	1	JMdict
+kata-bebiikaa	ベビーカー	ベビーカー	4		pushchair	not a small car: from 'baby car'	1	JMdict
+kata-manaamoodo	マナーモード	マナーモード			silent mode (on a phone)	made in Japan from 'manner mode'	1	JMdict
+kata-suutsukeesu	スーツケース	スーツケース	4		suitcase	ス, ツ and ケ in one word	1	JMdict
+kata-pasupooto	パスポート	パスポート	3		passport		1	JMdict
+kata-tsuaa	ツアー	ツアー	1		tour	ツ, not シ; ア, not マ	1	JMdict
+kata-mappu	マップ	マップ	1		map	マ, not ア or ム	1	JMdict
+kata-infomeeshon	インフォメーション	インフォメーション	4		information	フォ is typed fo	1	JMdict
+kata-roopuwei	ロープウェイ	ロープウェイ			ropeway; aerial cable car	ウェ is typed we	1	JMdict
+kata-monoreeru	モノレール	モノレール	3		monorail	ノ, not ソ or ン	1	JMdict
+kata-sumaho	スマホ	スマホ			smartphone	short for スマートフォン	1	JMdict
+kata-pasokon	パソコン	パソコン	0		personal computer	short for パーソナルコンピューター	1	JMdict
+kata-apuri	アプリ	アプリ			app	short for アプリケーションソフト	1	JMdict
+kata-manshon	マンション	マンション	1		flat; block of flats	not a mansion	1	JMdict
+kata-karaoke	カラオケ	カラオケ			karaoke	from 'empty' and 'orchestra'	1	JMdict
+kata-famiresu	ファミレス	ファミレス			family restaurant	short for ファミリーレストラン	1	JMdict

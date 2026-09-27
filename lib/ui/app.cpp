@@ -1,7 +1,9 @@
 #include "app.h"
 
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <vector>
 
 #include "screens.h"
 
@@ -10,6 +12,9 @@ namespace ui {
 namespace {
 
 const char* const kSettingsFile = "settings.txt";
+
+constexpr uint16_t kCardsPerSitting = 12;
+constexpr uint16_t kNewPerSitting   = 4;
 
 const char* romajiKey(RomajiMode mode)
 {
@@ -50,12 +55,14 @@ Key::Code navigation(const Key& key)
     }
 }
 
-App::App(Platform& platform) : _platform(platform)
+App::App(Platform& platform) : _platform(platform), _store(platform), _queue(_store)
 {
     _screens[static_cast<size_t>(ScreenId::Home)]     = makeHomeScreen();
     _screens[static_cast<size_t>(ScreenId::Menu)]     = makeMenuScreen();
     _screens[static_cast<size_t>(ScreenId::Kana)]     = makeKanaScreen();
     _screens[static_cast<size_t>(ScreenId::Settings)] = makeSettingsScreen();
+    _screens[static_cast<size_t>(ScreenId::Cards)]    = makeCardsScreen();
+    _screens[static_cast<size_t>(ScreenId::Summary)]  = makeSummaryScreen();
 }
 
 App::~App() = default;
@@ -63,6 +70,7 @@ App::~App() = default;
 void App::begin()
 {
     loadSettings();
+    _store.load();
     _current = ScreenId::Home;
     _screens[static_cast<size_t>(_current)]->enter(*this);
     _dirty = true;
@@ -73,7 +81,9 @@ void App::key(const Key& key)
     if (key.code == Key::None) {
         return;
     }
-    _screens[static_cast<size_t>(_current)]->key(*this, key);
+    // The button on the edge of the device goes back, like Esc, which needs two fingers.
+    const Key pressed = (key.code == Key::Button) ? Key::of(Key::Escape) : key;
+    _screens[static_cast<size_t>(_current)]->key(*this, pressed);
     _dirty = true;
 }
 
@@ -100,6 +110,129 @@ void App::show(ScreenId id)
     _current = id;
     _screens[static_cast<size_t>(_current)]->enter(*this);
     _dirty = true;
+}
+
+void App::startSitting(const deck::Deck* deck)
+{
+    _sitting      = Sitting();
+    _sitting.deck = deck;
+
+    std::vector<const deck::Deck*> decks;
+    if (deck) {
+        decks.push_back(deck);
+    } else {
+        for (size_t i = 0; i < deck::count(); ++i) {
+            decks.push_back(&deck::at(i));
+        }
+    }
+    session::Plan plan;
+    plan.today    = today();
+    plan.maxCards = kCardsPerSitting;
+    plan.maxNew   = kNewPerSitting;
+    plan.level    = static_cast<uint8_t>(_settings.level);
+    // The same day brings the decks in the same turn; the next day starts with another deck.
+    plan.seed = static_cast<uint32_t>(_settings.dayNumber);
+    _queue.start(plan, decks);
+    show(ScreenId::Cards);
+}
+
+void App::endSitting()
+{
+    _store.checkpoint();
+    saveSettings();
+}
+
+void App::startNewDay()
+{
+    ++_settings.dayNumber;
+    _settings.answeredToday = 0;
+    saveSettings();
+}
+
+int App::dueToday() const
+{
+    return static_cast<int>(_store.dueOn(today()));
+}
+
+int App::newAvailable() const
+{
+    int count = 0;
+    for (size_t d = 0; d < deck::count(); ++d) {
+        const deck::Deck& deck = deck::at(d);
+        for (uint16_t i = 0; i < deck.count; ++i) {
+            if (deck.items[i].level <= _settings.level &&
+                _store.get(deck::key(deck.items[i].id)).stage == srs::Stage::New) {
+                if (++count >= kNewPerSitting) {
+                    return count;
+                }
+            }
+        }
+    }
+    return count;
+}
+
+std::string App::describe() const
+{
+    char text[320];
+    std::snprintf(text, sizeof(text),
+                  "{\"screen\":%d,\"look\":\"%s\",\"romaji\":\"%s\",\"sound\":%s,\"textbookN\":%s,\"level\":%d,"
+                  "\"day\":%d,\"answeredToday\":%d,\"due\":%d,\"new\":%d,\"seen\":%u,\"learnt\":%u",
+                  static_cast<int>(_current), theme().key, romajiKey(_settings.romaji),
+                  _settings.sound ? "true" : "false", _settings.textbookN ? "true" : "false", _settings.level,
+                  _settings.dayNumber, _settings.answeredToday, dueToday(), newAvailable(),
+                  static_cast<unsigned>(_store.seen()), static_cast<unsigned>(_store.learnt()));
+    std::string all = text;
+    _screens[static_cast<size_t>(_current)]->describe(all);
+    all += "}";
+    return all;
+}
+
+void App::startFresh()
+{
+    _store.reset();
+    _settings.dayNumber     = 1;
+    _settings.answeredToday = 0;
+    saveSettings();
+    show(ScreenId::Home);
+}
+
+namespace {
+
+const char* const kKept[][2] = {
+    {"settings.txt", "settings.bak"},
+    {"progress.txt", "progress.bak"},
+    {"reviews.log", "reviews.bak"},
+};
+
+}  // namespace
+
+bool App::keepAside()
+{
+    saveSettings();
+    bool ok = true;
+    for (const auto& pair : kKept) {
+        std::string text;
+        _platform.load(pair[0], text);  // a file that does not exist yet is kept as an empty one
+        ok = _platform.save(pair[1], text) && ok;
+    }
+    return ok;
+}
+
+bool App::bringBack()
+{
+    bool ok = true;
+    for (const auto& pair : kKept) {
+        std::string text;
+        if (!_platform.load(pair[1], text)) {
+            return false;  // nothing was kept aside
+        }
+        ok = _platform.save(pair[0], text) && ok;
+    }
+    _settings = Settings();
+    loadSettings();
+    _store.load();
+    show(ScreenId::Home);
+    return ok;
 }
 
 void App::loadSettings()
@@ -132,7 +265,13 @@ void App::loadSettings()
             _settings.sound = (value == "1");
         } else if (name == "day") {
             const int day = std::atoi(value.c_str());
-            _settings.dayNumber = day > 0 ? day : 1;
+            _settings.dayNumber = (day > 0 && day < 60000) ? day : 1;
+        } else if (name == "answered_today") {
+            const int answered = std::atoi(value.c_str());
+            _settings.answeredToday = answered > 0 ? answered : 0;
+        } else if (name == "level") {
+            const int level = std::atoi(value.c_str());
+            _settings.level = (level >= 1 && level <= 3) ? level : 3;
         }
     }
 }
@@ -150,6 +289,10 @@ void App::saveSettings()
     text += _settings.sound ? "1" : "0";
     text += "\nday=";
     text += std::to_string(_settings.dayNumber);
+    text += "\nanswered_today=";
+    text += std::to_string(_settings.answeredToday);
+    text += "\nlevel=";
+    text += std::to_string(_settings.level);
     text += "\n";
     _platform.save(kSettingsFile, text);
 }

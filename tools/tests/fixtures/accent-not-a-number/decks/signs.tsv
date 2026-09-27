@@ -1,0 +1,9 @@
+# Test fixture with deliberate mistakes. This is not content.
+# name-ja: かんばん
+# name-en: signs
+# kind: word
+id	prompt	reading	accent	accepted	gloss	note	level	source
+sign-deguchi	出口	でぐち	x		exit		2	JMdict
+sign-kippu	切符	きっぷ	-1		ticket		2	JMdict
+sign-iriguchi	入口	いりぐち	0,3		entrance		2	JMdict
+sign-kyaku	客	きゃく	01		guest; customer		2	JMdict

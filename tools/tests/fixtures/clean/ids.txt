@@ -1,0 +1,4 @@
+# Ids published by an earlier build of this fixture.
+kana-a
+sign-deguchi
+sign-kippu

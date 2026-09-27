@@ -1,0 +1,153 @@
+# name-ja: かぞえかた
+# name-en: counters
+# kind: counter
+# A quantity is shown; the answer is how it is said. Generic travel situations only.
+# A row with ? in the prompt asks for the question word: いくつ, なんにん, なんぼん.
+# Readings: JMdict where the form is a headword, otherwise the page named in the source column.
+# Accepted answers: other readings of the same form, and another counter where a teacher would
+# take it (つ when ordering food and drink, 個 for これ, 名 for people).
+# They were checked in JMdict, in the tables of the pages named in the source column, and in the
+# table of sound changes at https://en.wikipedia.org/wiki/Japanese_counter_word
+# はちはい and はちはく: 8 need not take the small っ, https://ja.wikipedia.org/wiki/助数詞
+# Clock hours are asked as "4 o'clock", so that ごぜん and ごご play no part. The numbers deck
+# asks for whole times such as 4:00.
+# Accents are left empty: a quantity is not a word of the accent list.
+id	prompt	reading	accent	accepted	gloss	note	level	source
+count-tsu-1	これ × 1	ひとつ		いっこ	one of these	つ: for any thing, 1 to 10 only	1	JMdict
+count-tsu-2	これ × 2	ふたつ		にこ	two of these	つ: for any thing, 1 to 10 only	1	JMdict
+count-tsu-3	これ × 3	みっつ		さんこ	three of these	small っ: みっつ よっつ むっつ やっつ	1	JMdict
+count-tsu-4	これ × 4	よっつ		よんこ	four of these	small っ: みっつ よっつ むっつ やっつ	1	JMdict
+count-tsu-5	これ × 5	いつつ		ごこ	five of these	つ: for any thing, 1 to 10 only	1	JMdict
+count-tsu-6	これ × 6	むっつ		ろっこ	six of these	small っ: みっつ よっつ むっつ やっつ	1	JMdict
+count-tsu-7	これ × 7	ななつ		ななこ|しちこ	seven of these	つ: for any thing, 1 to 10 only	1	JMdict
+count-tsu-8	これ × 8	やっつ		はっこ|はちこ	eight of these	small っ: みっつ よっつ むっつ やっつ	1	JMdict
+count-tsu-9	これ × 9	ここのつ		きゅうこ	nine of these	つ: for any thing, 1 to 10 only	1	JMdict
+count-tsu-10	これ × 10	とお		じゅっこ|じっこ	ten of these	とお: no つ. From 11: じゅういち	1	JMdict
+count-tsu-ikutsu	これ × ?	いくつ		なんこ	how many of these?	いくつ: how many, of any thing	1	JMdict
+count-nin-1	おとな × 1	ひとり		いちめい	one adult	人: 1 ひとり 2 ふたり, then にん	1	JMdict
+count-nin-2	おとな × 2	ふたり		にめい	two adults	人: 1 ひとり 2 ふたり, then にん	1	JMdict
+count-nin-3	こども × 3	さんにん		さんめい	three children	from 3: the number plus にん (人)	1	JMdict
+count-nin-4	おとな × 4	よにん		よんめい	four adults	4 is よにん, not よんにん or しにん	1	JMdict
+count-nin-5	こども × 5	ごにん		ごめい	five children	from 3: the number plus にん (人)	1	JMdict
+count-nin-7	ひと × 7	しちにん		ななにん|ななめい|しちめい	seven people	7 is しちにん or ななにん	1	JMdict
+count-nin-9	ひと × 9	きゅうにん		くにん|きゅうめい	nine people	9 is きゅうにん or くにん	1	JMdict
+count-nin-10	ひと × 10	じゅうにん		じゅうめい	ten people	from 3: the number plus にん (人)	1	JMdict
+count-nin-nan	ひと × ?	なんにん		なんめい	how many people?	なんにん (何人). Formal: なんめい	1	JMdict
+count-mei-1	おきゃくさま × 1 (formal)	いちめい		いちめいさま|おひとりさま	one guest (formal)	名 めい: polite count of guests	1	JMdict
+count-mei-2	おきゃくさま × 2 (formal)	にめい		にめいさま	two guests (formal)	staff ask なんめいさまですか	1	https://en.wiktionary.org/wiki/Appendix:Japanese_counters
+count-mei-3	おきゃくさま × 3 (formal)	さんめい		さんめいさま	three guests (formal)	名 めい: polite count of guests	1	https://en.wiktionary.org/wiki/Appendix:Japanese_counters
+count-mei-4	おきゃくさま × 4 (formal)	よんめい		よんめいさま	four guests (formal)	staff ask なんめいさまですか	1	https://en.wiktionary.org/wiki/Appendix:Japanese_counters
+count-mei-10	おきゃくさま × 10 (formal)	じゅうめい		じゅうめいさま	ten guests (formal)	名 めい: polite count of guests	1	https://en.wiktionary.org/wiki/Appendix:Japanese_counters
+count-mei-nan	おきゃくさま × ? (formal)	なんめい		なんめいさま	formal: how many guests?	staff ask なんめいさまですか	1	JMdict
+count-hon-1	かさ × 1	いっぽん			one umbrella	本: 1 いっぽん 3 さんぼん 6 ろっぽん	1	JMdict
+count-hon-2	ビール (びん) × 2	にほん		ふたつ	two bottles of beer	本 ほん: long thin things, bottles	1	JMdict
+count-hon-3	ペン × 3	さんぼん			three pens	本: 1 いっぽん 3 さんぼん 6 ろっぽん	1	JMdict
+count-hon-4	バナナ × 4	よんほん		しほん|よっつ	four bananas	4 is よんほん: no sound change	1	JMdict
+count-hon-5	やきとり × 5	ごほん		いつつ	five yakitori skewers	本 ほん: long thin things, bottles	1	JMdict
+count-hon-6	ビール (びん) × 6	ろっぽん		むっつ	six bottles of beer	本: 1 いっぽん 3 さんぼん 6 ろっぽん	1	JMdict
+count-hon-8	かさ × 8	はっぽん		はちほん	eight umbrellas	本: 8 はっぽん 10 じゅっぽん	1	JMdict
+count-hon-10	ペン × 10	じゅっぽん		じっぽん	ten pens	10 is じゅっぽん or じっぽん	1	JMdict
+count-hon-nan	ビール (びん) × ?	なんぼん		いくつ	how many bottles of beer?	なん takes ぼん, as 3 does: なんぼん	1	https://www.tofugu.com/japanese/japanese-counter-hon/
+count-hai-1	みず (コップ) × 1	いっぱい		ひとつ	one glass of water	杯: 1 いっぱい 3 さんばい 6 ろっぱい	1	JMdict
+count-hai-2	ごはん (ちゃわん) × 2	にはい		ふたつ	two bowls of rice	杯 はい: full glasses, cups, bowls	1	https://en.wiktionary.org/wiki/Appendix:Japanese_counters
+count-hai-3	ビール (グラス) × 3	さんばい		みっつ	three glasses of beer	杯: 1 いっぱい 3 さんばい 6 ろっぱい	1	https://en.wiktionary.org/wiki/Appendix:Japanese_counters
+count-hai-4	コーヒー (カップ) × 4	よんはい		よっつ	four cups of coffee	4 is よんはい: no sound change	1	https://en.wiktionary.org/wiki/Appendix:Japanese_counters
+count-hai-6	ビール (ジョッキ) × 6	ろっぱい		むっつ	six mugs of beer	杯: 1 いっぱい 3 さんばい 6 ろっぱい	1	https://en.wiktionary.org/wiki/Appendix:Japanese_counters
+count-hai-8	ラーメン × 8	はっぱい		はちはい|やっつ	eight bowls of ramen	杯: 8 はっぱい 10 じゅっぱい	1	https://en.wiktionary.org/wiki/Appendix:Japanese_counters
+count-hai-10	みず (コップ) × 10	じゅっぱい		じっぱい|とお	ten glasses of water	10 is じゅっぱい or じっぱい	1	https://en.wiktionary.org/wiki/Appendix:Japanese_counters
+count-hai-nan	ビール (グラス) × ?	なんばい		いくつ	how many glasses of beer?	なん takes ばい, as 3 does: なんばい	1	https://en.wikipedia.org/wiki/Japanese_counter_word
+count-mai-1	きっぷ × 1	いちまい			one ticket	枚 まい: flat things. No sound change	1	JMdict
+count-mai-2	きっぷ × 2	にまい			two tickets	枚: tickets, plates, shirts, paper	1	JMdict
+count-mai-3	シャツ × 3	さんまい			three shirts	枚 まい: flat things. No sound change	1	JMdict
+count-mai-4	さら × 4	よんまい			four plates	枚: tickets, plates, shirts, paper	1	https://www.tofugu.com/japanese/japanese-counter-mai/
+count-mai-7	タオル × 7	ななまい		しちまい	seven towels	7 is ななまい or しちまい	1	https://www.tofugu.com/japanese/japanese-counter-mai/
+count-mai-10	はがき × 10	じゅうまい			ten postcards	枚 まい: flat things. No sound change	1	https://www.tofugu.com/japanese/japanese-counter-mai/
+count-mai-nan	きっぷ × ?	なんまい			how many tickets?	枚 まい: flat things. No sound change	1	https://www.tofugu.com/japanese/japanese-counter-mai/
+count-ko-1	りんご × 1	いっこ		ひとつ	one apple	個: 1 いっこ 6 ろっこ 8 はっこ	1	JMdict
+count-ko-2	たまご × 2	にこ		ふたつ	two eggs	個 こ: small things you can hold	1	https://www.tofugu.com/japanese/japanese-counter-ko/
+count-ko-3	おにぎり × 3	さんこ		みっつ	three rice balls	個 こ: small things you can hold	1	https://www.tofugu.com/japanese/japanese-counter-ko/
+count-ko-6	たまご × 6	ろっこ		むっつ	six eggs	個: 1 いっこ 6 ろっこ 8 はっこ	1	https://www.tofugu.com/japanese/japanese-counter-ko/
+count-ko-8	りんご × 8	はっこ		はちこ|やっつ	eight apples	個: 1 いっこ 6 ろっこ 8 はっこ	1	https://www.tofugu.com/japanese/japanese-counter-ko/
+count-ko-10	みかん × 10	じゅっこ		じっこ|とお	ten mandarins	10 is じゅっこ or じっこ	1	https://www.tofugu.com/japanese/japanese-counter-ko/
+count-ko-nan	りんご × ?	なんこ		いくつ	how many apples?	なんこ (何個), or いくつ	1	JMdict
+count-haku-1	1 night (hotel)	いっぱく			a stay of one night	泊: 1 いっぱく 3 さんぱく 6 ろっぱく	1	JMdict
+count-haku-2	2 nights (hotel)	にはく			a stay of two nights	泊 はく: nights of a stay	1	https://en.wiktionary.org/wiki/Appendix:Japanese_counters
+count-haku-3	3 nights (hotel)	さんぱく			a stay of three nights	泊: 1 いっぱく 3 さんぱく 6 ろっぱく	1	https://en.wiktionary.org/wiki/Appendix:Japanese_counters
+count-haku-4	4 nights (hotel)	よんぱく		よんはく	a stay of four nights	4 is よんぱく or よんはく	1	https://en.wiktionary.org/wiki/Appendix:Japanese_counters
+count-haku-6	6 nights (hotel)	ろっぱく			a stay of six nights	泊: 1 いっぱく 3 さんぱく 6 ろっぱく	1	https://en.wiktionary.org/wiki/Appendix:Japanese_counters
+count-haku-8	8 nights (hotel)	はっぱく		はちはく	a stay of eight nights	泊: 8 はっぱく 10 じゅっぱく	1	https://en.wiktionary.org/wiki/Appendix:Japanese_counters
+count-haku-10	10 nights (hotel)	じゅっぱく		じっぱく	a stay of ten nights	10 is じゅっぱく or じっぱく	1	https://en.wiktionary.org/wiki/Appendix:Japanese_counters
+count-kai-1	1F	いっかい			floor 1, at street level	Japan counts street level as 1F	1	JMdict
+count-kai-2	2F	にかい			floor 2	階: 1 いっかい 3 さんがい 6 ろっかい	1	JMdict
+count-kai-3	3F	さんがい		さんかい	floor 3	3 is さんがい. さんかい is also heard	1	JMdict
+count-kai-4	4F	よんかい			floor 4	階 かい: floors of a building	1	https://www.tofugu.com/japanese/japanese-counter-kai-floors/
+count-kai-6	6F	ろっかい			floor 6	階: 1 いっかい 3 さんがい 6 ろっかい	1	https://www.tofugu.com/japanese/japanese-counter-kai-floors/
+count-kai-8	8F	はっかい		はちかい	floor 8	階: 8 はっかい 10 じゅっかい	1	https://www.tofugu.com/japanese/japanese-counter-kai-floors/
+count-kai-10	10F	じゅっかい		じっかい	floor 10	10 is じゅっかい or じっかい	1	https://www.tofugu.com/japanese/japanese-counter-kai-floors/
+count-kai-b1	B1	ちかいっかい			basement floor 1	地下 ちか: basement. B2 is ちかにかい	1	JMdict
+count-kai-nan	?F	なんがい		なんかい	which floor?	なんがい, as 3 is さんがい	1	JMdict
+count-bansen-1	platform 1	いちばんせん			platform 1 (track no. 1)	番線 ばんせん: platform, track	1	JMdict
+count-bansen-2	platform 2	にばんせん			platform 2 (track no. 2)	番線 ばんせん: platform, track	1	JMdict
+count-bansen-3	platform 3	さんばんせん			platform 3 (track no. 3)	番線 ばんせん: platform, track	1	JMdict 番線 ばんせん; number as 番 in https://en.wiktionary.org/wiki/Appendix:Japanese_counters
+count-bansen-4	platform 4	よんばんせん			platform 4 (track no. 4)	4 is よんばんせん	1	JMdict 番線 ばんせん; number as 番 in https://en.wiktionary.org/wiki/Appendix:Japanese_counters
+count-bansen-7	platform 7	ななばんせん		しちばんせん	platform 7 (track no. 7)	7 is ななばんせん or しちばんせん	1	JMdict 番線 ばんせん; number as 番 in https://en.wiktionary.org/wiki/Appendix:Japanese_counters
+count-bansen-9	platform 9	きゅうばんせん			platform 9 (track no. 9)	9 is きゅうばんせん	1	JMdict 番線 ばんせん; number as 番 in https://en.wiktionary.org/wiki/Appendix:Japanese_counters
+count-bansen-nan	platform ?	なんばんせん			which platform?	asked as なんばんせんですか	1	JMdict 何番 なんばん and 番線 ばんせん
+count-gousha-1	car 1	いちごうしゃ			car 1 of a train	号車 ごうしゃ: car, as on the ticket	1	JMdict 号車 ごうしゃ; number as 号 in https://en.wiktionary.org/wiki/Appendix:Japanese_counters
+count-gousha-4	car 4	よんごうしゃ			car 4 of a train	4 is よんごうしゃ	1	JMdict 号車 ごうしゃ; number as 号 in https://en.wiktionary.org/wiki/Appendix:Japanese_counters
+count-gousha-9	car 9	きゅうごうしゃ			car 9 of a train	9 is きゅうごうしゃ	1	JMdict 号車 ごうしゃ; number as 号 in https://en.wiktionary.org/wiki/Appendix:Japanese_counters
+count-fun-1	9:01 (minutes only)	いっぷん			1 minute past	分: 1 いっぷん 3 さんぷん 4 よんぷん	1	JMdict
+count-fun-2	9:02 (minutes only)	にふん			2 minutes past	ふん after 2, 5, 7 and 9	1	JMdict
+count-fun-3	9:03 (minutes only)	さんぷん			3 minutes past	分: 1 いっぷん 3 さんぷん 4 よんぷん	1	JMdict
+count-fun-4	9:04 (minutes only)	よんぷん		よんふん	4 minutes past	分: 1 いっぷん 3 さんぷん 4 よんぷん	1	JMdict
+count-fun-5	9:05 (minutes only)	ごふん			5 minutes past	ふん after 2, 5, 7 and 9	1	JMdict
+count-fun-6	9:06 (minutes only)	ろっぷん			6 minutes past	分: 6 ろっぷん 8 はっぷん	1	JMdict
+count-fun-7	9:07 (minutes only)	ななふん		しちふん	7 minutes past	7 is ななふん or しちふん	1	JMdict
+count-fun-8	9:08 (minutes only)	はっぷん		はちふん	8 minutes past	分: 6 ろっぷん 8 はっぷん	1	JMdict
+count-fun-9	9:09 (minutes only)	きゅうふん			9 minutes past	ふん after 2, 5, 7 and 9	1	JMdict
+count-fun-10	9:10 (minutes only)	じゅっぷん		じっぷん	10 minutes past	10 is じゅっぷん or じっぷん	1	JMdict
+count-fun-15	9:15 (minutes only)	じゅうごふん			15 minutes past	the last digit decides: 5 is ごふん	1	JMdict 五分 ごふん, after じゅう
+count-fun-30	9:30 (minutes only)	さんじゅっぷん		さんじっぷん|はん	30 minutes past	9:30 is also くじはん (半)	1	JMdict
+count-fun-nan	9:?? (minutes only)	なんぷん			how many minutes past?	なん takes ぷん, as 3 does: なんぷん	1	JMdict
+count-ji-1	1 o'clock	いちじ			one o'clock (1:00 or 13:00)	時: 4 よじ 7 しちじ 9 くじ	1	JMdict
+count-ji-4	4 o'clock	よじ			four o'clock (4:00 or 16:00)	4 is よじ, not よんじ or しじ	1	JMdict
+count-ji-6	6 o'clock	ろくじ			six o'clock (6:00 or 18:00)	時: 4 よじ 7 しちじ 9 くじ	1	JMdict
+count-ji-7	7 o'clock	しちじ		ななじ	seven o'clock (7:00 or 19:00)	7 is しちじ. ななじ is also heard	1	JMdict
+count-ji-9	9 o'clock	くじ			nine o'clock (9:00 or 21:00)	9 is くじ, not きゅうじ	1	JMdict
+count-ji-10	10 o'clock	じゅうじ			ten o'clock (10:00 or 22:00)	時: 4 よじ 7 しちじ 9 くじ	1	JMdict
+count-ji-12	12 o'clock	じゅうにじ			twelve o'clock (noon, midnight)	時: 4 よじ 7 しちじ 9 くじ	1	JMdict
+count-ji-nan	? o'clock	なんじ			what time?	asked as いま なんじですか	1	JMdict
+count-jikan-1	1 hour	いちじかん			for one hour	時間 じかん: hours, how long	1	JMdict
+count-jikan-2	2 hours	にじかん			for two hours	時間 じかん: hours, how long	1	https://www.tofugu.com/japanese/japanese-counter-ji-jikan/
+count-jikan-4	4 hours	よじかん			for four hours	時間: 4 よじかん 9 くじかん	1	https://www.tofugu.com/japanese/japanese-counter-ji-jikan/
+count-jikan-7	7 hours	しちじかん		ななじかん	for seven hours	7 is しちじかん or ななじかん	1	https://www.tofugu.com/japanese/japanese-counter-ji-jikan/
+count-jikan-9	9 hours	くじかん			for nine hours	時間: 4 よじかん 9 くじかん	1	https://www.tofugu.com/japanese/japanese-counter-ji-jikan/
+count-jikan-1-5	1.5 hours	いちじかんはん			for an hour and a half	半 はん: and a half	1	https://www.tofugu.com/japanese/japanese-counter-ji-jikan/
+count-jikan-nan	? hours	なんじかん			how many hours?	時間 じかん: hours, how long	1	JMdict
+count-nichi-1	the 1st (date)	ついたち		いっぴ	the 1st of the month	日: 1 ついたち 2 ふつか 3 みっか	1	JMdict
+count-nichi-2	the 2nd (date)	ふつか			the 2nd of the month	日: 1 ついたち 2 ふつか 3 みっか	1	JMdict
+count-nichi-3	the 3rd (date)	みっか			the 3rd of the month	日: 1 ついたち 2 ふつか 3 みっか	1	JMdict
+count-nichi-4	the 4th (date)	よっか			the 4th of the month	4 よっか and 8 ようか sound close	1	JMdict
+count-nichi-5	the 5th (date)	いつか			the 5th of the month	日: 4 よっか 5 いつか 6 むいか	1	JMdict
+count-nichi-6	the 6th (date)	むいか			the 6th of the month	日: 4 よっか 5 いつか 6 むいか	1	JMdict
+count-nichi-7	the 7th (date)	なのか			the 7th of the month	日: 7 なのか 8 ようか 9 ここのか	1	JMdict
+count-nichi-8	the 8th (date)	ようか			the 8th of the month	4 よっか and 8 ようか sound close	1	JMdict
+count-nichi-9	the 9th (date)	ここのか			the 9th of the month	日: 7 なのか 8 ようか 9 ここのか	1	JMdict
+count-nichi-10	the 10th (date)	とおか			the 10th of the month	10 とおか 14 じゅうよっか 20 はつか	1	JMdict
+count-nichi-11	the 11th (date)	じゅういちにち			the 11th of the month	11 to 31: にち, but not 14 20 24	1	JMdict
+count-nichi-14	the 14th (date)	じゅうよっか			the 14th of the month	14 じゅうよっか 24 にじゅうよっか	1	JMdict
+count-nichi-17	the 17th (date)	じゅうしちにち		じゅうななにち	the 17th of the month	17 じゅうしちにち 19 じゅうくにち	1	JMdict
+count-nichi-19	the 19th (date)	じゅうくにち			the 19th of the month	17 じゅうしちにち 19 じゅうくにち	1	JMdict
+count-nichi-20	the 20th (date)	はつか			the 20th of the month	10 とおか 14 じゅうよっか 20 はつか	1	JMdict
+count-nichi-24	the 24th (date)	にじゅうよっか			the 24th of the month	14 じゅうよっか 24 にじゅうよっか	1	JMdict
+count-nichi-nan	the ?th (date)	なんにち			which day of the month?	なんにち asks for the date	1	JMdict
+count-nichikan-1	1 day (how long)	いちにち		いちにちかん	for one day	1 day is いちにち, not ついたち	1	JMdict
+count-nichikan-2	2 days (how long)	ふつかかん		ふつか	for two days	日間: the day word plus かん (間)	1	JMdict
+count-nichikan-3	3 days (how long)	みっかかん		みっか	for three days	日間: the day word plus かん (間)	1	JMdict 三日 みっか, with 間 as in 二日間 ふつかかん
+count-nichikan-7	7 days (how long)	なのかかん		なのか|いっしゅうかん	for seven days	日間: the day word plus かん (間)	1	JMdict 七日 なのか, with 間 as in 二日間 ふつかかん
+count-nichikan-10	10 days (how long)	とおかかん		とおか	for ten days	日間: the day word plus かん (間)	1	JMdict 十日 とおか, with 間 as in 二日間 ふつかかん
+count-nichikan-nan	? days (how long)	なんにち			how many days?	なんにち also asks how many days	1	JMdict
+count-shuukan-1	1 week	いっしゅうかん			for one week	週間: 1 いっしゅうかん 2 にしゅうかん	1	JMdict
+count-shuukan-2	2 weeks	にしゅうかん			for two weeks	週間: 1 いっしゅうかん 2 にしゅうかん	1	JMdict
+count-ninmae-1	1 serving (food)	いちにんまえ		ひとりまえ	one serving, a portion for one	人前 にんまえ: portions on a menu	1	JMdict
+count-ninmae-2	2 servings (food)	ににんまえ			two servings	人前 にんまえ: portions on a menu	1	JMdict

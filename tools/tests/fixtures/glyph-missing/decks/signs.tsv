@@ -1,0 +1,8 @@
+# Test fixture with deliberate mistakes. This is not content.
+# name-ja: かんばん
+# name-en: signs
+# kind: word
+id	prompt	reading	accent	accepted	gloss	note	level	source
+sign-shikaru	𠮟る	しかる			to scold		3	JMdict
+sign-shikaru-2	叱る	しかる			to scold	also written 𠮟る	3	JMdict
+sign-kippu	切符	きっぷ			ticket ✔		2	JMdict

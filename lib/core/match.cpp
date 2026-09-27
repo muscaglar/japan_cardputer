@@ -249,9 +249,10 @@ Outcome compare(const std::string& typed, const std::string& candidate)
 
     if (said == wanted) {
         // the same sounds, spelled another way: おお for おう
-        outcome.verdict = Verdict::Almost;
-        outcome.slip    = Slip::LongVowel;
-        outcome.beat    = firstDifference(kana::beats(b), kana::beats(a));
+        outcome.verdict   = Verdict::Almost;
+        outcome.slip      = Slip::LongVowel;
+        outcome.sameSound = true;
+        outcome.beat      = firstDifference(kana::beats(b), kana::beats(a));
         return outcome;
     }
 

@@ -124,7 +124,7 @@ public:
 
         const bool showRomaji = (s.romaji == RomajiMode::Always) || (_peek && s.romaji != RomajiMode::Never) ||
                                 _state != State::Typing;
-        const std::string answer = kana::toRomaji(_prompt);
+        const std::string answer = kana::toRomaji(_prompt, !s.textbookN);
         const int lineY          = bigTop + 38;
 
         if (_state == State::Typing) {

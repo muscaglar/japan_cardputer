@@ -1,0 +1,7 @@
+# Test fixture without mistakes.
+# mood: greeting, start, right, streak, wrong, almost, finish, back, low-battery, idle
+id	mood	ja	en
+buddy-greeting-01	greeting	こんにちは！	Hello!
+buddy-start-01	start	ゆっくりで いいよ。	Take your time.
+buddy-start-02	start	じゅんびは いい？	Are you ready??
+buddy-right-01	right	せいかい！	Correct!

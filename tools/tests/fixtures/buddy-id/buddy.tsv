@@ -1,0 +1,6 @@
+# Test fixture with deliberate mistakes. This is not content.
+id	mood	ja	en
+buddy-greeting-01	greeting	こんにちは！	Hello!
+buddy-greeting-01	greeting	げんき？	How are you?
+Buddy 3	greeting	まってたよ。	I was waiting for you.
+sign-kippu	greeting	げんき？	How are you?

@@ -1,0 +1,8 @@
+# Test fixture without mistakes.
+# name-ja: たべもの
+# name-en: food
+# kind: word
+id	prompt	reading	accent	accepted	gloss	note	level	source
+food-mizu	水	みず			water		2	JMdict
+food-ocha	お茶	おちゃ	0		tea		2	JMdict
+food-gohan	ご飯	ごはん			cooked rice; a meal		2	JMdict

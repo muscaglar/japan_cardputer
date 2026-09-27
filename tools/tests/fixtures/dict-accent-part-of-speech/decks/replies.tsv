@@ -1,0 +1,7 @@
+# Test fixture: the accent of 結構 depends on the part of speech, so none is filled in.
+# name-ja: へんじ
+# name-en: replies
+# kind: word
+id	prompt	reading	accent	accepted	gloss	note	level	source
+reply-kekkou	結構	けっこう			fine; no, thank you		3	JMdict
+reply-daijoubu	大丈夫	だいじょうぶ			all right; OK		2	JMdict

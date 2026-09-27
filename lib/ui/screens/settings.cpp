@@ -5,10 +5,11 @@ namespace ui {
 
 namespace {
 
-enum Row { kLook, kRomaji, kSound, kTyping, kRowCount };
+enum Row { kLook, kLevel, kRomaji, kSound, kTyping, kRowCount };
 
 const char* const kLabels[kRowCount][2] = {
     {"みため", "look"},
+    {"レベル", "level"},
     {"ローマじ", "romaji"},
     {"おと", "sound"},
     {"ん", "typing n"},
@@ -32,6 +33,9 @@ public:
                     s.theme = static_cast<ThemeId>((static_cast<int>(s.theme) + count + step) % count);
                     break;
                 }
+                case kLevel:
+                    s.level = 1 + (s.level - 1 + 3 + step) % 3;
+                    break;
                 case kRomaji: {
                     const int count = static_cast<int>(RomajiMode::Count);
                     s.romaji = static_cast<RomajiMode>((static_cast<int>(s.romaji) + count + step) % count);
@@ -62,7 +66,7 @@ public:
             text(c, 42, 101, "すきな ように どうぞ。", font12(), t.ink);
         }
         const Area a        = contentArea(t);
-        const int rowHeight = (t.id == ThemeId::Techo) ? 17 : 18;
+        const int rowHeight = (t.id == ThemeId::Rpg) ? 14 : 17;
         int y               = a.y + ((t.id == ThemeId::Techo) ? 1 : 2);
         for (int row = 0; row < kRowCount; ++row) {
             const bool chosen = (row == _row);
@@ -76,6 +80,9 @@ public:
             switch (row) {
                 case kLook:
                     value = theme(s.theme).nameJa;
+                    break;
+                case kLevel:
+                    value = (s.level == 1) ? "かな だけ kana" : (s.level == 2) ? "かんじ すこし" : "ぜんぶ all";  // 3 is the default
                     break;
                 case kRomaji:
                     value = (s.romaji == RomajiMode::Always) ? "いつも always"

@@ -1,0 +1,100 @@
+# What the buddy says. The buddy is the daruma on the home screen; its lines are reading practice.
+# mood: greeting, start, right, streak, wrong, almost, finish, back, low-battery, idle
+# ja: kana only, a space between words, at most 15 characters with the spaces
+# en: at most 34 characters
+# Nothing here names a place, a date, a season or a journey.
+# Words checked against JMdict (EDRDG, CC BY-SA 4.0).
+id	mood	ja	en
+buddy-greeting-01	greeting	こんにちは！	Hello!
+buddy-greeting-02	greeting	また あえたね。	Nice to see you again.
+buddy-greeting-03	greeting	げんき？	How are you?
+buddy-greeting-04	greeting	まってたよ。	I was waiting for you.
+buddy-greeting-05	greeting	きょうも よろしくね。	Be kind to me again today.
+buddy-greeting-06	greeting	いっしょに やろう。	Let's do it together.
+buddy-greeting-07	greeting	きょうは なに する？	What shall we do today?
+buddy-greeting-08	greeting	すこし やって みる？	Want to try a little?
+buddy-greeting-09	greeting	きて くれて うれしい。	I'm glad you came.
+buddy-start-01	start	さあ、 はじめよう。	Right, let's begin.
+buddy-start-02	start	じゅんびは いい？	Are you ready?
+buddy-start-03	start	ゆっくりで いいよ。	Take your time.
+buddy-start-04	start	じぶんの ペースで。	At your own pace.
+buddy-start-05	start	きらくに いこう。	Let's keep it relaxed.
+buddy-start-06	start	よし、 いこう！	Right, let's go!
+buddy-start-07	start	れんしゅう しよう。	Let's practise.
+buddy-start-08	start	たのしく やろう。	Let's enjoy this.
+buddy-start-09	start	あせらなくて いいよ。	No need to hurry.
+buddy-right-01	right	せいかい！	Correct!
+buddy-right-02	right	あたり！	You got it!
+buddy-right-03	right	その とおり！	That's right!
+buddy-right-04	right	あってるよ！	You've got it right!
+buddy-right-05	right	いいね！	Nice!
+buddy-right-06	right	すごい！	Great!
+buddy-right-07	right	やったね！	You did it!
+buddy-right-08	right	さすが！	Just what I expected of you!
+buddy-right-09	right	ナイス！	Nice one!
+buddy-right-10	right	かんぺき！	Perfect!
+buddy-right-11	right	おぼえてるね。	You remember it.
+buddy-streak-01	streak	その ちょうし！	Keep it up!
+buddy-streak-02	streak	ちょうし いいね！	You're in good form!
+buddy-streak-03	streak	れんぞく せいかい！	A run of right answers!
+buddy-streak-04	streak	すごい、 つづいてる！	Wow, you're on a run!
+buddy-streak-05	streak	とまらないね！	There's no stopping you!
+buddy-streak-06	streak	どんどん いこう！	Let's keep going!
+buddy-streak-07	streak	ぜっこうちょう！	You're on top form!
+buddy-streak-08	streak	いい かんじ！	Looking good!
+buddy-streak-09	streak	まだまだ いけるね。	You can go further yet.
+buddy-wrong-01	wrong	だいじょうぶだよ。	It's all right.
+buddy-wrong-02	wrong	きに しないで。	Don't worry about it.
+buddy-wrong-03	wrong	つぎは できるよ。	You'll get it next time.
+buddy-wrong-04	wrong	もう いちど みよう。	Let's look once more.
+buddy-wrong-05	wrong	まちがえても いいよ。	It's fine to get it wrong.
+buddy-wrong-06	wrong	これは むずかしいね。	This one is hard, isn't it?
+buddy-wrong-07	wrong	だれでも まちがえるよ。	Everyone gets things wrong.
+buddy-wrong-08	wrong	また でて くるよ。	It will come round again.
+buddy-wrong-09	wrong	ななころび やおき。	Fall seven times, rise eight.
+buddy-wrong-10	wrong	これから おぼえよう。	We can learn it from here.
+buddy-almost-01	almost	おしい！	So close!
+buddy-almost-02	almost	もう すこし！	Nearly there!
+buddy-almost-03	almost	あと ちょっと！	Just a little more!
+buddy-almost-04	almost	あと いっぽ！	One more step!
+buddy-almost-05	almost	ほとんど あってるよ。	It's nearly right.
+buddy-almost-06	almost	すこし ちがうよ。	It's a little off.
+buddy-almost-07	almost	ちかい！	Close!
+buddy-almost-08	almost	もう いっかい！	Once more!
+buddy-almost-09	almost	よく みて みよう。	Let's look closely.
+buddy-finish-01	finish	おつかれさま！	Good work!
+buddy-finish-02	finish	よく がんばったね。	You worked hard.
+buddy-finish-03	finish	ぜんぶ おわったよ。	All done.
+buddy-finish-04	finish	また やろうね。	Let's do this again.
+buddy-finish-05	finish	すこし やすもう。	Let's rest a little.
+buddy-finish-06	finish	たのしかったね。	That was fun.
+buddy-finish-07	finish	ありがとう。 またね。	Thanks. See you.
+buddy-finish-08	finish	すこしずつ すすもう。	Let's go forward bit by bit.
+buddy-finish-09	finish	おちゃに しよう。	Let's stop for some tea.
+buddy-back-01	back	おかえり！	Welcome back!
+buddy-back-02	back	ひさしぶり！	It's been a while!
+buddy-back-03	back	げんきだった？	Have you been well?
+buddy-back-04	back	また あえて うれしい。	Glad to see you again.
+buddy-back-05	back	ゆっくり はじめよう。	Let's start gently.
+buddy-back-06	back	わすれても へいきだよ。	It's fine if you've forgotten.
+buddy-back-07	back	すぐ おもいだせるよ。	It will soon come back to you.
+buddy-back-08	back	やすむのも だいじだよ。	Rest matters too.
+buddy-back-09	back	また いっしょだね。	Together again.
+buddy-low-battery-01	low-battery	でんちが すくないよ。	The battery is low.
+buddy-low-battery-02	low-battery	おなかが すいた。	I'm hungry.
+buddy-low-battery-03	low-battery	じゅうでん してね。	Charge me, please.
+buddy-low-battery-04	low-battery	パワーが たりない。	I'm short of power.
+buddy-low-battery-05	low-battery	でんきを ください。	Some electricity, please.
+buddy-low-battery-06	low-battery	そろそろ じゅうでん？	About time for a charge?
+buddy-low-battery-07	low-battery	ちからが でない。	I've no strength left.
+buddy-low-battery-08	low-battery	ケーブルは ある？	Have you got a cable?
+buddy-low-battery-09	low-battery	でんちが ピンチ！	The battery is in a tight spot!
+buddy-idle-01	idle	ひまだなあ。	Nothing to do...
+buddy-idle-02	idle	まだ いる？	Still there?
+buddy-idle-03	idle	おーい。	Hello-o?
+buddy-idle-04	idle	ねむく なって きた。	I'm getting sleepy.
+buddy-idle-05	idle	なにか やる？	Shall we do something?
+buddy-idle-06	idle	いつでも いいよ。	Whenever you like.
+buddy-idle-07	idle	ここに いるよ。	I'm right here.
+buddy-idle-08	idle	キーを おして みて。	Try pressing a key.
+buddy-idle-09	idle	のんびり しよう。	Let's take it easy.

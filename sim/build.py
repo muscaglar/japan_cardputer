@@ -18,7 +18,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 M5GFX = os.path.join(ROOT, ".pio", "libdeps", "cardputer", "M5GFX", "src")
 # Kept outside .pio/build, which PlatformIO empties whenever platformio.ini changes.
 BUILD = os.path.join(ROOT, "build", "sim")
-EXPORTS = "_sim_init,_sim_key,_sim_advance,_sim_render,_sim_pixels,_sim_screen,_malloc,_free"
+EXPORTS = ("_sim_init,_sim_key,_sim_advance,_sim_render,_sim_pixels,_sim_screen,_sim_restart,_sim_info,"
+           "_sim_keep,_malloc,_free")
 
 LIBRARY_C = [
     "lgfx/utility/lgfx_miniz.c", "lgfx/utility/lgfx_pngle.c", "lgfx/utility/lgfx_qoi.c",

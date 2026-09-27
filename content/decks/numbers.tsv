@@ -1,0 +1,111 @@
+# name-ja: すうじ
+# name-en: numbers
+# kind: number
+# Prices, times and dates as a till, a price tag, a timetable or a ticket prints them.
+# The columns reading, accepted and source are written by tools/number_reading.py --fill, never by hand.
+# Its sources and choices are listed at the top of that file. Accents are left empty.
+id	prompt	reading	accent	accepted	gloss	note	level	source
+num-yen-1	¥1	いちえん			1 yen		1	generated, tools/number_reading.py
+num-yen-4	¥4	よえん			4 yen	4 is よ before えん	1	generated, tools/number_reading.py
+num-yen-5	¥5	ごえん			5 yen		1	generated, tools/number_reading.py
+num-yen-7	¥7	ななえん		しちえん	7 yen	しちえん is also said	1	generated, tools/number_reading.py
+num-yen-9	¥9	きゅうえん			9 yen		1	generated, tools/number_reading.py
+num-yen-10	¥10	じゅうえん			10 yen		1	generated, tools/number_reading.py
+num-yen-14	¥14	じゅうよえん			14 yen	4 is よ before えん: じゅうよえん	1	generated, tools/number_reading.py
+num-yen-50	¥50	ごじゅうえん			50 yen		1	generated, tools/number_reading.py
+num-yen-100	¥100	ひゃくえん			100 yen	ひゃく alone, no いち in front	1	generated, tools/number_reading.py
+num-yen-110	¥110	ひゃくじゅうえん			110 yen		1	generated, tools/number_reading.py
+num-yen-150	¥150	ひゃくごじゅうえん			150 yen		1	generated, tools/number_reading.py
+num-yen-160	¥160	ひゃくろくじゅうえん			160 yen		1	generated, tools/number_reading.py
+num-yen-198	¥198	ひゃくきゅうじゅうはちえん			198 yen		1	generated, tools/number_reading.py
+num-yen-230	¥230	にひゃくさんじゅうえん			230 yen		1	generated, tools/number_reading.py
+num-yen-300	¥300	さんびゃくえん			300 yen	さんびゃく, not さんひゃく	1	generated, tools/number_reading.py
+num-yen-324	¥324	さんびゃくにじゅうよえん			324 yen	4 is よ before えん	1	generated, tools/number_reading.py
+num-yen-390	¥390	さんびゃくきゅうじゅうえん			390 yen	さんびゃく, not さんひゃく	1	generated, tools/number_reading.py
+num-yen-440	¥440	よんひゃくよんじゅうえん			440 yen	よん in front of ひゃく and じゅう	1	generated, tools/number_reading.py
+num-yen-500	¥500	ごひゃくえん			500 yen		1	generated, tools/number_reading.py
+num-yen-600	¥600	ろっぴゃくえん			600 yen	ろっぴゃく, not ろくひゃく	1	generated, tools/number_reading.py
+num-yen-680	¥680	ろっぴゃくはちじゅうえん			680 yen	ろっぴゃく, not ろくひゃく	1	generated, tools/number_reading.py
+num-yen-770	¥770	ななひゃくななじゅうえん		ななひゃくしちじゅうえん|しちひゃくななじゅうえん|しちひゃくしちじゅうえん	770 yen	also しちひゃく and しちじゅう	1	generated, tools/number_reading.py
+num-yen-800	¥800	はっぴゃくえん			800 yen	はっぴゃく, not はちひゃく	1	generated, tools/number_reading.py
+num-yen-880	¥880	はっぴゃくはちじゅうえん			880 yen	はっぴゃく, but はちじゅう	1	generated, tools/number_reading.py
+num-yen-980	¥980	きゅうひゃくはちじゅうえん			980 yen		1	generated, tools/number_reading.py
+num-yen-1000	¥1,000	せんえん			1,000 yen	せん alone, no いち in front	1	generated, tools/number_reading.py
+num-yen-1005	¥1,005	せんごえん			1,005 yen	zeros are skipped: せん ご えん	1	generated, tools/number_reading.py
+num-yen-1050	¥1,050	せんごじゅうえん			1,050 yen	zeros are skipped	1	generated, tools/number_reading.py
+num-yen-1280	¥1,280	せんにひゃくはちじゅうえん			1,280 yen		1	generated, tools/number_reading.py
+num-yen-1600	¥1,600	せんろっぴゃくえん			1,600 yen		1	generated, tools/number_reading.py
+num-yen-1980	¥1,980	せんきゅうひゃくはちじゅうえん			1,980 yen		1	generated, tools/number_reading.py
+num-yen-2008	¥2,008	にせんはちえん			2,008 yen	zeros are skipped: にせん はち えん	1	generated, tools/number_reading.py
+num-yen-2400	¥2,400	にせんよんひゃくえん			2,400 yen		1	generated, tools/number_reading.py
+num-yen-3000	¥3,000	さんぜんえん			3,000 yen	さんぜん, not さんせん	1	generated, tools/number_reading.py
+num-yen-3300	¥3,300	さんぜんさんびゃくえん			3,300 yen	さんぜん さんびゃく: both change	1	generated, tools/number_reading.py
+num-yen-3600	¥3,600	さんぜんろっぴゃくえん			3,600 yen	さんぜん ろっぴゃく: both change	1	generated, tools/number_reading.py
+num-yen-4800	¥4,800	よんせんはっぴゃくえん			4,800 yen		1	generated, tools/number_reading.py
+num-yen-5000	¥5,000	ごせんえん			5,000 yen	typed gosen'en: n' before えん	1	generated, tools/number_reading.py
+num-yen-6300	¥6,300	ろくせんさんびゃくえん			6,300 yen	ろくせん, but さんびゃく	1	generated, tools/number_reading.py
+num-yen-7000	¥7,000	ななせんえん		しちせんえん	7,000 yen	しちせん is also said	1	generated, tools/number_reading.py
+num-yen-8000	¥8,000	はっせんえん			8,000 yen	はっせん, not はちせん	1	generated, tools/number_reading.py
+num-yen-8800	¥8,800	はっせんはっぴゃくえん			8,800 yen	はっせん はっぴゃく: both change	1	generated, tools/number_reading.py
+num-yen-9900	¥9,900	きゅうせんきゅうひゃくえん			9,900 yen		1	generated, tools/number_reading.py
+num-yen-10000	¥10,000	いちまんえん			10,000 yen	まん needs いち in front	1	generated, tools/number_reading.py
+num-yen-10500	¥10,500	いちまんごひゃくえん			10,500 yen		1	generated, tools/number_reading.py
+num-yen-12000	¥12,000	いちまんにせんえん			12,000 yen	typed ichiman nisen'en: n' before えん	1	generated, tools/number_reading.py
+num-yen-13800	¥13,800	いちまんさんぜんはっぴゃくえん			13,800 yen		1	generated, tools/number_reading.py
+num-yen-19800	¥19,800	いちまんきゅうせんはっぴゃくえん			19,800 yen		1	generated, tools/number_reading.py
+num-yen-20000	¥20,000	にまんえん			20,000 yen		1	generated, tools/number_reading.py
+num-yen-30000	¥30,000	さんまんえん			30,000 yen	さんまん: nothing changes before まん	1	generated, tools/number_reading.py
+num-yen-48600	¥48,600	よんまんはっせんろっぴゃくえん			48,600 yen		1	generated, tools/number_reading.py
+num-yen-100000	¥100,000	じゅうまんえん			100,000 yen	じゅうまん: ten times まん	1	generated, tools/number_reading.py
+num-yen-128000	¥128,000	じゅうにまんはっせんえん			128,000 yen	じゅうにまん, then はっせん	1	generated, tools/number_reading.py
+num-time-0005	0:05	れいじごふん		ぜろじごふん|ごぜんれいじごふん	0:05, just after midnight	0 o'clock is れいじ	1	generated, tools/number_reading.py
+num-time-0111	1:11	いちじじゅういっぷん		ごぜんいちじじゅういっぷん	1:11 am	じゅういっぷん, not じゅういちふん	1	generated, tools/number_reading.py
+num-time-0400	4:00	よじ		ごぜんよじ	4:00 am	4 is よ before じ	1	generated, tools/number_reading.py
+num-time-0414	4:14	よじじゅうよんぷん		よじじゅうよんふん|ごぜんよじじゅうよんぷん|ごぜんよじじゅうよんふん	4:14 am	よじ, but じゅうよんぷん	1	generated, tools/number_reading.py
+num-time-0520	5:20	ごじにじゅっぷん		ごじにじっぷん|ごぜんごじにじゅっぷん|ごぜんごじにじっぷん	5:20 am	にじっぷん is also said	1	generated, tools/number_reading.py
+num-time-0601	6:01	ろくじいっぷん		ごぜんろくじいっぷん	6:01 am	1 6 8 10 take っぷん	1	generated, tools/number_reading.py
+num-time-0700	7:00	しちじ		ななじ|ごぜんしちじ|ごぜんななじ	7:00 am	ななじ is also said	1	generated, tools/number_reading.py
+num-time-0710	7:10	しちじじゅっぷん		しちじじっぷん|ななじじゅっぷん|ななじじっぷん|ごぜんしちじじゅっぷん|ごぜんしちじじっぷん|ごぜんななじじゅっぷん|ごぜんななじじっぷん	7:10 am	じっぷん is also said	1	generated, tools/number_reading.py
+num-time-0803	8:03	はちじさんぷん		ごぜんはちじさんぷん	8:03 am	3 takes ぷん: さんぷん	1	generated, tools/number_reading.py
+num-time-0856	8:56	はちじごじゅうろっぷん		ごぜんはちじごじゅうろっぷん	8:56 am	ろっぷん, not ろくふん	1	generated, tools/number_reading.py
+num-time-0900	9:00	くじ		ごぜんくじ	9:00 am	くじ, not きゅうじ	1	generated, tools/number_reading.py
+num-time-0904	9:04	くじよんぷん		くじよんふん|ごぜんくじよんぷん|ごぜんくじよんふん	9:04 am	4 takes ぷん: よんぷん	1	generated, tools/number_reading.py
+num-time-0930	9:30	くじさんじゅっぷん		くじさんじっぷん|くじはん|ごぜんくじさんじゅっぷん|ごぜんくじさんじっぷん|ごぜんくじはん	9:30 am	also くじはん, half past nine	1	generated, tools/number_reading.py
+num-time-1010	10:10	じゅうじじゅっぷん		じゅうじじっぷん|ごぜんじゅうじじゅっぷん|ごぜんじゅうじじっぷん	10:10 am	じゅうじ, then じゅっぷん	1	generated, tools/number_reading.py
+num-time-1108	11:08	じゅういちじはっぷん		じゅういちじはちふん|ごぜんじゅういちじはっぷん|ごぜんじゅういちじはちふん	11:08 am	はちふん is also said	1	generated, tools/number_reading.py
+num-time-1200	12:00	じゅうにじ		ごごれいじ|ごぜんじゅうにじ	12 noon	with ごご it is ごごれいじ	1	generated, tools/number_reading.py
+num-time-1215	12:15	じゅうにじじゅうごふん		ごごれいじじゅうごふん|ごごじゅうにじじゅうごふん	12:15 pm	ごごれいじ is the clearest after noon	1	generated, tools/number_reading.py
+num-time-1302	13:02	じゅうさんじにふん		ごごいちじにふん	1:02 pm	also ごごいちじ, 1 pm	1	generated, tools/number_reading.py
+num-time-1400	14:00	じゅうよじ		ごごにじ	2:00 pm	4 is よ before じ: じゅうよじ	1	generated, tools/number_reading.py
+num-time-1437	14:37	じゅうよじさんじゅうななふん		じゅうよじさんじゅうしちふん|ごごにじさんじゅうななふん|ごごにじさんじゅうしちふん	2:37 pm	also ごごにじ, 2 pm	1	generated, tools/number_reading.py
+num-time-1550	15:50	じゅうごじごじゅっぷん		じゅうごじごじっぷん|ごごさんじごじゅっぷん|ごごさんじごじっぷん	3:50 pm	also ごごさんじ, 3 pm	1	generated, tools/number_reading.py
+num-time-1644	16:44	じゅうろくじよんじゅうよんぷん		じゅうろくじよんじゅうよんふん|ごごよじよんじゅうよんぷん|ごごよじよんじゅうよんふん	4:44 pm	also ごごよじ, 4 pm	1	generated, tools/number_reading.py
+num-time-1700	17:00	じゅうしちじ		じゅうななじ|ごごごじ	5:00 pm	じゅうななじ is also said	1	generated, tools/number_reading.py
+num-time-1707	17:07	じゅうしちじななふん		じゅうしちじしちふん|じゅうななじななふん|じゅうななじしちふん|ごごごじななふん|ごごごじしちふん	5:07 pm	しちふん is also said	1	generated, tools/number_reading.py
+num-time-1830	18:30	じゅうはちじさんじゅっぷん		じゅうはちじさんじっぷん|じゅうはちじはん|ごごろくじさんじゅっぷん|ごごろくじさんじっぷん|ごごろくじはん	6:30 pm	also じゅうはちじはん, half past	1	generated, tools/number_reading.py
+num-time-1919	19:19	じゅうくじじゅうきゅうふん		ごごしちじじゅうきゅうふん|ごごななじじゅうきゅうふん	7:19 pm	く before じ, きゅう before ふん	1	generated, tools/number_reading.py
+num-time-1945	19:45	じゅうくじよんじゅうごふん		ごごしちじよんじゅうごふん|ごごななじよんじゅうごふん	7:45 pm	also ごごしちじ, 7 pm	1	generated, tools/number_reading.py
+num-time-2009	20:09	にじゅうじきゅうふん		ごごはちじきゅうふん	8:09 pm	9 is きゅう before ふん	1	generated, tools/number_reading.py
+num-time-2115	21:15	にじゅういちじじゅうごふん		ごごくじじゅうごふん	9:15 pm	also ごごくじ, 9 pm	1	generated, tools/number_reading.py
+num-time-2218	22:18	にじゅうにじじゅうはっぷん		にじゅうにじじゅうはちふん|ごごじゅうじじゅうはっぷん|ごごじゅうじじゅうはちふん	10:18 pm	じゅうはっぷん: 8 takes っぷん	1	generated, tools/number_reading.py
+num-time-2340	23:40	にじゅうさんじよんじゅっぷん		にじゅうさんじよんじっぷん|ごごじゅういちじよんじゅっぷん|ごごじゅういちじよんじっぷん	11:40 pm	also ごごじゅういちじ, 11 pm	1	generated, tools/number_reading.py
+num-date-0110	1/10	いちがつとおか			10 January	とおか: the 10th	1	generated, tools/number_reading.py
+num-date-0123	1/23	いちがつにじゅうさんにち			23 January		1	generated, tools/number_reading.py
+num-date-0207	2/7	にがつなのか			7 February	なのか: the 7th	1	generated, tools/number_reading.py
+num-date-0306	3/6	さんがつむいか			6 March	むいか: the 6th	1	generated, tools/number_reading.py
+num-date-0327	3/27	さんがつにじゅうしちにち		さんがつにじゅうななにち	27 March	にじゅうななにち is also said	1	generated, tools/number_reading.py
+num-date-0404	4/4	しがつよっか			4 April	しがつ, not よんがつ	1	generated, tools/number_reading.py
+num-date-0420	4/20	しがつはつか			20 April	はつか: the 20th	1	generated, tools/number_reading.py
+num-date-0509	5/9	ごがつここのか			9 May	ここのか: the 9th	1	generated, tools/number_reading.py
+num-date-0531	5/31	ごがつさんじゅういちにち			31 May		1	generated, tools/number_reading.py
+num-date-0603	6/3	ろくがつみっか			3 June	みっか: the 3rd	1	generated, tools/number_reading.py
+num-date-0614	6/14	ろくがつじゅうよっか			14 June	the 14th and 24th end in よっか	1	generated, tools/number_reading.py
+num-date-0717	7/17	しちがつじゅうしちにち		しちがつじゅうななにち|なながつじゅうしちにち|なながつじゅうななにち	17 July	なながつ is also said	1	generated, tools/number_reading.py
+num-date-0801	8/1	はちがつついたち			1 August	ついたち: the 1st	1	generated, tools/number_reading.py
+num-date-0829	8/29	はちがつにじゅうくにち			29 August	9 is く here: にじゅうくにち	1	generated, tools/number_reading.py
+num-date-0919	9/19	くがつじゅうくにち			19 September	くがつ, not きゅうがつ	1	generated, tools/number_reading.py
+num-date-1002	10/2	じゅうがつふつか			2 October	ふつか: the 2nd	1	generated, tools/number_reading.py
+num-date-1030	10/30	じゅうがつさんじゅうにち			30 October		1	generated, tools/number_reading.py
+num-date-1105	11/5	じゅういちがついつか			5 November	いつか: the 5th	1	generated, tools/number_reading.py
+num-date-1124	11/24	じゅういちがつにじゅうよっか			24 November	the 14th and 24th end in よっか	1	generated, tools/number_reading.py
+num-date-1208	12/8	じゅうにがつようか			8 December	ようか: the 8th. よっか is the 4th	1	generated, tools/number_reading.py

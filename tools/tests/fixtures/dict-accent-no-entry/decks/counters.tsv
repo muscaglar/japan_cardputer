@@ -1,0 +1,6 @@
+# Test fixture with deliberate mistakes. This is not content.
+# name-ja: かぞえかた
+# name-en: counters
+# kind: counter
+id	prompt	reading	accent	accepted	gloss	note	level	source
+count-biiru-3	ビール × 3	さんぼん	1	みっつ	three beers		1	JMdict

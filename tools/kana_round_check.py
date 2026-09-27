@@ -98,11 +98,13 @@ def go_home(target):
     return target.frame()[0] == "home"
 
 
+def start_round(target):
+    target.open("kana")
+
+
 def choose_look(target, current, wanted):
     """From the home screen: sets the look in the settings and comes back."""
-    target.key("Tab")      # menu
-    target.key("Down")
-    target.key("Enter")    # settings, the first row is the look
+    target.open("settings")  # the first row is the look
     for _ in range((LOOKS.index(wanted) - LOOKS.index(current)) % len(LOOKS)):
         target.key("Right")
     target.key("Esc")
@@ -113,9 +115,9 @@ def choose_look(target, current, wanted):
 
 def play(target, look, index, table, expect, problems):
     hiragana = list(table)
-    target.type("x")
+    start_round(target)
     screen, rows = target.frame()
-    expect(screen == "kana", "%s: a key on the home screen starts the round" % look)
+    expect(screen == "kana", "%s: the menu leads to the kana round" % look)
 
     # Odd looks are played in katakana. The app remembers the script, so look before switching.
     wanted_script = "katakana" if index % 2 == 1 else "hiragana"
@@ -174,7 +176,7 @@ def play(target, look, index, table, expect, problems):
     target.key("Esc")
     screen, _ = target.frame()
     expect(screen == "home", "%s: Esc in the middle of a round goes home" % look)
-    target.type("k")
+    start_round(target)
     screen, rows = target.frame()
     expect(screen == "kana" and result_of(rows, look) == "none", "%s: coming back starts a clean round" % look)
     target.key("Esc")

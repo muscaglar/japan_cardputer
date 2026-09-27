@@ -10,6 +10,7 @@ tools/cardputer_screen.py, which is pixel-exact.
 Needs the simulator built for Node: python3 sim/build.py
 """
 import base64
+import json
 import os
 import subprocess
 import sys
@@ -18,7 +19,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from cardputer_screen import HEIGHT, WIDTH, font  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SCREENS = ["home", "menu", "kana", "settings"]
+SCREENS = ["home", "menu", "kana", "settings", "cards", "summary"]
 
 
 class Simulator:
@@ -40,17 +41,52 @@ class Simulator:
     def fn(self, character):
         self.send("fn " + character)
 
-    def frame(self):
-        """Returns (screen name, rows of (r, g, b))."""
-        self.send("frame")
+    def _answer(self, command, prefix):
+        self.send(command)
         while True:
             line = self.process.stdout.readline()
             if not line:
                 raise RuntimeError("the simulator stopped")
             if line.startswith("error"):
                 raise RuntimeError(line.strip())
-            if line.startswith("frame "):
-                break
+            if line.startswith(prefix + " "):
+                return line[len(prefix) + 1:].strip()
+
+    def info(self):
+        return json.loads(self._answer("info", "info"))
+
+    def look(self):
+        return self.info()["look"]
+
+    def open(self, entry):
+        """From the home screen: opens the menu and the entry of that name ("kana", "settings", a deck)."""
+        self.key("Tab")
+        state = self.info()
+        names = state.get("menu", [])
+        if entry not in names:
+            raise RuntimeError("the menu has no entry %r: %s" % (entry, ", ".join(names)))
+        steps = names.index(entry) - state["chosen"]
+        for _ in range(abs(steps)):
+            self.key("Down" if steps > 0 else "Up")
+        self.key("Enter")
+
+    def restart(self):
+        """Off and on again. Settings and progress stay."""
+        self.send("restart")
+
+    def keep(self):
+        return self._answer("keep", "done") == "1"
+
+    def back(self):
+        return self._answer("back", "done") == "1"
+
+    def fresh(self):
+        """Forgets all progress and starts at day 1."""
+        return self._answer("fresh", "done") == "1"
+
+    def frame(self):
+        """Returns (screen name, rows of (r, g, b))."""
+        line = "frame " + self._answer("frame", "frame")
         _, screen, data = line.split(" ", 2)
         raw = base64.b64decode(data)
         rows = [[tuple(raw[(y * WIDTH + x) * 4:(y * WIDTH + x) * 4 + 3]) for x in range(WIDTH)] for y in range(HEIGHT)]

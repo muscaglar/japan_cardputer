@@ -114,6 +114,25 @@ char lower(char c)
     return (c >= 'A' && c <= 'Z') ? static_cast<char>(c - 'A' + 'a') : c;
 }
 
+// Lower is better.
+int preference(const char* roma)
+{
+    static const char* const kTextbook[] = {
+        "shi", "chi", "tsu", "fu", "ji", "sha", "shu", "sho", "she", "cha", "chu", "cho", "che", "ja", "ju", "jo", "je",
+    };
+    int score = static_cast<int>(std::strlen(roma));
+    // x and l type small kana one by one, q and c are keyboard shortcuts: never what a textbook writes
+    if (roma[0] == 'x' || roma[0] == 'l' || roma[0] == 'q' || (roma[0] == 'c' && roma[1] != 'h')) {
+        score += 100;
+    }
+    for (const char* textbook : kTextbook) {
+        if (std::strcmp(roma, textbook) == 0) {
+            score -= 50;
+        }
+    }
+    return score;
+}
+
 const char* lookup(const char* s, size_t length)
 {
     for (size_t i = 0; i < kTableSize; ++i) {
@@ -278,6 +297,23 @@ Result convert(const std::string& input, const Options& options, bool flush)
     }
 
     return result;
+}
+
+std::string spelling(const std::string& hiraganaUnit)
+{
+    const char* best = nullptr;
+    int bestScore    = 0;
+    for (size_t i = 0; i < kTableSize; ++i) {
+        if (hiraganaUnit != kTable[i].kana) {
+            continue;
+        }
+        const int score = preference(kTable[i].roma);
+        if (!best || score < bestScore) {
+            best      = kTable[i].roma;
+            bestScore = score;
+        }
+    }
+    return best ? std::string(best) : std::string();
 }
 
 std::string toKatakana(const std::string& text)

@@ -10,6 +10,9 @@
 //                   equal colour, each run three bytes: length, then the colour as the panel
 //                   gets it (16 bit, high byte first)
 //   info            answers "#info {...}" with the state of the app and the memory left
+//   keep, back      keeps settings and progress aside, brings them back: "#done 1" or "#done 0"
+//   fresh           forgets all progress and starts at day 1. Refused unless "keep" was done.
+//   restart         restarts the device
 // Every other command is answered with "#ok" or "#error <why>".
 #pragma once
 

@@ -1,0 +1,7 @@
+# Test fixture without mistakes.
+# name-ja: へんじ
+# name-en: replies
+# kind: word
+id	prompt	reading	accent	accepted	gloss	note	level	source
+reply-kekkou	結構	けっこう	1		fine; no, thank you		3	JMdict
+reply-daijoubu	大丈夫	だいじょうぶ			all right; OK		2	JMdict

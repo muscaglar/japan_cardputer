@@ -1,2 +1,3 @@
 lib/core/kana.cpp
 lib/core/pitch.cpp
+lib/romaji/romaji.cpp

@@ -1,0 +1,8 @@
+# Test fixture without mistakes: づ, ティ and ー, which are typed du, thi and with a hyphen.
+# name-ja: たべもの
+# name-en: food
+# kind: word
+id	prompt	reading	accent	accepted	gloss	note	level	source
+food-tsuzuku	続く	つづく			to continue		2	JMdict
+food-paatii	パーティー	パーティー			party		1	JMdict
+food-koohii	コーヒー	コーヒー			coffee		1	JMdict

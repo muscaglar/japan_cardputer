@@ -6,6 +6,8 @@
 #include <string>
 
 #include "platform.h"
+#include "progress.h"
+#include "session.h"
 #include "theme.h"
 
 namespace ui {
@@ -17,10 +19,20 @@ struct Settings {
     RomajiMode romaji = RomajiMode::Peek;
     bool textbookN    = true;   // minna -> みんな. Off: as on a PC, minnna -> みんな
     bool sound        = false;  // the speaker stays silent unless switched on
-    int dayNumber     = 1;
+    int dayNumber     = 1;      // the device has no clock: the owner confirms each new day
+    int answeredToday = 0;      // answers given on this day number
+    int level         = 3;      // 1 kana only, 2 kanji of the first school years too, 3 everything
 };
 
-enum class ScreenId : uint8_t { Home, Menu, Kana, Settings, Count };
+enum class ScreenId : uint8_t { Home, Menu, Kana, Settings, Cards, Summary, Count };
+
+// What happened in the sitting that is running or has just ended.
+struct Sitting {
+    const deck::Deck* deck = nullptr;  // nullptr: every deck
+    int asked              = 0;
+    int right              = 0;
+    int introduced         = 0;        // cards met for the first time
+};
 
 class App;
 
@@ -31,6 +43,9 @@ public:
     virtual void key(App&, const Key&) {}
     virtual void tick(App&) {}
     virtual void draw(App&, Canvas&) = 0;
+    // For checks run from a computer: adds fields to the JSON account of the app, each written
+    // as ,"name":value
+    virtual void describe(std::string&) const {}
 };
 
 class App {
@@ -52,11 +67,35 @@ public:
     ScreenId current() const { return _current; }
     void invalidate() { _dirty = true; }
 
+    // Cards. A sitting takes its cards from one deck, or from all of them when deck is nullptr.
+    void startSitting(const deck::Deck* deck);
+    void endSitting();  // keeps what was learnt; called when the sitting is over or left
+    session::Queue& queue() { return _queue; }
+    progress::Store& store() { return _store; }
+    Sitting& sitting() { return _sitting; }
+    uint16_t today() const { return static_cast<uint16_t>(_settings.dayNumber); }
+    void startNewDay();
+
+    // Cards waiting today, and new ones a sitting would bring, over all decks.
+    int dueToday() const;
+    int newAvailable() const;
+
+    // For checks run from a computer. describe() gives the state as one line of JSON.
+    // keepAside() copies settings and progress to spare files; bringBack() puts them back and
+    // loads them, so that a check leaves the owner's progress as it found it.
+    std::string describe() const;
+    bool keepAside();
+    bool bringBack();
+    void startFresh();  // forgets all progress and starts at day 1; the look and the rest stay
+
 private:
     void loadSettings();
 
     Platform& _platform;
     Settings _settings;
+    progress::Store _store;
+    session::Queue _queue;
+    Sitting _sitting;
     std::unique_ptr<Screen> _screens[static_cast<size_t>(ScreenId::Count)];
     ScreenId _current = ScreenId::Home;
     bool _dirty       = true;

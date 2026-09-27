@@ -1,0 +1,10 @@
+# Test fixture without mistakes.
+# name-ja: カタカナ
+# name-en: katakana words
+# kind: word
+id	prompt	reading	accent	accepted	gloss	note	level	source
+kata-koohii	コーヒー	コーヒー			coffee		1	JMdict
+kata-hoteru	ホテル	ホテル	1		hotel		1	JMdict
+kata-konbini	コンビニ	コンビニ			convenience store		1	JMdict
+kata-paatii	パーティー	パーティー		パーティ	party		1	JMdict
+kata-takushii	タクシー	タクシー	1		taxi		1	JMdict

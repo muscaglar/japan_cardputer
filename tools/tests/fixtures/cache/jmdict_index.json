@@ -1,0 +1,922 @@
+{
+ "あ": [
+  {
+   "common": false,
+   "gloss": [
+    "muteness",
+    "speech impairment",
+    "mute",
+    "deaf-mute"
+   ],
+   "kana": [
+    "おし",
+    "あ",
+    "おうし"
+   ]
+  },
+  {
+   "common": true,
+   "gloss": [
+    "I",
+    "me",
+    "oneself",
+    "you",
+    "prefix indicating familiarity or contempt"
+   ],
+   "kana": [
+    "われ",
+    "わ",
+    "あれ",
+    "あ",
+    "わぬ",
+    "わろ"
+   ]
+  },
+  {
+   "common": false,
+   "gloss": [
+    "sub-",
+    "second-rate",
+    "inferior",
+    "-ous (indicating a low oxidation state)",
+    "-ite",
+    "Asia"
+   ],
+   "kana": [
+    "あ",
+    "ア"
+   ]
+  },
+  {
+   "common": true,
+   "gloss": [
+    "ah",
+    "oh",
+    "hey!"
+   ],
+   "kana": [
+    "あっ",
+    "アッ",
+    "アっ",
+    "あ",
+    "ア"
+   ]
+  },
+  {
+   "common": false,
+   "gloss": [
+    "first Sanskrit alphabet letter",
+    "Africa",
+    "Awa (old province of Japan)",
+    "prefixed to names to show intimacy"
+   ],
+   "kana": [
+    "あ"
+   ]
+  }
+ ],
+ "お茶": [
+  {
+   "common": true,
+   "gloss": [
+    "tea (esp. green or barley)",
+    "tea break",
+    "teatime",
+    "tea ceremony"
+   ],
+   "kana": [
+    "おちゃ"
+   ]
+  }
+ ],
+ "き": [
+  {
+   "common": false,
+   "gloss": [
+    "yellow"
+   ],
+   "kana": [
+    "き"
+   ]
+  },
+  {
+   "common": false,
+   "gloss": [
+    "tusk",
+    "fang"
+   ],
+   "kana": [
+    "きば",
+    "き",
+    "キバ"
+   ]
+  },
+  {
+   "common": false,
+   "gloss": [
+    "period",
+    "time",
+    "opportunity",
+    "chance",
+    "occasion",
+    "age"
+   ],
+   "kana": [
+    "き"
+   ]
+  },
+  {
+   "common": true,
+   "gloss": [
+    "spirit",
+    "mind",
+    "heart",
+    "nature",
+    "disposition",
+    "intention"
+   ],
+   "kana": [
+    "き"
+   ]
+  },
+  {
+   "common": false,
+   "gloss": [
+    "account",
+    "history",
+    "chronicle",
+    "annals",
+    "record",
+    "notice"
+   ],
+   "kana": [
+    "き"
+   ]
+  },
+  {
+   "common": true,
+   "gloss": [
+    "ogre",
+    "demon",
+    "oni",
+    "spirit of a deceased person",
+    "ogre-like person (i.e. fierce, relentless, merciless, etc.)",
+    "it (in a game of tag, hide-and-seek, etc.)"
+   ],
+   "kana": [
+    "おに",
+    "き"
+   ]
+  },
+  {
+   "common": false,
+   "gloss": [
+    "pure",
+    "undiluted",
+    "raw",
+    "crude"
+   ],
+   "kana": [
+    "き"
+   ]
+  },
+  {
+   "common": true,
+   "gloss": [
+    "tree",
+    "shrub",
+    "bush",
+    "wood",
+    "timber",
+    "wooden clappers (signalling the beginning or end of a performance)"
+   ],
+   "kana": [
+    "き"
+   ]
+  },
+  {
+   "common": false,
+   "gloss": [
+    "armrest",
+    "desk",
+    "table"
+   ],
+   "kana": [
+    "おしまずき",
+    "き"
+   ]
+  },
+  {
+   "common": false,
+   "gloss": [
+    "6th in rank",
+    "sixth sign of the Chinese calendar"
+   ],
+   "kana": [
+    "き",
+    "つちのと"
+   ]
+  },
+  {
+   "common": true,
+   "gloss": [
+    "counter for small animals",
+    "counter for rolls of cloth (two han in size)",
+    "counter for horses",
+    "roll of cloth"
+   ],
+   "kana": [
+    "ひき",
+    "き"
+   ]
+  },
+  {
+   "common": false,
+   "gloss": [
+    "10th in rank",
+    "tenth sign of the Chinese calendar"
+   ],
+   "kana": [
+    "き",
+    "みずのと"
+   ]
+  },
+  {
+   "common": false,
+   "gloss": [
+    "season (in nature, sports, etc.)",
+    "seasonal word or phrase (in haiku)",
+    "year"
+   ],
+   "kana": [
+    "き"
+   ]
+  },
+  {
+   "common": false,
+   "gloss": [
+    "way",
+    "method"
+   ],
+   "kana": [
+    "き"
+   ]
+  },
+  {
+   "common": true,
+   "gloss": [
+    "chance",
+    "opportunity",
+    "machine",
+    "aircraft",
+    "counter for aircraft",
+    "counter for (remaining) lives"
+   ],
+   "kana": [
+    "き"
+   ]
+  },
+  {
+   "common": false,
+   "gloss": [
+    "strange",
+    "unconventional",
+    "eccentric",
+    "novel",
+    "odd",
+    "odd number"
+   ],
+   "kana": [
+    "き"
+   ]
+  },
+  {
+   "common": false,
+   "gloss": [
+    "device",
+    "instrument",
+    "vessel",
+    "container",
+    "ability",
+    "capacity"
+   ],
+   "kana": [
+    "き"
+   ]
+  },
+  {
+   "common": false,
+   "gloss": [
+    "wooden clappers (signalling the beginning or end of a performance)"
+   ],
+   "kana": [
+    "き",
+    "たく"
+   ]
+  },
+  {
+   "common": false,
+   "gloss": [
+    "danger",
+    "Chinese \"rooftop\" constellation (one of the 28 mansions)"
+   ],
+   "kana": [
+    "き"
+   ]
+  },
+  {
+   "common": false,
+   "gloss": [
+    "Chinese \"winnowing basket\" constellation (one of the 28 mansions)"
+   ],
+   "kana": [
+    "き"
+   ]
+  },
+  {
+   "common": false,
+   "gloss": [
+    "group",
+    "(free) radical",
+    "counter for installed or mounted objects (e.g. stone lanterns, gravestones, satellites)"
+   ],
+   "kana": [
+    "き"
+   ]
+  },
+  {
+   "common": false,
+   "gloss": [
+    "period",
+    "Nihon Shoki (second oldest work of Japanese history, compiled in 720 CE)",
+    "Nihongi",
+    "Chronicles of Japan",
+    "Kii (former province located in present-day Wakayama and southern Mie prefectures)"
+   ],
+   "kana": [
+    "き"
+   ]
+  },
+  {
+   "common": false,
+   "gloss": [
+    "fortress (surrounded by a wall, moat, etc.)"
+   ],
+   "kana": [
+    "き"
+   ]
+  },
+  {
+   "common": false,
+   "gloss": [
+    "thin twilled silk fabric"
+   ],
+   "kana": [
+    "き",
+    "かんはた",
+    "かんばた",
+    "かにはた"
+   ]
+  },
+  {
+   "common": false,
+   "gloss": [
+    "your",
+    "indicates high rank or status",
+    "indicates love and respect (usu. for an older person)"
+   ],
+   "kana": [
+    "き"
+   ]
+  },
+  {
+   "common": false,
+   "gloss": [
+    "mourning",
+    "mourning period",
+    "anniversary of one's death"
+   ],
+   "kana": [
+    "き"
+   ]
+  },
+  {
+   "common": false,
+   "gloss": [
+    "counter for horsemen"
+   ],
+   "kana": [
+    "き"
+   ]
+  },
+  {
+   "common": false,
+   "gloss": [
+    "dilute",
+    "rare",
+    "Greece"
+   ],
+   "kana": [
+    "き"
+   ]
+  },
+  {
+   "common": false,
+   "gloss": [
+    "rut",
+    "wheel track",
+    "distance between two wheels",
+    "gauge"
+   ],
+   "kana": [
+    "き"
+   ]
+  },
+  {
+   "common": false,
+   "gloss": [
+    "did",
+    "(have) done"
+   ],
+   "kana": [
+    "き"
+   ]
+  },
+  {
+   "common": false,
+   "gloss": [
+    "because",
+    "since"
+   ],
+   "kana": [
+    "き",
+    "きに"
+   ]
+  }
+ ],
+ "ご飯": [
+  {
+   "common": true,
+   "gloss": [
+    "cooked rice",
+    "meal"
+   ],
+   "kana": [
+    "ごはん"
+   ]
+  }
+ ],
+ "でぐち": [
+  {
+   "common": true,
+   "gloss": [
+    "exit",
+    "way out",
+    "outlet",
+    "vent"
+   ],
+   "kana": [
+    "でぐち"
+   ]
+  }
+ ],
+ "ん": [
+  {
+   "common": false,
+   "gloss": [
+    "yes",
+    "yeah",
+    "uh huh",
+    "huh?",
+    "what?",
+    "'s"
+   ],
+   "kana": [
+    "ん"
+   ]
+  },
+  {
+   "common": false,
+   "gloss": [
+    "not"
+   ],
+   "kana": [
+    "ぬ",
+    "ん"
+   ]
+  },
+  {
+   "common": false,
+   "gloss": [
+    "some"
+   ],
+   "kana": [
+    "ン",
+    "うん",
+    "ん"
+   ]
+  },
+  {
+   "common": false,
+   "gloss": [
+    "probably",
+    "will",
+    "intend to",
+    "would like to have done (for me)"
+   ],
+   "kana": [
+    "ん",
+    "む"
+   ]
+  }
+ ],
+ "ア": [
+  {
+   "common": false,
+   "gloss": [
+    "sub-",
+    "second-rate",
+    "inferior",
+    "-ous (indicating a low oxidation state)",
+    "-ite",
+    "Asia"
+   ],
+   "kana": [
+    "あ",
+    "ア"
+   ]
+  },
+  {
+   "common": true,
+   "gloss": [
+    "ah",
+    "oh",
+    "hey!"
+   ],
+   "kana": [
+    "あっ",
+    "アッ",
+    "アっ",
+    "あ",
+    "ア"
+   ]
+  }
+ ],
+ "コンビニ": [
+  {
+   "common": true,
+   "gloss": [
+    "convenience store"
+   ],
+   "kana": [
+    "コンビニ"
+   ]
+  }
+ ],
+ "コーヒー": [
+  {
+   "common": true,
+   "gloss": [
+    "coffee"
+   ],
+   "kana": [
+    "コーヒー"
+   ]
+  }
+ ],
+ "シ": [
+  {
+   "common": false,
+   "gloss": [
+    "ti (7th note of a major scale in movable-do solfège)",
+    "si",
+    "B (note in the fixed-do system)"
+   ],
+   "kana": [
+    "シ"
+   ]
+  }
+ ],
+ "タクシー": [
+  {
+   "common": true,
+   "gloss": [
+    "taxi"
+   ],
+   "kana": [
+    "タクシー",
+    "タクシ",
+    "タキシ",
+    "タキシー",
+    "タクシィ",
+    "タクシイ",
+    "タキシイ"
+   ]
+  }
+ ],
+ "パーティー": [
+  {
+   "common": true,
+   "gloss": [
+    "party (social gathering)",
+    "party (group of people participating in an activity, esp. mountain climbing)",
+    "(political) party"
+   ],
+   "kana": [
+    "パーティー",
+    "パーティ",
+    "パーリー"
+   ]
+  }
+ ],
+ "ホテル": [
+  {
+   "common": true,
+   "gloss": [
+    "hotel"
+   ],
+   "kana": [
+    "ホテル"
+   ]
+  }
+ ],
+ "入口": [
+  {
+   "common": true,
+   "gloss": [
+    "entrance",
+    "entry",
+    "gate",
+    "approach",
+    "mouth"
+   ],
+   "kana": [
+    "いりぐち",
+    "いりくち",
+    "はいりぐち",
+    "はいりくち"
+   ]
+  }
+ ],
+ "出口": [
+  {
+   "common": true,
+   "gloss": [
+    "exit",
+    "way out",
+    "outlet",
+    "vent"
+   ],
+   "kana": [
+    "でぐち"
+   ]
+  }
+ ],
+ "切符": [
+  {
+   "common": true,
+   "gloss": [
+    "ticket"
+   ],
+   "kana": [
+    "きっぷ"
+   ]
+  }
+ ],
+ "叱る": [
+  {
+   "common": true,
+   "gloss": [
+    "to scold",
+    "to chide",
+    "to rebuke",
+    "to reprimand"
+   ],
+   "kana": [
+    "しかる"
+   ]
+  }
+ ],
+ "大丈夫": [
+  {
+   "common": true,
+   "gloss": [
+    "safe",
+    "secure",
+    "sound",
+    "problem-free",
+    "without fear",
+    "all right"
+   ],
+   "kana": [
+    "だいじょうぶ",
+    "だいじょぶ",
+    "だいじょーぶ"
+   ]
+  },
+  {
+   "common": false,
+   "gloss": [
+    "great man",
+    "fine figure of a man"
+   ],
+   "kana": [
+    "だいじょうふ"
+   ]
+  }
+ ],
+ "客": [
+  {
+   "common": true,
+   "gloss": [
+    "guest",
+    "visitor",
+    "customer",
+    "client",
+    "shopper",
+    "spectator"
+   ],
+   "kana": [
+    "きゃく",
+    "かく"
+   ]
+  },
+  {
+   "common": false,
+   "gloss": [
+    "visitor from afar",
+    "guest"
+   ],
+   "kana": [
+    "まろうど",
+    "まろうと"
+   ]
+  },
+  {
+   "common": false,
+   "gloss": [
+    "visitor from afar",
+    "joy-bringing spirit from the divine realms"
+   ],
+   "kana": [
+    "まれびと",
+    "マレビト"
+   ]
+  }
+ ],
+ "心": [
+  {
+   "common": true,
+   "gloss": [
+    "mind",
+    "heart",
+    "spirit",
+    "the meaning of a phrase (riddle, etc.)"
+   ],
+   "kana": [
+    "こころ"
+   ]
+  },
+  {
+   "common": true,
+   "gloss": [
+    "heart",
+    "mind",
+    "spirit",
+    "vitality",
+    "inner strength",
+    "bottom of one's heart"
+   ],
+   "kana": [
+    "しん"
+   ]
+  }
+ ],
+ "水": [
+  {
+   "common": true,
+   "gloss": [
+    "water (esp. cool or cold)",
+    "fluid (esp. in an animal tissue)",
+    "liquid",
+    "flood",
+    "floodwaters",
+    "water offered to wrestlers just prior to a bout"
+   ],
+   "kana": [
+    "みず"
+   ]
+  },
+  {
+   "common": false,
+   "gloss": [
+    "Wednesday",
+    "shaved ice (served with flavored syrup)",
+    "water (fifth of the five elements)"
+   ],
+   "kana": [
+    "すい"
+   ]
+  }
+ ],
+ "禁煙": [
+  {
+   "common": true,
+   "gloss": [
+    "abstaining from smoking",
+    "quitting smoking",
+    "prohibition of smoking",
+    "No Smoking",
+    "Smoking Prohibited"
+   ],
+   "kana": [
+    "きんえん"
+   ]
+  }
+ ],
+ "精算機": [
+  {
+   "common": false,
+   "gloss": [
+    "fare adjustment machine",
+    "ticket adjustment machine"
+   ],
+   "kana": [
+    "せいさんき"
+   ]
+  }
+ ],
+ "結構": [
+  {
+   "common": true,
+   "gloss": [
+    "splendid",
+    "nice",
+    "wonderful",
+    "delightful",
+    "lovely",
+    "excellent"
+   ],
+   "kana": [
+    "けっこう"
+   ]
+  }
+ ],
+ "続く": [
+  {
+   "common": true,
+   "gloss": [
+    "to continue",
+    "to last",
+    "to go on",
+    "to continue (without a break)",
+    "to be unbroken",
+    "to occur again and again"
+   ],
+   "kana": [
+    "つづく"
+   ]
+  }
+ ],
+ "非常口": [
+  {
+   "common": true,
+   "gloss": [
+    "emergency exit"
+   ],
+   "kana": [
+    "ひじょうぐち"
+   ]
+  }
+ ],
+ "餃子": [
+  {
+   "common": true,
+   "gloss": [
+    "gyoza",
+    "pot sticker",
+    "crescent-shaped pan-fried dumplings stuffed with minced pork and vegetables"
+   ],
+   "kana": [
+    "ギョーザ",
+    "チャオズ",
+    "ぎょうざ",
+    "ギョウザ"
+   ]
+  }
+ ],
+ "𠮟る": [
+  {
+   "common": true,
+   "gloss": [
+    "to scold",
+    "to chide",
+    "to rebuke",
+    "to reprimand"
+   ],
+   "kana": [
+    "しかる"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,6 @@
+# Test fixture with deliberate mistakes. This is not content.
+# name-ja: たべもの
+# name-en: food
+# kind: word
+id	prompt	reading	accent	accepted	gloss	note	level	source
+sign-deguchi	水	みず			water		2	JMdict

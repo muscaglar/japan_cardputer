@@ -96,15 +96,16 @@ void sendFrame(ui::App& app, M5Canvas& canvas)
 
 void sendInfo(ui::App& app, ui::Platform& platform)
 {
-    const ui::Settings& s = app.settings();
-    Serial.printf("#info {\"screen\":%d,\"look\":\"%s\",\"romaji\":%d,\"sound\":%s,\"textbookN\":%s,\"day\":%d,"
-                  "\"board\":\"%s\",\"battery\":%d,\"heapFree\":%u,\"heapLargestBlock\":%u,\"heapLowest\":%u,"
-                  "\"uptimeMs\":%lu}\n",
-                  static_cast<int>(app.current()), app.theme().key, static_cast<int>(s.romaji),
-                  s.sound ? "true" : "false", s.textbookN ? "true" : "false", s.dayNumber, platform.boardName(),
-                  platform.batteryPercent(), static_cast<unsigned>(ESP.getFreeHeap()),
-                  static_cast<unsigned>(ESP.getMaxAllocHeap()), static_cast<unsigned>(ESP.getMinFreeHeap()),
-                  static_cast<unsigned long>(millis()));
+    // the app's own account, with what only the device knows added at the end
+    std::string text = app.describe();
+    if (!text.empty() && text.back() == '}') {
+        text.pop_back();
+    }
+    Serial.printf("#info %s,\"board\":\"%s\",\"battery\":%d,\"heapFree\":%u,\"heapLargestBlock\":%u,"
+                  "\"heapLowest\":%u,\"uptimeMs\":%lu}\n",
+                  text.c_str(), platform.boardName(), platform.batteryPercent(),
+                  static_cast<unsigned>(ESP.getFreeHeap()), static_cast<unsigned>(ESP.getMaxAllocHeap()),
+                  static_cast<unsigned>(ESP.getMinFreeHeap()), static_cast<unsigned long>(millis()));
 }
 
 bool namedKey(const std::string& name, ui::Key& key)
@@ -139,6 +140,29 @@ bool carryOut(const std::string& line, ui::App& app, M5Canvas& canvas, ui::Platf
     }
     if (command == "info") {
         sendInfo(app, platform);
+        return false;
+    }
+    if (command == "keep" || command == "back") {
+        const bool ok = (command == "keep") ? app.keepAside() : app.bringBack();
+        Serial.println(ok ? "#done 1" : "#done 0");
+        return true;
+    }
+    if (command == "fresh") {
+        // Refused unless progress was kept aside first, so that a slip cannot cost what was learnt.
+        std::string kept;
+        if (!platform.load("progress.bak", kept)) {
+            Serial.println("#error keep first");
+            return false;
+        }
+        app.startFresh();
+        Serial.println("#done 1");
+        return true;
+    }
+    if (command == "restart") {
+        Serial.println("#ok");
+        Serial.flush();
+        delay(100);
+        ESP.restart();
         return false;
     }
     if (command == "key") {

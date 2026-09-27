@@ -1,0 +1,4 @@
+# Test fixture with deliberate mistakes. This is not content.
+id	mood	ja	en
+buddy-greeting-01	happy	こんにちは！	Hello!
+buddy-greeting-02		げんき？	How are you?

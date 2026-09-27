@@ -6,6 +6,7 @@
 //
 // Scenarios are in sim/scenarios.json. Keys: a plain string types its characters; names in
 // angle brackets are special keys, e.g. "<Enter>", "<Tab>", "<Esc>", "<Up>", "<Fn+r>".
+// "<Restart>" switches the device off and on again; settings and progress stay.
 const fs = require("fs");
 const path = require("path");
 const zlib = require("zlib");
@@ -58,6 +59,7 @@ function send(sim, token) {
     for (const ch of token) sim._sim_key(CODES.Char, ch.charCodeAt(0), 0);
     return;
   }
+  if (special[1] === "Restart") { sim._sim_restart(); return; }
   let name = special[1], mods = 0;
   if (name.startsWith("Fn+")) { mods |= 1; name = name.slice(3); }
   if (name in CODES) sim._sim_key(CODES[name], 0, mods);

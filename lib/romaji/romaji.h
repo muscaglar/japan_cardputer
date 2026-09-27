@@ -34,4 +34,11 @@ Result convert(const std::string& input, const Options& options = Options(), boo
 // Hiragana -> katakana. Everything else passes through unchanged.
 std::string toKatakana(const std::string& text);
 
+// How to type one kana unit: a single hiragana (し) or one with a small kana (しゃ, てぃ, ふぁ).
+// Taken from the conversion table, so typing the answer gives the unit back. Where the table
+// has several spellings, the textbook one wins: shi, chi, tsu, fu, ji, sha, che.
+// Empty when the table has no such unit. ん, っ and ー are not units: how they are typed depends
+// on what follows.
+std::string spelling(const std::string& hiraganaUnit);
+
 }  // namespace romaji

@@ -1,0 +1,7 @@
+# Test fixture with deliberate mistakes. This is not content.
+# name-ja: かんばん
+# name-en: signs
+# kind: word
+id	prompt	reading	accent	accepted	gloss	note	level	source
+sign-seisanki	精算機	せいさんき			fare adjustment machine (railway)		3	JMdict
+sign-kippu	切符	きっぷ			a ticket for a train or for a bus		2	JMdict

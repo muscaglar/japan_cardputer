@@ -64,6 +64,51 @@ int textWidth(Canvas& c, const char* utf8, const lgfx::IFont* font)
     return c.textWidth(utf8, font);
 }
 
+bool hasGlyphs(const lgfx::IFont* font, const char* utf8)
+{
+    lgfx::FontMetrics metrics;
+    font->getDefaultMetric(&metrics);
+    const unsigned char* p = reinterpret_cast<const unsigned char*>(utf8);
+    while (*p) {
+        uint32_t code = *p;
+        int extra     = 0;
+        if ((code & 0xE0) == 0xC0) {
+            code &= 0x1F;
+            extra = 1;
+        } else if ((code & 0xF0) == 0xE0) {
+            code &= 0x0F;
+            extra = 2;
+        } else if ((code & 0xF8) == 0xF0) {
+            code &= 0x07;
+            extra = 3;
+        }
+        ++p;
+        while (extra-- > 0 && *p) {
+            code = (code << 6) | (*p & 0x3F);
+            ++p;
+        }
+        if (code > 0xFFFF || !font->updateFontMetric(&metrics, static_cast<uint16_t>(code))) {
+            return false;
+        }
+    }
+    return true;
+}
+
+const lgfx::IFont* fitFont(Canvas& c, const char* utf8, int width, int tallest)
+{
+    struct Choice {
+        int height;
+        const lgfx::IFont* font;
+    };
+    const Choice choices[] = {{32, fontBig()}, {24, font24()}, {16, font16()}};
+    for (const Choice& choice : choices) {
+        if (choice.height <= tallest && hasGlyphs(choice.font, utf8) && textWidth(c, utf8, choice.font) <= width) {
+            return choice.font;
+        }
+    }
+    return font12();
+}
+
 int text(Canvas& c, int x, int y, const char* utf8, const lgfx::IFont* font, uint32_t colour)
 {
     c.setFont(font);

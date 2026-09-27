@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "kana.h"
+#include "romaji.h"
 #include "pitch.h"
 
 namespace {
@@ -74,6 +75,54 @@ void test_romaji_for_display()
     TEST_ASSERT_EQUAL_STRING("ryokan", kana::toRomaji("りょかん").c_str());
     TEST_ASSERT_EQUAL_STRING("jaa", kana::toRomaji("じゃあ").c_str());
     TEST_ASSERT_EQUAL_STRING("chotto", kana::toRomaji("ちょっと").c_str());
+
+    // katakana words with small vowels: what is shown must be what the keyboard accepts
+    TEST_ASSERT_EQUAL_STRING("kafe", kana::toRomaji("カフェ").c_str());
+    TEST_ASSERT_EQUAL_STRING("chekkuin", kana::toRomaji("チェックイン").c_str());
+    TEST_ASSERT_EQUAL_STRING("dhinaa", kana::toRomaji("ディナー").c_str());
+    TEST_ASSERT_EQUAL_STRING("thisshu", kana::toRomaji("ティッシュ").c_str());
+    TEST_ASSERT_EQUAL_STRING("byuffe", kana::toRomaji("ビュッフェ").c_str());
+    TEST_ASSERT_EQUAL_STRING("famiresu", kana::toRomaji("ファミレス").c_str());
+    TEST_ASSERT_EQUAL_STRING("infomeeshon", kana::toRomaji("インフォメーション").c_str());
+    TEST_ASSERT_EQUAL_STRING("roopuwei", kana::toRomaji("ロープウェイ").c_str());
+    TEST_ASSERT_EQUAL_STRING("shefu", kana::toRomaji("シェフ").c_str());
+    TEST_ASSERT_EQUAL_STRING("jetto", kana::toRomaji("ジェット").c_str());
+
+    // kana with a spelling of their own
+    TEST_ASSERT_EQUAL_STRING("wo", kana::toRomaji("を").c_str());
+    TEST_ASSERT_EQUAL_STRING("hanadi", kana::toRomaji("はなぢ").c_str());
+    TEST_ASSERT_EQUAL_STRING("tsuduku", kana::toRomaji("つづく").c_str());
+
+    // the keyboard style in which n alone is never ん
+    TEST_ASSERT_EQUAL_STRING("minnna", kana::toRomaji("みんな", true).c_str());
+    TEST_ASSERT_EQUAL_STRING("kinnenn", kana::toRomaji("きんえん", true).c_str());
+
+    // not kana: left as it is
+    TEST_ASSERT_EQUAL_STRING("3kai", kana::toRomaji("3かい").c_str());
+    TEST_ASSERT_EQUAL_STRING("", kana::toRomaji("").c_str());
+    TEST_ASSERT_EQUAL_STRING("axtsu", kana::toRomaji("あっ").c_str());
+}
+
+void test_what_is_shown_can_be_typed()
+{
+    const char* const words[] = {
+        "かいさつ", "だいじょうぶ", "きっぷ", "まっちゃ", "ざっし", "とうきょう", "しんかんせん", "きんえん", "ほんや",
+        "こんにちは", "りょかん", "じゃあ", "ちょっと", "かふぇ", "ちぇっくいん", "でぃなあ", "てぃっしゅ", "びゅっふぇ",
+        "ふぁみれす", "いんふぉめえしょん", "ろおぷうぇい", "しぇふ", "じぇっと", "を", "はなぢ", "つづく", "みんな",
+        "さんばんせん", "しんぶん", "あんない", "ぎゅうにゅう", "にんぎょう", "ひゃくえん", "りょうがえ", "ぴょんぴょん",
+        "うぃんく", "うぉっち", "つぁ", "ゔぁいおりん", "でゅえっと", "あっ",
+    };
+    romaji::Options textbook;
+    textbook.punctuation = false;
+    romaji::Options doubled = textbook;
+    doubled.nStyle          = romaji::NStyle::Ime;
+    for (const char* word : words) {
+        const std::string shown = kana::toRomaji(word);
+        TEST_ASSERT_EQUAL_STRING_MESSAGE(word, romaji::convert(shown, textbook, true).kana.c_str(), shown.c_str());
+        const std::string shownDoubled = kana::toRomaji(word, true);
+        TEST_ASSERT_EQUAL_STRING_MESSAGE(word, romaji::convert(shownDoubled, doubled, true).kana.c_str(),
+                                         shownDoubled.c_str());
+    }
 }
 
 void test_pitch_patterns()
@@ -99,6 +148,7 @@ int main(int, char**)
     RUN_TEST(test_beats);
     RUN_TEST(test_scripts);
     RUN_TEST(test_romaji_for_display);
+    RUN_TEST(test_what_is_shown_can_be_typed);
     RUN_TEST(test_pitch_patterns);
     return UNITY_END();
 }

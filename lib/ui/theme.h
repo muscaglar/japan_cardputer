@@ -47,6 +47,13 @@ const lgfx::IFont* font16();
 const lgfx::IFont* font24();
 const lgfx::IFont* fontBig();  // 32 px, for a single word or kana
 
+// Whether the font can draw every character of the text. The 32 px font lacks rarer kanji.
+bool hasGlyphs(const lgfx::IFont* font, const char* utf8);
+
+// The largest font, of at most `tallest` pixels (32, 24, 16 or 12), that can draw the text and
+// keeps it within `width`. The 12 px font is returned when nothing fits.
+const lgfx::IFont* fitFont(Canvas& c, const char* utf8, int width, int tallest);
+
 struct Area {
     int x;
     int y;
