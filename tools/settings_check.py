@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
-"""Plays the settings, and the sound of the kana quiz that they steer.
+"""Plays the settings, and the kana quiz that they steer.
 
 For every look: walks through the seven rows and reads the picture to see that the chosen row is
 in sight, that the rows out of sight are not drawn and that ▲ and ▼ say where there is more;
-changes every row forth and back; switches off and on again to see that what was set is kept;
-listens to what is played after a change of volume or voice; and answers kana with the sound on
-and off. Also pushes on the edges: past the first and the last row, past the quietest and the
-loudest, keys that mean nothing, the memory card taken out.
+changes every row forth and back; switches off and on again, after all changes and after each
+by itself, to see that what was set is kept; listens to what is played after a change of volume
+or voice; and answers kana with the sound on and off, the memory card in and out, in each voice.
+In the quiz it also reads the picture: a kana of two signs at 64 px within the width, the line
+under it above the frame, and no hint for a key that does nothing. Also pushes on the edges: past
+the first and the last row, past the quietest and the loudest, keys that mean nothing, the memory
+card taken out.
 
     python3 tools/settings_check.py                  # in the simulator
     <PlatformIO's python> tools/settings_check.py --device [PORT]   # on a Cardputer over USB
@@ -15,8 +18,11 @@ The simulator tells what the app would have played. A device does not, so there 
 what is heard is left out. On a device the owner's settings are kept aside first and put back at
 the end, and the app is left on its home screen.
 """
+import itertools
+import json
 import os
 import re
+import subprocess
 import sys
 import time
 
@@ -29,8 +35,55 @@ LABELS = {"look": "Look", "cards": "Cards", "romaji": "Romaji", "sound": "Sound"
           "voice": "Voice", "typing": "Typing ん"}
 VISIBLE = 5
 LOUDEST = 5
+ROUND = 20
 SAMPLE = "/audio/%s/hiragana/hiragana-a.wav"
 FACE16 = [("efontJA_16", 1)]
+FACE24 = [("efontJA_24", 1)]
+FACE64 = [("lgfxJapanGothic_32", 2)]
+KANA_INK = 62     # rows of a kana at 64 px that can hold ink, from its top
+TAILS = "gyjpqgy"  # as many letters as the quiz takes, each reaching below the line
+
+# The simulator with an ear for the tones. sim/drive.js does not pass them on.
+LISTENER = r"""
+const CODES = { Enter: 2, Backspace: 3, Tab: 4, Up: 5, Down: 6, Left: 7, Right: 8, Esc: 9 };
+require(process.argv[1])().then(sim => {
+  const tones = [];
+  sim.onTone = (hertz, milliseconds) => tones.push([hertz, milliseconds]);
+  sim._sim_init(1, 0);
+  const lines = require("readline").createInterface({ input: process.stdin });
+  lines.on("line", line => {
+    const space = line.indexOf(" ");
+    const command = space < 0 ? line : line.slice(0, space);
+    const rest = space < 0 ? "" : line.slice(space + 1);
+    if (command === "init") {
+      sim._sim_init(parseInt(rest, 10) || 1, 0);
+    } else if (command === "key") {
+      sim._sim_key(CODES[rest], 0, 0);
+    } else if (command === "type") {
+      for (const ch of rest) sim._sim_key(1, ch.charCodeAt(0), 0);
+    } else if (command === "card") {
+      sim._sim_card(rest === "out" ? 0 : 1);
+    } else if (command === "info") {
+      const state = JSON.parse(sim.UTF8ToString(sim._sim_info()));
+      state.tones = tones;
+      console.log("info " + JSON.stringify(state));
+    } else if (command === "quit") {
+      process.exit(0);
+    }
+  });
+  lines.on("close", () => process.exit(0));
+});
+"""
+
+
+class Listener(Simulator):
+    """As the simulator, and info() tells under "tones" every tone asked for so far."""
+
+    def __init__(self, seed=1):
+        built = os.path.join(reader.ROOT, "build", "sim", "sim.js")
+        self.process = subprocess.Popen(["node", "-e", LISTENER, built], stdin=subprocess.PIPE,
+                                        stdout=subprocess.PIPE, text=True, bufsize=1)
+        self.send("init %d" % seed)
 
 # What a row stands for in the account the app gives of itself, and the values it goes through.
 FIELD = {"look": "look", "cards": "level", "romaji": "romaji", "sound": "sound", "volume": "volume",
@@ -38,6 +91,8 @@ FIELD = {"look": "look", "cards": "level", "romaji": "romaji", "sound": "sound",
 TURNS = {"look": reader.LOOKS, "cards": [1, 2, 3], "romaji": ["peek", "always", "never"], "sound": [False, True],
          "voice": ["both", "female", "male"], "typing": [True, False]}
 USUAL = {"cards": 3, "romaji": "peek", "sound": False, "volume": 3, "voice": "both", "typing": True}
+# What one press of → makes of the usual value.
+ONE_STEP = {"cards": 1, "romaji": "always", "sound": True, "volume": 4, "voice": "female", "typing": False}
 
 
 def look_names():
@@ -50,6 +105,13 @@ def kana_items():
     """(deck, prompt) -> item id, for the two kana decks."""
     return {(item["deck"], item["prompt"]): name for name, item in reader.decks().items()
             if item["deck"] in ("hiragana", "katakana")}
+
+
+def quiz_kana():
+    """The kana the quiz asks, from lib/ui/screens/kana.cpp."""
+    source = open(os.path.join(reader.ROOT, "lib", "ui", "screens", "kana.cpp"), encoding="utf-8").read()
+    tables = source[source.index("kBasic[]"):source.index("kBasicCount")]
+    return re.findall(r'"([ぁ-ゖ]+)"', tables)
 
 
 def to_katakana(text):
@@ -318,6 +380,30 @@ def change(target, look, colours, names, expect, restart):
     target.key("Esc")
 
 
+def kept_at_once(target, look, expect):
+    """Each row by itself: one press, then off and on at once. A change that is only saved along
+    with a later one is lost here."""
+    step = dict(ONE_STEP, look=reader.LOOKS[(reader.LOOKS.index(look) + 1) % len(reader.LOOKS)])
+    usual = dict(USUAL, look=look)
+    lost = []
+    for row in ROWS:
+        for key, wanted in (("Right", step[row]), ("Left", usual[row])):
+            target.open("settings")
+            go_to_row(target, row)
+            target.key(key)
+            set_to = target.info()[FIELD[row]]
+            target.restart()
+            go_home(target)
+            kept = target.info()[FIELD[row]]
+            if set_to != wanted or kept != wanted:
+                lost.append("%s: %s set to %s with %s is %s after off and on" % (
+                    look, LABELS[row], set_to, "→" if key == "Right" else "←", kept))
+    for line in lost:
+        expect(False, line)
+    expect(not lost, "%s: each of the %d rows keeps a change by itself through off and on, made with → or ←" % (
+        look, len(ROWS)))
+
+
 def samples(target, look, colours, names, expect):
     """What is heard after a change of volume or voice. Only where the machine tells what it played."""
     target.open("settings")
@@ -392,6 +478,55 @@ def samples(target, look, colours, names, expect):
                "%s: with the card in again the row says: on" % look)
     target.key("Esc")
     target.key("Esc")
+
+
+def heard_in_settings(target, look, expect):
+    """Sound on and off, the memory card in and out, each voice: what a change of volume and a
+    change of voice let hear. Only in the simulator."""
+    voices = TURNS["voice"]
+    wrong = []
+    for sound, voice, card in itertools.product((False, True), voices, (True, False)):
+        target.open("settings")
+        ready = all([set_row(target, row, wanted) for row, wanted in
+                     (("sound", sound), ("volume", 3), ("voice", voice))])
+        target.card(card)
+        audible = sound and card
+        where = "sound %s, card %s, voice %s" % ("on" if sound else "off", "in" if card else "out", voice)
+        if not ready:
+            wrong.append("%s: could not be set" % where)
+
+        def press(row, key, wanted, folders):
+            before = target.info()
+            target.key(key)
+            first = target.info()
+            let_time_pass(target)
+            state = target.info()
+            heard = plays(state) - plays(before)
+            said = "%s, %s to %s: %d played, the last %s at volume %d" % (
+                where, LABELS[row], state[FIELD[row]], heard, state["played"], state["playedAt"])
+            if state[FIELD[row]] != wanted:
+                wrong.append("%s, %s: %s gave %s, not %s" % (where, LABELS[row], key, state[FIELD[row]], wanted))
+            elif not audible and heard != 0:
+                wrong.append(said + ", where nothing can be heard")
+            elif audible and (heard != len(folders) or first["played"] != SAMPLE % folders[0] or
+                              state["played"] != SAMPLE % folders[-1] or state["playedAt"] != state["volume"]):
+                wrong.append(said + ", expected the voices %s at volume %d" % (" then ".join(folders), state["volume"]))
+
+        go_to_row(target, "volume")
+        own = ["m"] if voice == "male" else ["f"]
+        press("volume", "Right", 4, own)
+        press("volume", "Left", 3, own)
+        go_to_row(target, "voice")
+        for key, step in (("Right", 1), ("Left", -1)):
+            wanted = voices[(voices.index(target.info()["voice"]) + step) % len(voices)]
+            press("voice", key, wanted, {"both": ["f", "m"], "female": ["f"], "male": ["m"]}[wanted])
+        target.card(True)
+        target.key("Esc")
+        target.key("Esc")
+    for line in wrong:
+        expect(False, "%s: %s" % (look, line))
+    expect(not wrong, "%s: sound on or off, card in or out, each voice: volume and voice are heard only with "
+                      "sound and card, in the voice that is set, at the volume that is set" % look)
 
 
 def answer(target, right):
@@ -510,19 +645,265 @@ def kana_quiz(target, look, colours, items, expect):
         expect(set_all(target, {"sound": False}), "%s: sound off again" % look)
 
 
+def heard_in_quiz(target, look, colours, items, expect):
+    """Sound on and off, the memory card in and out, each voice: what is heard before the answer,
+    after it, and after /. Only in the simulator."""
+    _, _, hint = header_colours(look, colours)
+    wrong = []
+    for sound, voice in itertools.product((False, True), TURNS["voice"]):
+        if not set_all(target, {"sound": sound, "volume": 4, "voice": voice}):
+            wrong.append("sound %s, voice %s: could not be set" % (sound, voice))
+        for card in (True, False):
+            where = "sound %s, card %s, voice %s" % ("on" if sound else "off", "in" if card else "out", voice)
+            audible = sound and card
+            target.card(card)
+            start = target.info()
+            target.open("kana")
+            script = target.info()["script"]
+            target.key("Tab")
+            target.key("Enter")
+            target.type("  k/")
+            target.fn("r")
+            target.key("Right")
+            for _ in range(3):
+                target.key("Backspace")
+            let_time_pass(target)
+            state = target.info()
+            if state["kanaState"] != "typing" or plays(state) != plays(start) or state["script"] != script:
+                wrong.append("%s: something was heard or marked before the answer" % where)
+
+            before, state = answer(target, right=card)
+            clips = [clip_of(before, items, folder) for folder in
+                     {"both": "fm", "female": "f", "male": "m"}[voice]]
+            heard = plays(state) - plays(before)
+            _, rows = target.frame()
+            offered = find16(rows, hint, "/: again") is not None
+            if state["heard"] is not audible or heard != (1 if audible else 0) or offered is not audible:
+                wrong.append("%s: after the answer %d played, the app says heard %s, / is %s" % (
+                    where, heard, state["heard"], "offered" if offered else "not offered"))
+            elif audible and (state["played"] not in clips or state["playedAt"] != 4):
+                wrong.append("%s: %s was played at volume %d, expected %s at volume 4" % (
+                    where, state["played"], state["playedAt"], " or ".join(clips)))
+
+            if audible:
+                target.type("/")
+                again = target.info()
+                if (again["kanaState"] != state["kanaState"] or plays(again) != plays(state) + 1 or
+                        again["played"] not in clips or (voice == "both") != (again["played"] != state["played"])):
+                    wrong.append("%s: / played %s after %s" % (where, again["played"], state["played"]))
+                # the card is taken out while the answer stands, with no key pressed, and put back
+                target.frame()
+                for present in (False, True):
+                    target.card(present)
+                    _, rows = target.frame()
+                    if (find16(rows, hint, "/: again") is not None) is not present:
+                        wrong.append("%s: with the card %s after the answer / is %s" % (
+                            where, "put back" if present else "taken out", "not offered" if present else "offered"))
+            # on to the next kana: with / where it has nothing to play, with another key where it has
+            before = target.info()
+            target.type("a" if audible else "/")
+            state = target.info()
+            if state["kanaState"] != "typing" or state["asked"] != before["asked"] + 1 or plays(state) != plays(before):
+                wrong.append("%s: the next kana did not come, or not in silence: %s, %d played" % (
+                    where, state["kanaState"], plays(state) - plays(before)))
+            target.card(True)
+            target.key("Esc")
+    for line in wrong:
+        expect(False, "%s: %s" % (look, line))
+    expect(not wrong, "%s: sound on or off, card in or out, each voice: nothing is heard before the answer, the "
+                      "kana after it and after / only with sound and card, in the voice and at the volume set" % look)
+    expect(set_all(target, {"sound": False, "volume": 3, "voice": "both"}), "%s: sound off, the usual volume and "
+                                                                           "voice" % look)
+
+
+def help_hint(target, look, colours, expect):
+    """Tab is offered where it brings the romaji, and nowhere else."""
+    _, _, hint = header_colours(look, colours)
+    accent = colours[look]["accent"]
+    wrong = []
+    for romaji in TURNS["romaji"]:
+        if not set_all(target, {"romaji": romaji}):
+            wrong.append("Romaji could not be set to %s" % romaji)
+        target.open("kana")
+        roma = reader.to_romaji(target.info()["kana"])
+        seen = []
+        for press in range(3):
+            _, rows = target.frame()
+            seen.append((find16(rows, hint, "Tab: help") is not None,
+                         reader.find_anywhere(rows, accent, roma, FACE24) is not None))
+            target.key("Tab")
+        # (Tab is offered, the romaji is shown): at first, after Tab, after Tab again
+        wanted = {"peek": [(True, False), (False, True), (False, True)], "always": [(False, True)] * 3,
+                  "never": [(False, False)] * 3}[romaji]
+        if seen != wanted:
+            wrong.append("with Romaji set to %s, (Tab offered, romaji shown) was %s at first and after Tab, "
+                         "expected %s" % (romaji, seen, wanted))
+        target.key("Esc")
+    for line in wrong:
+        expect(False, "%s: %s" % (look, line))
+    expect(not wrong, "%s: the quiz offers Tab only while Tab brings the romaji: not when it is shown already, "
+                      "not when the settings say never" % look)
+    expect(set_all(target, {"romaji": "peek"}), "%s: Romaji is set back" % look)
+
+
+def read_quiz(rows, look, colours, area, state, typed, helped):
+    """Compares the picture of a question, or of its mark, with the state. Returns what is wrong."""
+    c = colours[look]
+    x, y, w, h = area
+    shown = to_katakana(state["kana"]) if state["script"] == "katakana" else state["kana"]
+    found = reader.find_anywhere(rows, c["ink"], shown, FACE64)
+    if found is None:
+        return ["%s is not drawn at 64 px" % shown]
+    wrong = []
+    left, top = found[0], found[1]
+    if top < y or left < x or left + 2 * reader.width(shown, FACE64[0][0]) > x + w:
+        wrong.append("%s at 64 px does not stay within the content area" % shown)
+
+    roma = reader.to_romaji(state["kana"])
+    if state["kanaState"] == "typing":
+        lines = [(c["type"], typed + "_")]
+        if helped:
+            lines.append((c["accent"], roma))
+    elif state["kanaState"] == "right":
+        lines = [(c["good"], "〇 " + roma)]
+    else:
+        lines = [(c["bad"], "× %s  not %s" % (roma, typed))]
+    # The line is looked for from the middle of the kana downwards: higher up, a piece of the
+    # frame can look like the _ that waits for a letter.
+    lower = [row if index >= top + 32 else [c["bg"]] * len(row) for index, row in enumerate(rows)]
+    for colour, text in lines:
+        at = reader.find_anywhere(lower, colour, text, FACE24)
+        if at is None:
+            wrong.append("%r is not drawn at 24 px" % text)
+            continue
+        if at[1] < top + KANA_INK:
+            wrong.append("%r starts %d rows into the kana" % (text, top + KANA_INK - at[1]))
+        below = at[1] + reader.font(at[2]).height - (y + h)
+        if below > 0:
+            wrong.append("%r reaches %d rows below the content area" % (text, below))
+        if at[0] < x or at[0] + reader.width(text, at[2]) > x + w:
+            wrong.append("%r is wider than the content area" % text)
+    return wrong
+
+
+def until_two_signs(target):
+    """Answers until a kana of two signs such as きゃ is asked, which a round does after fourteen
+    right answers. Returns whether one is on the screen."""
+    for _ in range(12 * ROUND):
+        state = target.info()
+        if state["kanaState"] == "done":
+            target.key("Enter")
+        elif len(state["kana"]) > 1:
+            return True
+        else:
+            answer(target, True)
+            target.type("a")
+    return False
+
+
+def quiz_layout(target, look, colours, area, expect):
+    """A kana of two signs in both scripts: while typing, with help, marked wrong and marked right."""
+    target.open("kana")
+    wrong = []
+    asked = []
+    for script in ("hiragana", "katakana"):
+        for right in (False, True):
+            if not until_two_signs(target):
+                wrong.append("no kana of two signs was asked in %d rounds" % 12)
+                break
+            if target.info()["script"] != script:
+                target.type(" ")
+            state = target.info()
+            asked.append(to_katakana(state["kana"]) if script == "katakana" else state["kana"])
+            typed = reader.to_romaji(state["kana"]) if right else TAILS
+            steps = [("", "", False), ("type", typed, False)]
+            steps += [("Enter", typed, False)] if right else [("Tab", typed, True), ("Enter", typed, False)]
+            for press, written, helped in steps:
+                if press == "type":
+                    target.type(typed if right else typed + "j")  # one more than it takes
+                elif press:
+                    target.key(press)
+                state = target.info()
+                _, rows = target.frame()
+                wrong += ["%s, %s: %s" % (asked[-1], state["kanaState"], line)
+                          for line in read_quiz(rows, look, colours, area, state, written, helped)]
+            if state["kanaState"] != ("right" if right else "wrong"):
+                wrong.append("%s answered with %s was marked %s" % (asked[-1], typed, state["kanaState"]))
+            target.type("a")
+    if target.info()["kanaState"] == "done":
+        target.key("Enter")
+    if target.info()["script"] != "hiragana":
+        target.type(" ")
+    for line in wrong:
+        expect(False, "%s: %s" % (look, line))
+    expect(not wrong and len(asked) == 4,
+           "%s: %s are drawn at 64 px within the width, and the line under them, at 24 px with %d letters, "
+           "with help and with a mark, lies between the kana and the frame" % (look, ", ".join(asked), len(TAILS)))
+    go_home(target)
+
+
+def tones(expect):
+    """A tone marks the answer only where no clip does: the two would sound at once."""
+    ear = Listener(seed=77)
+    wrong = []
+    try:
+        for sound, card, right in itertools.product((True, False), (True, False), (True, False)):
+            set_all(ear, {"sound": sound})
+            ear.card(card)
+            ear.open("kana")
+            before, state = answer(ear, right)
+            heard = plays(state) - plays(before)
+            rung = state["tones"][len(before["tones"]):]
+            wanted = [] if not sound or card else [[1320, 80]] if right else [[440, 200]]
+            if state["sound"] is not sound or heard != (1 if sound and card else 0) or rung != wanted:
+                wrong.append("sound %s, card %s, a %s answer: %d clips and the tones %s, expected %d and %s" % (
+                    "on" if sound else "off", "in" if card else "out", "right" if right else "wrong", heard,
+                    json.dumps(rung), 1 if sound and card else 0, json.dumps(wanted)))
+            ear.card(True)
+            ear.key("Esc")
+    finally:
+        ear.close()
+    for line in wrong:
+        expect(False, "tones: %s" % line)
+    expect(not wrong, "tones: with the sound on an answer brings the clip and no tone, without the memory card "
+                      "the tone, high for right and low for wrong; with the sound off neither")
+
+
+def kana_cards(items, expect):
+    """Every kana of the quiz needs a card in both kana decks, or it has no clip."""
+    asked = quiz_kana()
+    without = [kana for kana in asked
+               if ("hiragana", kana) not in items or ("katakana", to_katakana(kana)) not in items]
+    expect(len(asked) > 100 and not without,
+           "the %d kana of the quiz have a card each in the decks hiragana and katakana %s" % (
+               len(asked), " ".join(without)))
+    expect(items.get(("hiragana", "あ")) == os.path.basename(SAMPLE)[:-len(".wav")],
+           "the clip heard in the settings is the one of あ: %s" % os.path.basename(SAMPLE))
+
+
 def choose_look(target, wanted):
     return set_all(target, {"look": wanted}) and target.info()["look"] == wanted
 
 
-def play(target, look, colours, names, items, expect, restart):
+def play(target, look, colours, area, names, items, expect, restart):
+    told = plays(target.info()) is not None and hasattr(target, "card")
     expect(choose_look(target, look), "%s: the look is set and the home screen is back" % look)
     expect(set_all(target, USUAL), "%s: the rows are set to what a new device has" % look)
     walk(target, look, colours, names, expect)
     change(target, look, colours, names, expect, restart)
+    if restart:
+        kept_at_once(target, look, expect)
     if plays(target.info()) is not None:
         samples(target, look, colours, names, expect)
         expect(set_all(target, USUAL), "%s: the rows are set back" % look)
+    if told:
+        heard_in_settings(target, look, expect)
+        expect(set_all(target, USUAL), "%s: the rows are set back again" % look)
     kana_quiz(target, look, colours, items, expect)
+    if told:
+        heard_in_quiz(target, look, colours, items, expect)
+    help_hint(target, look, colours, expect)
+    quiz_layout(target, look, colours, area, expect)
     expect(go_home(target), "%s: the home screen is back" % look)
 
 
@@ -533,7 +914,7 @@ def main():
     port = next((a for a in rest if a.startswith("/dev/")), None)
     looks = [a for a in rest if a in reader.LOOKS] or reader.LOOKS
 
-    colours, _ = reader.themes()
+    colours, areas = reader.themes()
     names = look_names()
     items = kana_items()
     problems = []
@@ -542,6 +923,7 @@ def main():
     def expect(condition, message):
         (notes if condition else problems).append(("ok   " if condition else "FAIL ") + message)
 
+    kana_cards(items, expect)
     if on_device:
         from device_driver import Device
         try:
@@ -560,7 +942,7 @@ def main():
             expect(kept, "device: settings and progress are kept aside")
             if kept:
                 for index, look in enumerate(looks):
-                    play(device, look, colours, names, items, expect, restart=(index == 0))
+                    play(device, look, colours, areas[look], names, items, expect, restart=(index == 0))
                     print("%s done" % look, flush=True)
         finally:
             if kept:
@@ -578,9 +960,10 @@ def main():
         for look in looks:
             sim = Simulator(seed=300 + reader.LOOKS.index(look))
             try:
-                play(sim, look, colours, names, items, expect, restart=True)
+                play(sim, look, colours, areas[look], names, items, expect, restart=True)
             finally:
                 sim.close()
+        tones(expect)
 
     for line in notes:
         print(line)

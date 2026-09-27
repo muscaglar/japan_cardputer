@@ -30,6 +30,9 @@ constexpr int kBasicCount    = sizeof(kBasic) / sizeof(kBasic[0]);
 constexpr int kVoicedCount   = sizeof(kVoiced) / sizeof(kVoiced[0]);
 constexpr int kCombinedCount = sizeof(kCombined) / sizeof(kCombined[0]);
 constexpr int kRound         = 20;
+// Letters taken for one answer. With more, a wrong answer and what was typed would not fit
+// in one line at 24 px in every look.
+constexpr size_t kLetters = 7;
 
 enum class State : uint8_t { Typing, Right, Wrong, Done };
 
@@ -50,8 +53,19 @@ public:
         _asked   = 0;
         _correct = 0;
         _state   = State::Typing;
+        _card    = app.platform().hasCard();
         _typed.clear();
         pick(app);
+    }
+
+    void tick(App& app) override
+    {
+        // the footer offers / only while there is a memory card to play from
+        const bool card = app.platform().hasCard();
+        if (card != _card) {
+            _card = card;
+            app.invalidate();
+        }
     }
 
     void key(App& app, const Key& key) override
@@ -99,7 +113,7 @@ public:
                     if (app.settings().romaji != RomajiMode::Never) {
                         _peek = true;
                     }
-                } else if (_typed.size() < 8 && key.ch > ' ') {
+                } else if (_typed.size() < kLetters && key.ch > ' ') {
                     _typed.push_back(key.ch);
                 }
                 break;
@@ -126,19 +140,23 @@ public:
 
         char title[32];
         std::snprintf(title, sizeof(title), "Kana %d/%d", _asked + 1, kRound);
-        const bool typing = (_state == State::Typing);
-        // After the answer Space is a key like any other, so its hint is shown while typing only.
+        const bool typing     = (_state == State::Typing);
+        const bool showRomaji = (s.romaji == RomajiMode::Always) || _peek;
+        // A hint is shown only while its key does something: Space and Tab while typing, Tab
+        // only as long as it has romaji to bring, / only while the clip can be played.
         const char* script = !typing ? "" : _katakana ? "Space: あ" : "Space: ア";
-        drawFrame(c, t, title, script, typing ? "Enter: answer" : "Any key: next",
-                  typing ? "Tab: help" : _heard ? "/: again" : "");
+        const char* help   = (s.romaji == RomajiMode::Peek && !showRomaji) ? "Tab: help" : "";
+        const char* again  = (_heard && s.sound && app.platform().hasCard()) ? "/: again" : "";
+        drawFrame(c, t, title, script, typing ? "Enter: answer" : "Any key: next", typing ? help : again);
 
         const std::string shown = _katakana ? kana::toKatakana(_prompt) : _prompt;
         const Face large        = fitFace(c, shown.c_str(), a.w - 4, 64);
         faceCentre(c, centre, a.y, shown.c_str(), large, t.ink);
 
-        const bool showRomaji    = (s.romaji == RomajiMode::Always) || _peek;
         const std::string answer = kana::toRomaji(_prompt, !s.textbookN);
-        const int lineY          = a.y + 66;
+        // under the kana, and with its 24 px wholly above the frame where the area is low
+        const int lowest = a.y + a.h - 25;
+        const int lineY  = (a.y + 66 < lowest) ? a.y + 66 : lowest;
 
         if (typing) {
             std::string typed = _typed;
@@ -237,10 +255,11 @@ private:
         if (right) {
             ++_correct;
         }
-        if (app.settings().sound) {
+        _heard = hear(app);
+        // A clip says more than a tone does, and the two would sound at once.
+        if (!_heard && app.settings().sound) {
             app.platform().tone(right ? 1320 : 440, right ? 80 : 200);
         }
-        _heard = hear(app);
     }
 
     void next(App& app)
@@ -264,6 +283,7 @@ private:
     bool _katakana = false;
     bool _peek     = false;
     bool _heard    = false;  // the kana was played after the answer
+    bool _card     = false;  // whether the memory card was in when last looked
 };
 
 }  // namespace

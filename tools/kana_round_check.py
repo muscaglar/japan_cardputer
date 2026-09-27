@@ -84,7 +84,8 @@ def play(target, look, index, colours, expect, problems):
             target.key("Tab")
             _, rows = target.frame()
             help_text = reader.to_romaji(kana).replace("-", "")
-            expect(reader.find_anywhere(rows, colours[look]["accent"], help_text, reader.TEXT_FACES) is not None,
+            # at 24 px only: the hints at the bottom are 16 px and may hold the same letters
+            expect(reader.find_anywhere(rows, colours[look]["accent"], help_text, [("efontJA_24", 1)]) is not None,
                    "%s: Tab shows the romaji %s" % (look, help_text))
         answer_wrong = (question % 4 == 3)
         target.type(("zu" if kana != "ず" else "a") if answer_wrong else reader.to_romaji(kana))
