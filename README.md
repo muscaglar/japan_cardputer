@@ -6,8 +6,8 @@ The phone translates. This device takes the other job: it catches the Japanese i
 makes them type it back until it stays. It is generic: nothing in it is tuned to one trip, route or
 season.
 
-Status, 27 September 2026: design stage. The firmware in `src/` is a hardware check, not the app.
-It has been type-checked against the real headers but has not yet been built or run on a device.
+Status, 27 September 2026: first slice. Home screen, menu, settings with four looks, and a kana
+round. It runs in the simulator and builds in the cloud. It has not yet been run on a device.
 
 ## The plan in one table
 
@@ -27,7 +27,12 @@ optional romaji), audio clips prepared on a computer, and record-and-compare wit
 
 | Path | Contents |
 |---|---|
-| `src/main.cpp` | Hardware check firmware |
+| `src/main.cpp` | Device shell: keyboard, screen, storage and sound for the app |
+| `src/hwcheck.cpp` | Hardware check, started by holding G0 while switching on |
+| `lib/ui/` | The app: themes, widgets and screens, drawn on any M5GFX canvas |
+| `lib/core/` | Kana and pitch helpers, pure C++ |
+| `sim/` | The simulator: the app compiled to WebAssembly, with a screenshot runner |
+| `docs/screens/` | Reference pictures of every screen, made by the simulator |
 | `lib/romaji/` | Romaji to kana conversion, pure C++, shared by everything that takes typed Japanese |
 | `test/test_romaji/` | Unit tests for the conversion rules |
 | `tools/cardputer_screen.py` | Pixel-exact preview of the 240 x 135 screen, drawn with the device's own fonts |
@@ -41,6 +46,8 @@ optional romaji), audio clips prepared on a computer, and record-and-compare wit
 | `docs/research/` | Research notes with sources, each statement fact-checked |
 
 ## Hardware check
+
+Hold the G0 button while switching the device on.
 
 | Page | What it tells us |
 |---|---|
@@ -60,6 +67,21 @@ pio device monitor
 ```
 
 To enter download mode if the upload cannot connect: switch the device off, hold G0, plug in USB.
+
+## The simulator
+
+The app is written against a small `Platform` interface, so the same code runs on the device and,
+compiled with Emscripten, in a browser or under Node. The pixels are drawn by M5GFX itself with the
+device's fonts.
+
+```
+python3 sim/build.py --page      # build/sim/sim.js for Node, docs/sim/cardputer-simulator.html for a browser
+node sim/shots.js                # plays the key sequences in sim/scenarios.json, writes docs/screens/*.png
+node sim/shots.js --check        # the same, compared with docs/screens
+```
+
+Open `docs/sim/cardputer-simulator.html` in a browser and type. Arrow keys are the arrows printed on
+`;` `,` `.` `/`, Option or Alt is `Fn`, Esc goes back.
 
 ## Working without a device or a compiler
 

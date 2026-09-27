@@ -11,3 +11,5 @@ sd/private/
 local/
 build/
 japan_cardputer.bin
+# The built simulator page is large and is rebuilt by sim/build.py --page
+docs/sim/

@@ -18,12 +18,13 @@ import subprocess
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-BUILD = os.path.join(ROOT, ".pio", "build", "wasm")
+# Kept outside .pio/build, which PlatformIO empties whenever platformio.ini changes.
+BUILD = os.path.join(ROOT, "build", "wasm")
 UNITY = os.path.join(ROOT, ".pio", "libdeps", "native", "Unity", "src")
 
 # Libraries that use nothing but the C++ standard library. Anything that touches the hardware
 # stays out of this list and is tested on the device instead.
-PORTABLE_LIBS = ["romaji"]
+PORTABLE_LIBS = ["romaji", "core"]
 
 
 def environment():

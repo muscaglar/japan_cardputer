@@ -5,7 +5,7 @@ description: How to verify changes in this repository by running them - the firm
 
 # Verifying cardputer-nihongo
 
-Three surfaces. Drive the one the change reaches.
+Four surfaces. Drive the one the change reaches.
 
 ## 1. Firmware (src/, lib/) - the device
 
@@ -65,7 +65,38 @@ Gotchas:
 - `syntax_check.py` prints nothing about Xtensa inline assembly on purpose; those errors come from
   parsing ESP-IDF headers with an ARM target and are filtered.
 
-## 3. Concept page (docs/board/) - the browser
+## 3. The app in the simulator (lib/ui, lib/core, sim/) - Node and the browser
+
+The real app code with the real graphics library, compiled with Emscripten.
+
+```
+python3 sim/build.py --page
+node sim/shots.js --check          # every scenario against docs/screens; prints CHANGED with a path
+```
+
+`python3 tools/kana_round_check.py` plays whole kana rounds in all four looks. It reads each kana off
+the screen, answers some right and some wrong on purpose, and checks the marks and the final score.
+Use `tools/sim_driver.py` the same way for any check that has to react to what is on the screen.
+
+A CHANGED screen is not a failure by itself: open the new picture, and if it is what was intended,
+run `node sim/shots.js` to accept it. Add a scenario to `sim/scenarios.json` for every new screen.
+
+For typing feel and flows, serve the built page and drive it with real key presses:
+
+```
+python3 -m http.server 8765 --bind 127.0.0.1 --directory docs/sim
+```
+
+The line under the screen names the current screen (home, menu, kana round, settings).
+
+Gotchas:
+
+- Build output lives in `build/`, not `.pio/build/`: PlatformIO empties its folder whenever
+  `platformio.ini` changes.
+- The browser page is plain JavaScript (`-sWASM=0`). In that build M5GFX `readPixelRGB` lost the
+  green channel, so `sim/main.cpp` reads the sprite buffer itself. Do not go back to `readPixelRGB`.
+
+## 4. Concept page (docs/board/) - the browser
 
 ```
 cd docs/board && python3 -m http.server 8765 --bind 127.0.0.1

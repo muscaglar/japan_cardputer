@@ -1,0 +1,16 @@
+[
+  {"name": "home_techo", "keys": []},
+  {"name": "home_english", "keys": [" "]},
+  {"name": "menu_techo", "keys": ["<Tab>"]},
+  {"name": "settings_techo", "keys": ["<Tab>", "<Down>", "<Enter>"]},
+  {"name": "kana_typing", "keys": ["a", "<Esc>", "x", "sh"]},
+  {"name": "kana_peek", "keys": ["x", "<Fn+r>"]},
+  {"name": "kana_wrong", "keys": ["x", "zz", "<Enter>"]},
+  {"name": "home_eki", "keys": ["<Tab>", "<Down>", "<Enter>", "<Right>", "<Esc>", "<Esc>"]},
+  {"name": "home_rpg", "keys": ["<Tab>", "<Down>", "<Enter>", "<Right>", "<Right>", "<Esc>", "<Esc>"]},
+  {"name": "home_washi", "keys": ["<Tab>", "<Down>", "<Enter>", "<Right>", "<Right>", "<Right>", "<Esc>", "<Esc>"]},
+  {"name": "kana_eki", "keys": ["<Tab>", "<Down>", "<Enter>", "<Right>", "<Esc>", "<Esc>", "x", "k"]},
+  {"name": "kana_rpg", "keys": ["<Tab>", "<Down>", "<Enter>", "<Right>", "<Right>", "<Esc>", "<Esc>", "x", "k"]},
+  {"name": "kana_washi", "keys": ["<Tab>", "<Down>", "<Enter>", "<Right>", "<Right>", "<Right>", "<Esc>", "<Esc>", "x", "k"]},
+  {"name": "settings_rpg", "keys": ["<Tab>", "<Down>", "<Enter>", "<Right>", "<Right>"]}
+]

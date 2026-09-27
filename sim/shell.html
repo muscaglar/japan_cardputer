@@ -1,0 +1,317 @@
+<title>Cardputer Simulator</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&family=IBM+Plex+Mono:wght@400;500&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+/* Layout: the device in the middle of the page at three times its size, keys underneath as on
+   the real thing, and a short list of what to try beside it. */
+:root {
+  --bg: #eef1f3;
+  --surface: #ffffff;
+  --ink: #16202c;
+  --ink-2: #4d5a69;
+  --ink-3: #6f7b89;
+  --rule: #d2d8de;
+  --case: #f4f4f1;
+  --case-edge: #c9cdd1;
+  --key: #2b3036;
+  --key-ink: #f2f4f6;
+  --key-mod: #e0600f;
+  --key-mod-ink: #ffffff;
+  --bezel: #0b0f14;
+  --focus: #0a66c2;
+  --font-display: "DotGothic16", "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", sans-serif;
+  --font-body: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f141a; --surface: #171e27; --ink: #e8edf2; --ink-2: #a9b4c0; --ink-3: #8794a2; --rule: #2a3440;
+    --case: #d9dbd8; --case-edge: #8d9297; --key: #23282e; --key-ink: #f2f4f6; --key-mod: #ff8a3d; --key-mod-ink: #1a0f06;
+    --bezel: #000000; --focus: #6cb6ff;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f141a; --surface: #171e27; --ink: #e8edf2; --ink-2: #a9b4c0; --ink-3: #8794a2; --rule: #2a3440;
+  --case: #d9dbd8; --case-edge: #8d9297; --key: #23282e; --key-ink: #f2f4f6; --key-mod: #ff8a3d; --key-mod-ink: #1a0f06;
+  --bezel: #000000; --focus: #6cb6ff;
+  color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.6;
+  padding-inline: 20px; padding-block: 28px 48px;
+}
+h1, h2, p, ul { margin: 0; padding: 0; }
+ul { list-style: none; }
+.wrap { max-width: 1120px; margin-inline: auto; display: grid; grid-template-columns: minmax(0, 760px) minmax(0, 1fr); gap: 40px; align-items: start; }
+.label { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-3); }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 44px); line-height: 1.1; }
+h2 { font-size: 16px; font-weight: 700; }
+.intro { display: flex; flex-direction: column; gap: 10px; grid-column: 1 / -1; }
+.intro p { color: var(--ink-2); max-width: 46em; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+.device {
+  background: var(--case); border: 1px solid var(--case-edge); border-radius: 18px; padding: 18px;
+  display: flex; flex-direction: column; gap: 16px; min-width: 0;
+}
+.screen-row { display: flex; gap: 16px; align-items: stretch; }
+.lcd { background: var(--bezel); border-radius: 8px; padding: 8px; line-height: 0; flex: 0 1 736px; min-width: 0; }
+.lcd canvas { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; image-rendering: pixelated; border-radius: 2px; }
+.lcd:focus-within, .device.active .lcd { box-shadow: 0 0 0 3px var(--focus); }
+.keys { display: grid; grid-template-columns: repeat(14, minmax(0, 1fr)); gap: 4px; }
+.keys button {
+  font-family: var(--font-mono); font-size: 12px; line-height: 1.1; padding: 7px 0 6px; min-width: 0;
+  border: 0; border-radius: 5px; background: var(--key); color: var(--key-ink); cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
+}
+.keys button small { font-size: 9px; opacity: 0.7; }
+.keys button.mod { background: var(--key-mod); color: var(--key-mod-ink); }
+.keys button.on { outline: 2px solid var(--focus); outline-offset: 1px; }
+.status { font-family: var(--font-mono); font-size: 12px; color: #4d5a69; min-height: 1.6em; }
+
+.side { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+.side section { display: flex; flex-direction: column; gap: 8px; }
+.side li { color: var(--ink-2); padding-left: 14px; position: relative; }
+.side li::before { content: ""; position: absolute; left: 0; top: 0.72em; width: 6px; height: 2px; background: var(--ink-3); }
+kbd { font-family: var(--font-mono); font-size: 12px; background: var(--surface); border: 1px solid var(--rule); border-radius: 3px; padding: 1px 5px; color: var(--ink); }
+table { border-collapse: collapse; width: 100%; }
+th, td { text-align: left; vertical-align: top; padding: 6px 12px 6px 0; border-top: 1px solid var(--rule); font-size: 14px; }
+th { font-weight: 500; white-space: nowrap; }
+td { color: var(--ink-2); }
+button.plain { font: inherit; font-weight: 500; cursor: pointer; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); border-radius: 4px; padding: 8px 14px; align-self: flex-start; }
+
+@media (max-width: 900px) {
+  .wrap { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+}
+@media (max-width: 520px) {
+  body { padding-inline: 16px; }
+  .device { padding: 10px; border-radius: 12px; }
+  .keys { gap: 3px; }
+  .keys button { font-size: 10px; padding: 8px 0 7px; border-radius: 4px; }
+  .keys button small { display: none; }
+}
+</style>
+
+<div class="wrap">
+  <header class="intro">
+    <p class="label">M5Stack Cardputer ADV · the firmware itself, running in this page</p>
+    <h1>Cardputer Simulator</h1>
+    <p>This is the same program that goes onto the device, drawing the same pixels with the same fonts. Click the screen and type on your own keyboard, or press the keys below.</p>
+  </header>
+
+  <div class="device" id="device">
+    <div class="screen-row">
+      <div class="lcd" id="lcd" tabindex="0" aria-label="Cardputer screen. Click, then type.">
+        <canvas id="screen" width="240" height="135"></canvas>
+      </div>
+    </div>
+    <p class="status" id="status" aria-live="polite">Starting…</p>
+    <div class="keys" id="keys" aria-label="Cardputer keyboard"></div>
+  </div>
+
+  <aside class="side">
+    <section>
+      <h2>Try this</h2>
+      <ul>
+        <li>Press any letter on the home screen to start a round of kana.</li>
+        <li>Type the reading, for example <kbd>shi</kbd> or <kbd>si</kbd> for し, then <kbd>Enter</kbd>.</li>
+        <li><kbd>Tab</kbd> in a round switches between hiragana and katakana.</li>
+        <li><kbd>Fn</kbd> + <kbd>R</kbd> shows the romaji when you are stuck.</li>
+        <li><kbd>Tab</kbd> on the home screen opens the menu. Settings has the four looks.</li>
+      </ul>
+    </section>
+    <section>
+      <h2>Your keyboard</h2>
+      <table>
+        <tbody>
+          <tr><th scope="row">Arrow keys</th><td>The arrows printed on <kbd>;</kbd> <kbd>,</kbd> <kbd>.</kbd> <kbd>/</kbd></td></tr>
+          <tr><th scope="row">Option or Alt</th><td>The <kbd>Fn</kbd> key</td></tr>
+          <tr><th scope="row">Esc</th><td><kbd>Fn</kbd> + <kbd>`</kbd>, back</td></tr>
+          <tr><th scope="row">Backspace</th><td>Delete</td></tr>
+        </tbody>
+      </table>
+    </section>
+    <section>
+      <h2>What it is not yet</h2>
+      <ul>
+        <li>Only the kana round, the menu and the settings exist so far.</li>
+        <li>There is no sound from the speaker yet, only a beep when sound is switched on.</li>
+      </ul>
+      <button type="button" class="plain" id="restart">Start again from a fresh device</button>
+    </section>
+  </aside>
+</div>
+
+<script>
+/*SIMULATOR*/
+</script>
+<script>
+(function () {
+  var CODE = { Char: 1, Enter: 2, Backspace: 3, Tab: 4, Up: 5, Down: 6, Left: 7, Right: 8, Esc: 9, Button: 10 };
+  var SCREENS = ["home", "menu", "kana round", "settings"];
+  var ROWS = [
+    [["`", "~", "esc"], ["1", "!"], ["2", "@"], ["3", "#"], ["4", "$"], ["5", "%"], ["6", "^"], ["7", "&"], ["8", "*"], ["9", "("], ["0", ")"], ["-", "_"], ["=", "+"], ["del"]],
+    [["tab"], ["q"], ["w"], ["e"], ["r"], ["t"], ["y"], ["u"], ["i"], ["o"], ["p"], ["[", "{"], ["]", "}"], ["\\", "|"]],
+    [["fn"], ["shift"], ["a"], ["s"], ["d"], ["f"], ["g"], ["h"], ["j"], ["k"], ["l"], [";", ":", "↑"], ["'", "\""], ["ok"]],
+    [["ctrl"], ["opt"], ["alt"], ["z"], ["x"], ["c"], ["v"], ["b"], ["n"], ["m"], [",", "<", "←"], [".", ">", "↓"], ["/", "?", "→"], ["space"]]
+  ];
+  var ARROWS = { ";": CODE.Up, ".": CODE.Down, ",": CODE.Left, "/": CODE.Right };
+
+  var canvas = document.getElementById("screen");
+  var context = canvas.getContext("2d");
+  var image = context.createImageData(240, 135);
+  var status = document.getElementById("status");
+  var lcd = document.getElementById("lcd");
+  var sim = null;
+  var sticky = { fn: false, shift: false };
+  var audio = null;
+  var last = 0;
+
+  function tone(hertz, milliseconds) {
+    try {
+      audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+      var osc = audio.createOscillator(), gain = audio.createGain();
+      osc.frequency.value = hertz; gain.gain.value = 0.05;
+      osc.connect(gain); gain.connect(audio.destination);
+      osc.start(); osc.stop(audio.currentTime + milliseconds / 1000);
+    } catch (e) { /* no sound available */ }
+  }
+
+  function paint() {
+    if (sim._sim_render()) {
+      var at = sim._sim_pixels();
+      image.data.set(sim.HEAPU8.subarray(at, at + 240 * 135 * 4));
+      context.putImageData(image, 0, 0);
+      var name = SCREENS[sim._sim_screen()] || "";
+      status.textContent = "Screen: " + name + (sticky.fn ? " · Fn is held for the next key" : "");
+    }
+  }
+
+  function frame(now) {
+    var elapsed = last ? Math.min(200, now - last) : 16;
+    last = now;
+    sim._sim_advance(Math.round(elapsed));
+    paint();
+    window.requestAnimationFrame(frame);
+  }
+
+  function press(code, ch, fn) {
+    if (!sim) { return; }
+    sim._sim_key(code, ch ? ch.charCodeAt(0) : 0, fn ? 1 : 0);
+    paint();
+  }
+
+  function releaseSticky() {
+    sticky.fn = false; sticky.shift = false;
+    Array.prototype.forEach.call(document.querySelectorAll(".keys button.on"), function (b) { b.classList.remove("on"); b.setAttribute("aria-pressed", "false"); });
+  }
+
+  function keyFromButton(spec, button) {
+    var base = spec[0];
+    if (base === "fn" || base === "shift") {
+      sticky[base] = !sticky[base];
+      button.classList.toggle("on", sticky[base]);
+      button.setAttribute("aria-pressed", sticky[base] ? "true" : "false");
+      paint();
+      status.textContent = sticky[base] ? base + " is held for the next key" : status.textContent;
+      return;
+    }
+    if (base === "ctrl" || base === "opt" || base === "alt") { return; }
+    var fn = sticky.fn, shift = sticky.shift;
+    if (base === "del") { press(CODE.Backspace, "", fn); }
+    else if (base === "tab") { press(CODE.Tab, "", fn); }
+    else if (base === "ok") { press(CODE.Enter, "", fn); }
+    else if (base === "space") { press(CODE.Char, " ", fn); }
+    else if (fn && base === "`") { press(CODE.Esc, "", false); }
+    else if (fn && ARROWS[base]) { press(ARROWS[base], "", false); }
+    else {
+      var ch = shift ? (spec[1] || base.toUpperCase()) : base;
+      press(CODE.Char, ch, fn);
+    }
+    releaseSticky();
+  }
+
+  function buildKeys() {
+    var holder = document.getElementById("keys");
+    ROWS.forEach(function (row) {
+      row.forEach(function (spec) {
+        var button = document.createElement("button");
+        button.type = "button";
+        var main = document.createElement("span");
+        main.textContent = spec[0];
+        button.appendChild(main);
+        if (spec[2]) {
+          var small = document.createElement("small");
+          small.textContent = spec[2];
+          button.appendChild(small);
+        }
+        if (["fn", "shift", "ctrl", "opt", "alt"].indexOf(spec[0]) >= 0) { button.className = "mod"; }
+        if (spec[0] === "fn" || spec[0] === "shift") { button.setAttribute("aria-pressed", "false"); }
+        button.setAttribute("aria-label", spec[0] === "ok" ? "enter" : spec[0]);
+        button.addEventListener("click", function () { keyFromButton(spec, button); lcd.focus({ preventScroll: true }); });
+        holder.appendChild(button);
+      });
+    });
+  }
+
+  function fromKeyboard(event) {
+    if (event.metaKey || event.ctrlKey) { return; }
+    var target = event.target;
+    if (target && target.tagName === "BUTTON" && (event.key === "Enter" || event.key === " ")) { return; }
+    var fn = event.altKey || sticky.fn;
+    var handled = true;
+    switch (event.key) {
+      case "Enter": press(CODE.Enter, "", fn); break;
+      case "Backspace": press(CODE.Backspace, "", fn); break;
+      case "Tab": press(CODE.Tab, "", fn); break;
+      case "Escape": press(CODE.Esc, "", false); break;
+      case "ArrowUp": press(CODE.Up, "", false); break;
+      case "ArrowDown": press(CODE.Down, "", false); break;
+      case "ArrowLeft": press(CODE.Left, "", false); break;
+      case "ArrowRight": press(CODE.Right, "", false); break;
+      default:
+        var ch = event.key;
+        if (event.altKey && event.code) {
+          // With Option held, macOS reports another character; take the key itself.
+          if (event.code.indexOf("Key") === 0) { ch = event.code.slice(3).toLowerCase(); }
+          else if (event.code.indexOf("Digit") === 0) { ch = event.code.slice(5); }
+          else if (event.code === "Backquote") { press(CODE.Esc, "", false); event.preventDefault(); return; }
+        }
+        if (ch && ch.length === 1) {
+          if (fn && ARROWS[ch]) { press(ARROWS[ch], "", false); }
+          else { press(CODE.Char, ch, fn); }
+        } else {
+          handled = false;
+        }
+    }
+    if (handled) {
+      event.preventDefault();
+      if (sticky.fn || sticky.shift) { releaseSticky(); }
+    }
+  }
+
+  function start(seed) {
+    sim._sim_init(seed, 1);
+    paint();
+  }
+
+  buildKeys();
+  createSim({ onTone: tone }).then(function (module) {
+    sim = module;
+    module.onTone = tone;
+    start((Date.now() & 0x7fffffff) || 1);
+    window.requestAnimationFrame(frame);
+    document.addEventListener("keydown", fromKeyboard);
+    document.getElementById("restart").addEventListener("click", function () {
+      try {
+        Object.keys(window.localStorage).forEach(function (k) { if (k.indexOf("cardputer-sim:") === 0) { window.localStorage.removeItem(k); } });
+      } catch (e) { /* storage unavailable */ }
+      start((Date.now() & 0x7fffffff) || 1);
+      lcd.focus({ preventScroll: true });
+    });
+  }, function (error) {
+    status.textContent = "The simulator could not start: " + error;
+  });
+})();
+</script>
