@@ -132,6 +132,9 @@ jobs:
       - name: Screens match the reference pictures
         run: node sim/shots.js --check
 
+      - name: The build for the browser draws the same pictures
+        run: SIM_JS=build/sim/sim_plain.js node sim/shots.js --check
+
       - name: Whole kana rounds play correctly
         run: python tools/kana_round_check.py
 

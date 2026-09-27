@@ -57,8 +57,16 @@ Before the first flash of a device, keep its factory firmware:
 Exercised on 2026-09-27 on a Cardputer ADV: flash, report (`Cardputer ADV`, no PSRAM, 267 KB
 free, 122 GB card mounted). The pages of the hardware check were not yet confirmed by a person.
 
+What only a person at the device can judge: whether text is large enough to read. On
+27 September 2026 the owner found 12 px text too small on the device and controls in kana too
+hard; since then nothing is under 16 px and everything that steers is in English. A screen that
+looks fine enlarged on a monitor says nothing about that.
+
 Gotchas:
 
+- Open the port with both control lines high (`dtr = rts = True`): lowering them restarts the chip,
+  and a pulse on DTR alone leaves it in download mode until `esptool.py ... chip_id` resets it.
+- Do not call `reset_input_buffer()`; read what is left instead.
 - In zsh a pattern without a match aborts the whole command: `ls /dev/cu.usbmodem* /dev/cu.usbserial*`
   prints nothing useful when one of them is absent. Use `ls /dev | grep usbmodem`.
 - `pio pkg exec` has no `python` on its path; call PlatformIO's Python by its full path.
@@ -116,6 +124,10 @@ put it back.
 `python3 tools/kana_round_check.py` plays whole kana rounds in all four looks. It reads each kana off
 the screen, answers some right and some wrong on purpose, and checks the marks and the final score.
 Use `tools/sim_driver.py` the same way for any check that has to react to what is on the screen.
+
+After a change to flows or decks, `python3 sim/make_scenarios.py` finds the key sequences anew by
+playing the app. The page for the browser runs another build (plain JavaScript); check it against
+the same pictures with `SIM_JS=build/sim/sim_plain.js node sim/shots.js --check`.
 
 A CHANGED screen is not a failure by itself: open the new picture, and if it is what was intended,
 run `node sim/shots.js` to accept it. Add a scenario to `sim/scenarios.json` for every new screen.

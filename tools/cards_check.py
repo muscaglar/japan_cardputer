@@ -6,10 +6,11 @@
     <PlatformIO's python> tools/cards_check.py --device   # on a Cardputer over USB
 
 What is checked, in every look:
-  day 1  four new cards are shown with their answer and want it typed; a wrong copy costs
-         nothing; each comes back in the same sitting as a question; a right answer is marked 〇,
-         a near miss △, a wrong one ×, a card given up →; what was missed comes back again;
-         the end shows right / asked
+  day 1  four new cards are shown with their answer and want it typed, those with a note on a
+         page of their own first; a wrong copy costs nothing; Tab shows the romaji; each card
+         comes back in the same sitting as a question; a right answer is marked 〇, a near miss
+         △, a wrong one ×, a card given up →; what was missed comes back again; the end shows
+         how many were right
   start  after a restart the app asks whether a new day has begun
   day 2  what was learnt on day 1 is due and is asked before anything new
 
@@ -39,38 +40,19 @@ class Check:
         return condition
 
 
-def prompt_font(rows, look, colours, areas, prompt):
-    """The font in which the prompt is drawn at the top of the card, or None if it is not there."""
-    ax, ay, aw, _ = areas[look]
-    centre = ax + aw // 2
-    for name, _height in reader.FONTS:
-        w = reader.width(prompt, name)
-        if reader.mask(prompt, name)[0] is None:
-            continue
-        if reader.find_text(rows, colours[look]["ink"], prompt, name, centre - w // 2, ay + 1) is not None:
-            return name
-    return None
+def prompt_drawn(rows, look, colours, prompt):
+    return reader.find_anywhere(rows, colours[look]["ink"], prompt, reader.PROMPT_FACES) is not None
 
 
-def mark_drawn(rows, look, colours, areas, font_name, reading, verdict):
-    """Whether the mark for the verdict stands in front of the reading."""
-    ax, ay, aw, _ = areas[look]
-    centre = ax + aw // 2
+def mark_drawn(rows, look, colours, verdict):
+    """Whether the mark for the verdict is on the screen, in its colour."""
     glyph, colour = MARKS[verdict]
-    line = "efontJA_16" if reader.width(reading, "efontJA_16") + 24 <= aw else "efontJA_12"
-    mark_width = reader.width(glyph, line) + 4
-    left = centre - (mark_width + reader.width(reading, line)) // 2
-    top = ay + 1 + reader.font(font_name).height + 6 + 1
-    return reader.find_text(rows, colours[look][colour], glyph, line, left, top, slack=3) is not None
+    return reader.find_anywhere(rows, colours[look][colour], glyph, reader.TEXT_FACES) is not None
 
 
-def score_drawn(rows, look, colours, areas, right, asked):
-    ax, ay, aw, _ = areas[look]
-    centre = ax + aw // 2
-    text = "%d / %d" % (right, asked)
-    top = ay + (4 if look == "rpg" else 24)
-    left = centre - 40 - reader.width(text, "efontJA_24") // 2
-    return reader.find_text(rows, colours[look]["good"], text, "efontJA_24", left, top, slack=2) is not None
+def score_drawn(rows, look, colours, right, asked):
+    text = "%d of %d right" % (right, asked)
+    return reader.find_anywhere(rows, colours[look]["good"], text, reader.TEXT_FACES) is not None
 
 
 def set_look(target, wanted):
@@ -84,7 +66,7 @@ def set_look(target, wanted):
     return target.look() == wanted and target.info()["screen"] == 0
 
 
-def play_sitting(target, look, items, colours, areas, check, day, plan):
+def play_sitting(target, look, items, colours, check, day, plan):
     """Answers every card of a sitting. `plan` names what to do with the n-th question asked."""
     asked = 0
     right = 0
@@ -93,7 +75,8 @@ def play_sitting(target, look, items, colours, areas, check, day, plan):
     introduced = set()
     verdicts = []
     tried_wrong_copy = False
-    for _ in range(80):
+    tried_help = False
+    for _ in range(120):
         state = target.info()
         if state["screen"] != 4:
             break
@@ -103,20 +86,41 @@ def play_sitting(target, look, items, colours, areas, check, day, plan):
             break
         met.append((state["card"], state["cardState"]))
         _, rows = target.frame()
-        drawn = prompt_font(rows, look, colours, areas, item["prompt"])
-        check.expect(drawn is not None, "%s day %d: %s is drawn as %s" % (look, day, state["card"], item["prompt"]))
+        check.expect(prompt_drawn(rows, look, colours, item["prompt"]),
+                     "%s day %d: %s is drawn as %s" % (look, day, state["card"], item["prompt"]))
         answer = reader.to_romaji(item["reading"])
 
-        if state["cardState"] == "introduce":
+        if state["cardState"] == "meet":
+            introduced.add(state["card"])
+            check.expect(bool(item.get("note")), "%s day %d: %s has a page of its own because it has a note" % (
+                look, day, state["card"]))
+            target.key("Enter")
+            after = target.info()
+            check.expect(after["card"] == state["card"] and after["cardState"] == "copy",
+                         "%s day %d: Enter leads from the note of %s to typing it" % (look, day, state["card"]))
+            continue
+
+        if state["cardState"] == "copy":
             introduced.add(state["card"])
             if not tried_wrong_copy:
                 tried_wrong_copy = True
                 target.type("zu")
                 target.key("Enter")
                 after = target.info()
-                check.expect(after["card"] == state["card"] and after["cardState"] == "introduce" and
+                check.expect(after["card"] == state["card"] and after["cardState"] == "copy" and
                              after["answeredToday"] == state["answeredToday"],
                              "%s day %d: a wrong copy of a new card costs nothing and the card stays" % (look, day))
+            elif not tried_help:
+                tried_help = True
+                target.key("Tab")
+                after = target.info()
+                _, rows = target.frame()
+                shown = reader.to_romaji(item["reading"]).replace("-", "")
+                check.expect(after["romajiShown"] is True, "%s day %d: Tab on a new card asks for the romaji" % (look, day))
+                check.expect(shown in reader.romaji_as_shown(item["reading"]) and reader.find_anywhere(
+                    rows, colours[look]["headAccent"], reader.romaji_as_shown(item["reading"]),
+                    [("efontJA_16", 1)]) is not None,
+                    "%s day %d: the romaji %s is on the screen" % (look, day, reader.romaji_as_shown(item["reading"])))
             target.type(answer)
             target.key("Enter")
             asked += 1
@@ -141,7 +145,8 @@ def play_sitting(target, look, items, colours, areas, check, day, plan):
             target.type("zzz")
             target.key("Enter")
         else:
-            target.key("Tab")
+            target.key("Tab")   # the romaji
+            target.key("Tab")   # the answer
         want = {"right": "right", "almost": "almost", "wrong": "wrong", "shown": "shown"}[step]
         after = target.info()
         asked += 1
@@ -151,10 +156,15 @@ def play_sitting(target, look, items, colours, areas, check, day, plan):
                           "%s day %d: %s answered %s is marked %s (the app says %s)" % (
                               look, day, state["card"], step + (" by " + slip[1] if slip else ""), want,
                               after.get("verdict")))
-        if ok and drawn:
+        if ok:
             _, rows = target.frame()
-            check.expect(mark_drawn(rows, look, colours, areas, drawn, item["reading"], want),
-                         "%s day %d: the mark %s stands before %s" % (look, day, MARKS[want][0], item["reading"]))
+            check.expect(mark_drawn(rows, look, colours, want),
+                         "%s day %d: the mark %s is on the screen for %s" % (look, day, MARKS[want][0], state["card"]))
+        if want != "right" and item.get("note"):
+            target.key("Tab")
+            note = target.info()
+            check.expect(note.get("cardState") == "note", "%s day %d: Tab after the mark shows the note of %s" % (
+                look, day, state["card"]))
         target.type(" ")
     return {"asked": asked, "right": right, "met": met, "introduced": introduced, "verdicts": verdicts}
 
@@ -170,7 +180,7 @@ def check_look(target, look, items, colours, areas, check):
     # day 1
     target.type("x")
     check.expect(target.info()["screen"] == 4, "%s: a key on the home screen starts a sitting" % look)
-    played = play_sitting(target, look, items, colours, areas, check, 1, ["right", "almost", "wrong", "shown"])
+    played = play_sitting(target, look, items, colours, check, 1, ["right", "almost", "wrong", "shown"])
     check.expect(len(played["introduced"]) == 4, "%s day 1: four new cards were introduced (%d)" % (
         look, len(played["introduced"])))
     asked_again = {card for card, state in played["met"] if state == "asking"}
@@ -189,8 +199,8 @@ def check_look(target, look, items, colours, areas, check):
     state = target.info()
     check.expect(state["screen"] == 5, "%s day 1: the sitting ends on the summary" % look)
     _, rows = target.frame()
-    check.expect(score_drawn(rows, look, colours, areas, played["right"], played["asked"]),
-                 "%s day 1: the summary shows %d / %d" % (look, played["right"], played["asked"]))
+    check.expect(score_drawn(rows, look, colours, played["right"], played["asked"]),
+                 "%s day 1: the summary shows %d of %d right" % (look, played["right"], played["asked"]))
     check.expect(state["answeredToday"] == played["asked"] and state["seen"] == 4,
                  "%s day 1: %d answers counted, four cards seen (%d, %d)" % (
                      look, played["asked"], state["answeredToday"], state["seen"]))
@@ -217,7 +227,7 @@ def check_look(target, look, items, colours, areas, check):
     # day 2
     due = state["due"]
     target.type("x")
-    played = play_sitting(target, look, items, colours, areas, check, 2, [])
+    played = play_sitting(target, look, items, colours, check, 2, [])
     first = [state for _, state in played["met"][:due]]
     check.expect(len(first) == due and all(s == "asking" for s in first),
                  "%s day 2: the %d cards that are due are asked before anything new" % (look, due))

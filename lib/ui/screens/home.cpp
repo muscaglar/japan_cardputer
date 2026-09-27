@@ -8,6 +8,8 @@ namespace ui {
 
 namespace {
 
+constexpr int kLine = 17;  // line height of the 16 px font
+
 class HomeScreen : public Screen {
 public:
     void enter(App& app) override
@@ -21,7 +23,6 @@ public:
         const deck::BuddyLine* line = buddy::say("greeting", app.platform().random());
         _ja                         = line ? line->ja : "こんにちは！";
         _en                         = line ? line->en : "Hello!";
-        _english                    = false;
     }
 
     void key(App& app, const Key& key) override
@@ -38,8 +39,6 @@ public:
         }
         if (key.code == Key::Tab) {
             app.show(ScreenId::Menu);
-        } else if (key.code == Key::Char && key.ch == ' ') {
-            _english = !_english;
         } else if (key.code == Key::Escape || key.code == Key::Backspace) {
             // nothing to go back to
         } else {
@@ -51,56 +50,49 @@ public:
     {
         const Theme& t = app.theme();
         char title[24];
-        std::snprintf(title, sizeof(title), "%d日目", app.settings().dayNumber);
-        char right[32];
+        std::snprintf(title, sizeof(title), "Day %d", app.settings().dayNumber);
+        char right[16] = "";
         const int battery = app.platform().batteryPercent();
-        const char* sound = app.settings().sound ? "おと" : "マナー";
         if (battery >= 0) {
-            std::snprintf(right, sizeof(right), "%s %d%%", sound, battery);
-        } else {
-            std::snprintf(right, sizeof(right), "%s", sound);
+            std::snprintf(right, sizeof(right), "%d%%", battery);
         }
-
-        const char* words  = _askDay ? "あたらしい ひ？" : (_english ? _en : _ja);
-        const char* toggle = _askDay ? "new day?" : (_english ? "Space にほんご" : "Space えいご");
         if (_askDay) {
-            drawFrame(c, t, title, right, "Enter はい", "Space いいえ");
+            drawFrame(c, t, title, right, "Enter: yes", "Space: no");
         } else {
-            drawFrame(c, t, title, right, "キーで スタート", "Tab メニュー");
-        }
-        const Area a = contentArea(t);
-
-        char waiting[48];
-        std::snprintf(waiting, sizeof(waiting), "ふくしゅう %d", app.dueToday());
-        char fresh[48];
-        std::snprintf(fresh, sizeof(fresh), "あたらしい %d", app.newAvailable());
-
-        if (t.id == ThemeId::Rpg) {
-            // The buddy speaks in the lower window; the upper one holds the day's numbers.
-            daruma(c, 22, 114, true);
-            textWrapped(c, 42, 100, 186, words, font12(), t.ink, 13, 1);
-            text(c, a.x + 4, a.y + 8, "きょう", font16(), t.ink);
-            text(c, a.x + 4, a.y + 32, waiting, font12(), t.ink);
-            text(c, a.x + 4, a.y + 47, fresh, font12(), t.ink);
-            textRight(c, a.x + a.w - 4, a.y + a.h - 14, toggle, font12(), t.dim);
-            return;
+            drawFrame(c, t, title, right, "Any key: start", "Tab: menu");
         }
 
-        const int top = a.y + 4;
-        daruma(c, a.x + 20, top + 26);
-        const int inner = a.w - 66;
-        bubble(c, a.x + 48, top, a.w - 52, 50, t.bubble);
-        if (textWidth(c, words, font16()) <= inner) {
-            text(c, a.x + 56, top + 8, words, font16(), t.bubbleInk);
+        const Area a     = contentArea(t);
+        const int left   = a.x + 44;
+        const int width  = a.w - 46;
+        const int inner  = width - 12;
+        const int most   = (a.h - kLine - 10) / kLine;  // lines that fit above the day's numbers
+        const uint32_t edge = (t.id == ThemeId::Rpg) ? t.ink : t.bubble;
+
+        daruma(c, a.x + 19, a.y + 23);
+        if (_askDay) {
+            bubble(c, left, a.y + 1, width, 24 + kLine + 10, t.bubble, edge);
+            text(c, left + 7, a.y + 5, "New day?", font24(), t.bubbleInk);
+            text(c, left + 7, a.y + 31, "あたらしい ひ？", font16(), t.bubbleDim);
         } else {
-            textWrapped(c, a.x + 56, top + 5, inner, words, font12(), t.bubbleInk, 13, 2);
+            int japanese = linesNeeded(c, inner, _ja, font16());
+            int english  = linesNeeded(c, inner, _en, font16());
+            if (japanese > 2) {
+                japanese = 2;
+            }
+            if (japanese + english > most) {
+                english = most - japanese;
+            }
+            bubble(c, left, a.y + 1, width, (japanese + english) * kLine + 8, t.bubble, edge);
+            int y = textWrapped(c, left + 7, a.y + 5, inner, _ja, font16(), t.bubbleInk, kLine, japanese);
+            if (english > 0) {
+                textWrapped(c, left + 7, y, inner, _en, font16(), t.bubbleDim, kLine, english);
+            }
         }
-        text(c, a.x + 56, top + 33, toggle, font12(), t.bubbleDim);
 
-        const int row = top + 58;
-        int x         = text(c, a.x + 4, row, "きょう", font12(), t.dim);
-        x             = text(c, x + 10, row, waiting, font12(), t.ink);
-        text(c, x + 10, row, fresh, font12(), t.ink);
+        char numbers[48];
+        std::snprintf(numbers, sizeof(numbers), "To review %d   New %d", app.dueToday(), app.newAvailable());
+        text(c, a.x + 2, a.y + a.h - kLine, numbers, font16(), t.ink);
     }
 
     void describe(std::string& json) const override
@@ -111,9 +103,33 @@ public:
 private:
     const char* _ja  = "";
     const char* _en  = "";
-    bool _english    = false;
     bool _askDay     = false;
     bool _firstEntry = true;
+};
+
+class KeysScreen : public Screen {
+public:
+    void key(App& app, const Key&) override { app.show(ScreenId::Menu); }
+
+    void draw(App& app, Canvas& c) override
+    {
+        const Theme& t = app.theme();
+        drawFrame(c, t, "Keys", "", "Any key: back", "");
+        const Area a = contentArea(t);
+        static const char* const kRows[][2] = {
+            {"Enter", "answer, next"},
+            {"Tab", "help, show answer"},
+            {"esc", "back (Fn and `)"},
+            {"G0", "back (side button)"},
+            {"; . , /", "up down left right"},
+        };
+        int y = a.y + 1;
+        for (const auto& row : kRows) {
+            text(c, a.x + 2, y, row[0], font16(), t.accent);
+            text(c, a.x + 66, y, row[1], font16(), t.ink);
+            y += kLine;
+        }
+    }
 };
 
 }  // namespace
@@ -121,6 +137,11 @@ private:
 std::unique_ptr<Screen> makeHomeScreen()
 {
     return std::unique_ptr<Screen>(new HomeScreen());
+}
+
+std::unique_ptr<Screen> makeKeysScreen()
+{
+    return std::unique_ptr<Screen>(new KeysScreen());
 }
 
 }  // namespace ui

@@ -15,11 +15,14 @@ namespace {
 
 constexpr size_t kLongestAnswer = 48;  // letters
 constexpr int kTriesBeforeHelp  = 2;   // wrong tries on a new card before the romaji is shown
+constexpr int kLine             = 17;  // line height of the 16 px font
 
 enum class State : uint8_t {
-    Introduce,  // a card never seen: the answer is shown, the learner types it
+    Meet,    // a card never seen, with a note: prompt, reading, meaning and the note, to be read
+    Copy,    // a card never seen: the answer is shown, the learner types it
     Asking,
     Marked,
+    Note,    // the note of a marked card, asked for with Tab
 };
 
 bool startsWithKatakana(const char* utf8)
@@ -55,19 +58,19 @@ const char* question(deck::Kind kind)
     switch (kind) {
         case deck::Kind::Counter:
         case deck::Kind::Number:
-            return "なんと いう？";
+            return "How do you say it?";
         default:
-            return "よみかたは？";
+            return "How is it read?";
     }
 }
 
 const char* slipHint(match::Slip slip)
 {
     switch (slip) {
-        case match::Slip::LongVowel: return "のばす おと long sound";
-        case match::Slip::SmallTsu:  return "ちいさい っ small tsu";
-        case match::Slip::N:         return "ん を わすれずに";
-        case match::Slip::Voicing:   return "てんてん ゛ に ちゅうい";
+        case match::Slip::LongVowel: return "Nearly: the long sound";
+        case match::Slip::SmallTsu:  return "Nearly: the small っ";
+        case match::Slip::N:         return "Nearly: the ん";
+        case match::Slip::Voicing:   return "Nearly: か or が?";
         default:                     return "";
     }
 }
@@ -90,9 +93,22 @@ public:
             leave(app);
             return;
         }
-        if (_state == State::Marked) {
-            next(app);
-            return;
+        switch (_state) {
+            case State::Meet:
+                _state = State::Copy;
+                return;
+            case State::Note:
+                next(app);
+                return;
+            case State::Marked:
+                if (key.code == Key::Tab && _pick.item->note[0] != 0) {
+                    _state = State::Note;
+                } else {
+                    next(app);
+                }
+                return;
+            default:
+                break;
         }
         switch (key.code) {
             case Key::Backspace:
@@ -106,7 +122,7 @@ public:
                 }
                 break;
             case Key::Tab:
-                giveUp(app);
+                help(app);
                 break;
             case Key::Char:
                 if (key.fn && (key.ch == 'r' || key.ch == 'R')) {
@@ -129,144 +145,150 @@ public:
         const Theme& t    = app.theme();
         const Settings& s = app.settings();
         if (!_pick.item) {
-            drawFrame(c, t, "カード", "", "", "");
+            drawFrame(c, t, "Cards", "", "", "");
             return;
         }
         const deck::Item& item = *_pick.item;
-
-        char right[32];
-        if (_state == State::Introduce) {
-            std::snprintf(right, sizeof(right), "あたらしい");
-        } else {
-            std::snprintf(right, sizeof(right), "あと %d", app.queue().remaining() + 1);
-        }
-        const char* footerLeft = (_state == State::Marked)      ? "キーで つぎへ"
-                                 : (_state == State::Introduce) ? "よんで、うって、Enter"
-                                                                : "Enter こたえる";
-        const char* footerRight = (_state == State::Marked) ? "" : (_state == State::Introduce ? "" : "Tab みる");
-        drawFrame(c, t, _pick.deck ? _pick.deck->nameJa : "カード", right, footerLeft, footerRight);
-        if (t.id == ThemeId::Rpg) {
-            daruma(c, 22, 114, true);
-        }
-
-        const Area a     = contentArea(t);
-        const int centre = a.x + a.w / 2;
-        const bool roomy = (t.id == ThemeId::Techo);
-        int y            = a.y + 1;
-
-        // the prompt
-        const lgfx::IFont* promptFont = fitFont(c, item.prompt, a.w - 4, roomy ? 32 : 24);
-        textCentre(c, centre, y, item.prompt, promptFont, t.ink);
-        c.setFont(promptFont);
-        y += c.fontHeight() + 6;  // room for the pitch line above the reading
-
-        const bool showReading = (_state != State::Asking);
-        const bool showRomaji  = showReading ? (s.romaji == RomajiMode::Always || _peeked || _helped)
-                                             : (_peeked && s.romaji != RomajiMode::Never);
+        const Area a           = contentArea(t);
+        const int centre       = a.x + a.w / 2;
+        const bool fresh       = (_state == State::Meet || _state == State::Copy);
+        const bool reads       = (_state == State::Meet || _state == State::Note);
+        const bool romajiOn    = (s.romaji == RomajiMode::Always) || _peeked || _helped;
         const std::string reading = (_state == State::Marked) ? _outcome.expected : std::string(item.reading);
 
-        if (showReading) {
-            const lgfx::IFont* font = (textWidth(c, reading.c_str(), font16()) + 24 <= a.w) ? font16() : font12();
-            const bool small        = (font == font12());
-            std::string mark;
-            uint32_t markColour = t.ink;
-            if (_state == State::Marked) {
-                if (_gaveUp) {
-                    mark       = "→";
-                    markColour = t.dim;
-                } else if (_outcome.verdict == match::Verdict::Right) {
-                    mark       = "〇";
-                    markColour = t.good;
-                } else if (_outcome.verdict == match::Verdict::Almost) {
-                    mark       = "△";
-                    markColour = t.wait;
-                } else {
-                    mark       = "×";
-                    markColour = t.bad;
-                }
-            }
-            const int markWidth = mark.empty() ? 0 : textWidth(c, mark.c_str(), font) + 4;
-            const int width     = markWidth + textWidth(c, reading.c_str(), font);
-            int x               = centre - width / 2;
-            if (!mark.empty()) {
-                text(c, x, y + 1, mark.c_str(), font, markColour);
-                x += markWidth;
-            }
-            PitchStyle style;
-            style.font        = font;
-            style.ink         = t.ink;
-            style.line        = t.accent;
-            style.particleInk = t.dim;
-            // The accent belongs to the main reading. Another accepted answer is drawn without.
-            const bool mainReading = (reading == item.reading);
-            pitchText(c, x, y + 1, reading, mainReading ? item.accent : -1, style);
-            y += (small ? 13 : 17) + 1;
-
-            if (t.id != ThemeId::Rpg) {
-                textCentre(c, centre, y, item.gloss, font12(), t.dim);
-                y += 13;
-            }
-        }
-
-        // what is being typed
-        if (_state != State::Marked) {
-            romaji::Options options;
-            options.nStyle      = s.textbookN ? romaji::NStyle::Hepburn : romaji::NStyle::Ime;
-            options.punctuation = false;
-            const romaji::Result live = romaji::convert(_typed, options, false);
-            const std::string kanaSoFar =
-                startsWithKatakana(item.reading) ? kana::toKatakana(live.kana) : live.kana;
-            const lgfx::IFont* font = font16();
-            const std::string shown = tailThatFits(c, kanaSoFar, font, a.w - 40);
-            const int width         = textWidth(c, shown.c_str(), font) + textWidth(c, live.pending.c_str(), font) +
-                                      textWidth(c, "_", font);
-            int x                   = centre - width / 2;
-            x                       = text(c, x, y, shown.c_str(), font, t.type);
-            x                       = text(c, x, y, live.pending.c_str(), font, t.wait);
-            text(c, x, y, "_", font, t.type);
-        }
-
-        // one line of help or comment
-        std::string message;
-        uint32_t messageColour = t.dim;
-        if (_state == State::Marked) {
-            const deck::BuddyLine* line = nullptr;
-            if (t.id == ThemeId::Rpg) {
-                // in the game look the buddy speaks, and the meaning has its place above
-                textCentre(c, centre, a.y + a.h - 14, item.gloss, font12(), t.dim);
-                const char* mood = _gaveUp ? "wrong"
-                                   : _outcome.verdict == match::Verdict::Right ? (_streak >= 5 ? "streak" : "right")
-                                   : _outcome.verdict == match::Verdict::Almost ? "almost" : "wrong";
-                line = buddy::say(mood, _said);
-            }
-            if (line) {
-                message       = line->ja;
-                messageColour = t.ink;
-            } else if (_outcome.verdict == match::Verdict::Almost && !_gaveUp) {
-                message = slipHint(_outcome.slip);
-            } else if (_outcome.verdict == match::Verdict::Wrong && !_gaveUp && !_answered.empty()) {
-                message = "うった: " + _answered;  // what was typed, to compare
-            } else if (item.note[0] != 0) {
-                message = item.note;
-            }
-            if (showRomaji && t.id != ThemeId::Rpg && message.empty()) {
-                message = kana::toRomaji(reading, !s.textbookN);
-            }
-        } else if (showRomaji) {
-            message       = kana::toRomaji(item.reading, !s.textbookN);
-            messageColour = t.accent;
-        } else if (_state == State::Introduce) {
-            // the footer says what to do; this line speaks up only after a slip
-            message = _tries > 0 ? "もういちど。よく みて。" : "";
-            if (t.id == ThemeId::Rpg && _tries == 0) {
-                message = item.gloss;
-            }
+        // the line at the top: the meaning, the question, or the romaji when help was asked for
+        std::string top;
+        uint32_t topColour = headerInk(t);
+        if (_state == State::Asking && !romajiOn) {
+            top = question(item.kind);
+        } else if (romajiOn && _state != State::Marked && !reads) {
+            top       = kana::toRomaji(item.reading, !s.textbookN);
+            topColour = headerAccent(t);
         } else {
-            message = question(item.kind);
+            top = item.gloss;
+        }
+        char tag[24];
+        if (fresh) {
+            std::snprintf(tag, sizeof(tag), "new");
+        } else {
+            std::snprintf(tag, sizeof(tag), "%d left", _remaining + 1);
+        }
+        const int tagWidth = textWidth(c, tag, font16());
+        const char* footerLeft  = "Any key: next";
+        const char* footerRight = "";
+        switch (_state) {
+            case State::Meet:
+                footerLeft = "Enter: go on";
+                break;
+            case State::Copy:
+                footerLeft  = "Type it + Enter";
+                footerRight = (s.romaji == RomajiMode::Never || romajiOn) ? "" : "Tab: help";
+                break;
+            case State::Asking:
+                footerLeft  = "Enter: answer";
+                footerRight = romajiOn ? "Tab: show" : "Tab: help";
+                break;
+            case State::Marked:
+                footerRight = (item.note[0] != 0) ? "Tab: note" : "";
+                break;
+            default:
+                break;
+        }
+        const std::string fitted = headThatFits(c, top, font16(), a.w - tagWidth - 14);
+        drawFrame(c, t, "", tag, footerLeft, footerRight);
+        text(c, t.id == ThemeId::Rpg ? a.x + 4 : a.x, 1, fitted.c_str(), font16(), topColour);
+        if (t.id == ThemeId::Rpg) {
+            // the frame of the game look is interrupted where the line at the top stands
+            c.fillRect(a.x, 9, textWidth(c, fitted.c_str(), font16()) + 8, 3, t.bg);
+            text(c, a.x + 4, 1, fitted.c_str(), font16(), topColour);
+        }
+
+        // the prompt; a page with a note of two lines has room for a smaller one only
+        int noteLines = 0;
+        if (reads) {
+            noteLines = linesNeeded(c, a.w - 4, item.note, font16());
+            if (noteLines > 2) {
+                noteLines = 2;
+            }
+        }
+        const int tallest = (noteLines == 2) ? 24 : 32;
+        const Face large  = fitFace(c, item.prompt, a.w - 4, tallest);
+        const bool tight  = (a.h < 92);  // the game look has the lowest window
+        int y             = a.y + (tight ? 0 : 1);
+        faceCentre(c, centre, y, item.prompt, large, t.ink);
+        y += large.height;
+
+        if (_state == State::Asking) {
+            drawTyped(c, t, s, item, a, y + 14);
+            return;
+        }
+
+        // the reading, with its mark after an answer and its pitch line where the accent is known
+        y += tight ? 5 : 6;
+        const lgfx::IFont* font = (textWidth(c, reading.c_str(), font24()) + 30 <= a.w) ? font24() : font16();
+        std::string mark;
+        uint32_t markColour = t.ink;
+        if (_state == State::Marked || _state == State::Note) {
+            if (_gaveUp) {
+                mark       = "→";
+                markColour = t.dim;
+            } else if (_outcome.verdict == match::Verdict::Right) {
+                mark       = "〇";
+                markColour = t.good;
+            } else if (_outcome.verdict == match::Verdict::Almost) {
+                mark       = "△";
+                markColour = t.wait;
+            } else {
+                mark       = "×";
+                markColour = t.bad;
+            }
+        }
+        const std::string shownReading = tailThatFits(c, reading, font, a.w - 30);
+        const int markWidth = mark.empty() ? 0 : textWidth(c, mark.c_str(), font) + 4;
+        const int width     = markWidth + textWidth(c, shownReading.c_str(), font);
+        int x               = centre - width / 2;
+        if (!mark.empty()) {
+            text(c, x, y, mark.c_str(), font, markColour);
+            x += markWidth;
+        }
+        PitchStyle style;
+        style.font        = font;
+        style.ink         = t.ink;
+        style.line        = t.accent;
+        style.particleInk = t.dim;
+        // The accent belongs to the main reading. Another accepted answer is drawn without.
+        const bool mainReading = (reading == item.reading) && (shownReading == reading);
+        pitchText(c, x, y, shownReading, mainReading ? item.accent : -1, style);
+        y += (font == font24() ? 24 : 16) + (tight ? 1 : 3);
+
+        if (_state == State::Copy) {
+            drawTyped(c, t, s, item, a, y);
+            return;
+        }
+        if (reads) {
+            textWrapped(c, a.x + 2, y, a.w - 4, item.note, font16(), t.ink, kLine, 2);
+            return;
+        }
+
+        // marked: one line about the answer
+        std::string message;
+        uint32_t colour = t.dim;
+        if (_gaveUp) {
+            message = "";
+        } else if (_outcome.verdict == match::Verdict::Almost) {
+            message = slipHint(_outcome.slip);
+            colour  = t.wait;
+        } else if (_outcome.verdict == match::Verdict::Wrong) {
+            message = "You typed " + _answered;
+        } else if (_praise) {
+            message = std::string(_praise->ja) + "  " + _praise->en;
+            if (textWidth(c, message.c_str(), font16()) > a.w - 4) {
+                message = _praise->en;
+            }
         }
         if (!message.empty()) {
-            const std::string fitted = tailThatFits(c, message, font12(), t.id == ThemeId::Rpg ? 186 : a.w - 4);
-            drawMessage(c, t, fitted.c_str(), messageColour);
+            const std::string line = headThatFits(c, message, font16(), a.w - 4);
+            textCentre(c, centre, y + 2, line.c_str(), font16(), colour);
         }
     }
 
@@ -275,9 +297,16 @@ public:
         if (!_pick.item) {
             return;
         }
-        const char* state   = (_state == State::Introduce) ? "introduce" : (_state == State::Asking) ? "asking" : "marked";
+        const char* state = "asking";
+        switch (_state) {
+            case State::Meet:   state = "meet"; break;
+            case State::Copy:   state = "copy"; break;
+            case State::Marked: state = "marked"; break;
+            case State::Note:   state = "note"; break;
+            default:            break;
+        }
         const char* verdict = "none";
-        if (_state == State::Marked) {
+        if (_state == State::Marked || _state == State::Note) {
             verdict = _gaveUp ? "shown"
                       : _outcome.verdict == match::Verdict::Right ? "right"
                       : _outcome.verdict == match::Verdict::Almost ? "almost" : "wrong";
@@ -290,29 +319,62 @@ public:
         json += verdict;
         json += "\",\"repeat\":";
         json += _pick.repeat ? "true" : "false";
+        json += ",\"romajiShown\":";
+        json += (_romajiShown ? "true" : "false");
         json += ",\"left\":";
         json += std::to_string(_remaining);
     }
 
 private:
+    // What is being typed, as kana, with the letters not yet decided in another colour.
+    void drawTyped(Canvas& c, const Theme& t, const Settings& s, const deck::Item& item, const Area& a, int y)
+    {
+        romaji::Options options;
+        options.nStyle      = s.textbookN ? romaji::NStyle::Hepburn : romaji::NStyle::Ime;
+        options.punctuation = false;
+        const romaji::Result live   = romaji::convert(_typed, options, false);
+        const std::string kanaSoFar = startsWithKatakana(item.reading) ? kana::toKatakana(live.kana) : live.kana;
+        const std::string whole     = kanaSoFar + live.pending + "_";
+        const lgfx::IFont* font     = (textWidth(c, whole.c_str(), font24()) <= a.w - 8) ? font24() : font16();
+        const int room              = a.w - 8 - textWidth(c, (live.pending + "_").c_str(), font);
+        const std::string shown     = tailThatFits(c, kanaSoFar, font, room);
+        const int width = textWidth(c, shown.c_str(), font) + textWidth(c, (live.pending + "_").c_str(), font);
+        int x           = a.x + a.w / 2 - width / 2;
+        x               = text(c, x, y, shown.c_str(), font, t.type);
+        x               = text(c, x, y, live.pending.c_str(), font, t.wait);
+        text(c, x, y, "_", font, t.type);
+        if (_tries > 0 && _state == State::Copy) {
+            const int under = y + (font == font24() ? 25 : 17);
+            if (under + 16 <= a.y + a.h) {
+                textCentre(c, a.x + a.w / 2, under, "Look again, then type", font16(), t.wait);
+            }
+        }
+    }
+
     void next(App& app)
     {
         _typed.clear();
-        _peeked = false;
-        _helped = false;
-        _gaveUp = false;
-        _tries  = 0;
+        _answered.clear();
+        _peeked    = false;
+        _helped    = false;
+        _gaveUp    = false;
+        _praise    = nullptr;
+        _tries     = 0;
+        _romajiShown = false;
         if (!app.queue().next(_pick)) {
             _pick = session::Pick();
             app.endSitting();
             app.show(ScreenId::Summary);
             return;
         }
-        _state     = _pick.isNew ? State::Introduce : State::Asking;
         _remaining = app.queue().remaining();
         if (_pick.isNew) {
             ++app.sitting().introduced;
+            _state = (_pick.item->note[0] != 0) ? State::Meet : State::Copy;
+        } else {
+            _state = State::Asking;
         }
+        _romajiShown = (app.settings().romaji == RomajiMode::Always);
     }
 
     void leave(App& app)
@@ -322,6 +384,21 @@ private:
         app.show(app.sitting().asked > 0 ? ScreenId::Summary : ScreenId::Home);
     }
 
+    // Tab: first the romaji, then, on a question, the answer itself.
+    void help(App& app)
+    {
+        const bool romajiAllowed = (app.settings().romaji != RomajiMode::Never);
+        const bool romajiOn      = (app.settings().romaji == RomajiMode::Always) || _peeked || _helped;
+        if (romajiAllowed && !romajiOn) {
+            _peeked    = true;
+            _romajiShown = true;
+            return;
+        }
+        if (_state == State::Asking) {
+            giveUp(app);
+        }
+    }
+
     void record(App& app, srs::Grade grade)
     {
         app.queue().answered(_pick, grade);
@@ -329,7 +406,6 @@ private:
         sitting.asked    = app.queue().asked();
         sitting.right    = app.queue().right();
         ++app.settings().answeredToday;
-        _said = app.platform().random();
         if (app.settings().sound) {
             const bool good = (grade != srs::Grade::Again);
             app.platform().tone(good ? 1320 : 440, good ? 80 : 200);
@@ -345,11 +421,14 @@ private:
         _outcome                = match::check(typed, *_pick.item);
         _answered               = startsWithKatakana(_pick.item->reading) ? kana::toKatakana(typed) : typed;
 
-        if (_state == State::Introduce) {
+        if (_state == State::Copy) {
             // Copying what is shown is practice, not a test: wrong tries cost nothing.
             if (_outcome.verdict != match::Verdict::Right) {
                 ++_tries;
-                _helped = (_tries >= kTriesBeforeHelp) && app.settings().romaji != RomajiMode::Never;
+                if (_tries >= kTriesBeforeHelp && app.settings().romaji != RomajiMode::Never) {
+                    _helped    = true;
+                    _romajiShown = true;
+                }
                 _typed.clear();
                 return;
             }
@@ -362,6 +441,7 @@ private:
         if (_outcome.verdict == match::Verdict::Right) {
             grade = _peeked ? srs::Grade::Hard : srs::Grade::Good;
             ++_streak;
+            _praise = buddy::say(_streak >= 5 ? "streak" : "right", app.platform().random());
         } else {
             if (_outcome.verdict == match::Verdict::Almost && _outcome.sameSound) {
                 grade = srs::Grade::Hard;
@@ -374,9 +454,6 @@ private:
 
     void giveUp(App& app)
     {
-        if (_state == State::Introduce) {
-            return;
-        }
         _outcome          = match::Outcome();
         _outcome.expected = _pick.item->reading;
         _gaveUp           = true;
@@ -389,22 +466,22 @@ private:
     match::Outcome _outcome;
     std::string _typed;
     std::string _answered;  // the last answer as kana
-    State _state   = State::Asking;
-    uint32_t _said = 0;
-    int _remaining = 0;
-    int _tries     = 0;
-    int _streak    = 0;
-    bool _peeked   = false;  // asked for the romaji before answering
-    bool _helped   = false;  // the romaji is shown because copying failed twice
-    bool _gaveUp   = false;
+    const deck::BuddyLine* _praise = nullptr;
+    State _state    = State::Asking;
+    int _remaining  = 0;
+    int _tries      = 0;
+    int _streak     = 0;
+    bool _peeked    = false;  // asked for the romaji before answering
+    bool _helped    = false;  // the romaji is shown because copying failed twice
+    bool _gaveUp    = false;
+    bool _romajiShown = false;  // the romaji is on the screen now
 };
 
 class SummaryScreen : public Screen {
 public:
     void enter(App& app) override
     {
-        const deck::BuddyLine* line = buddy::say("finish", app.platform().random());
-        _line                       = line ? line->ja : "おつかれさま！";
+        _line = buddy::say("finish", app.platform().random());
     }
 
     void key(App& app, const Key& key) override
@@ -420,37 +497,27 @@ public:
     {
         const Theme& t         = app.theme();
         const Sitting& sitting = app.sitting();
-        drawFrame(c, t, "おわり", "", "Enter もういちど", "キーで ホーム");
+        drawFrame(c, t, "Done", "", "Enter: again", "Any key: home");
         const Area a     = contentArea(t);
         const int centre = a.x + a.w / 2;
 
-        if (t.id == ThemeId::Rpg) {
-            daruma(c, 22, 114, true);
-            text(c, 42, 101, _line, font12(), t.ink);
-        } else {
-            textCentre(c, centre, a.y + 2, _line, font16(), t.ink);
-        }
-        const int top = a.y + (t.id == ThemeId::Rpg ? 4 : 24);
+        char score[32];
+        std::snprintf(score, sizeof(score), "%d of %d right", sitting.right, sitting.asked);
+        textCentre(c, centre, a.y + 2, score, font24(), t.good);
 
-        char score[24];
-        std::snprintf(score, sizeof(score), "%d / %d", sitting.right, sitting.asked);
-        textCentre(c, centre - 40, top, score, font24(), t.good);
-        text(c, centre - 40 - textWidth(c, score, font24()) / 2, top + 26, "せいかい right", font12(), t.dim);
+        char more[48];
+        std::snprintf(more, sizeof(more), "%d new   %d to repeat", sitting.introduced, app.dueToday());
+        textCentre(c, centre, a.y + 30, more, font16(), t.ink);
 
-        char fresh[40];
-        std::snprintf(fresh, sizeof(fresh), "あたらしい %d", sitting.introduced);
-        text(c, centre + 14, top + 2, fresh, font12(), t.ink);
-        char later[40];
-        std::snprintf(later, sizeof(later), "のこり %d", app.dueToday());
-        text(c, centre + 14, top + 16, later, font12(), t.ink);
-
-        if (sitting.asked > 0 && sitting.right == sitting.asked) {
-            stamp(c, a.x + a.w - 18, a.y + a.h - 20, "済", t.bad, t.bg);
+        if (_line) {
+            textCentre(c, centre, a.y + 52, _line->ja, font16(), t.ink);
+            const std::string english = headThatFits(c, _line->en, font16(), a.w - 4);
+            textCentre(c, centre, a.y + 52 + kLine, english.c_str(), font16(), t.dim);
         }
     }
 
 private:
-    const char* _line = "";
+    const deck::BuddyLine* _line = nullptr;
 };
 
 }  // namespace

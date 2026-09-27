@@ -9,10 +9,12 @@ namespace ui {
 
 namespace {
 
+constexpr int kRowHeight = 27;
+
 struct Entry {
     std::string id;          // for checks run from a computer
-    std::string ja;
     std::string en;
+    std::string ja;
     ScreenId target;         // where it leads, unless it starts a sitting
     const deck::Deck* deck;  // the deck of a sitting
     bool sitting;
@@ -23,13 +25,14 @@ public:
     void enter(App&) override
     {
         _entries.clear();
-        _entries.push_back({"all", "ぜんぶ", "all cards, mixed", ScreenId::Cards, nullptr, true});
+        _entries.push_back({"all", "All cards", "", ScreenId::Cards, nullptr, true});
         for (size_t i = 0; i < deck::count(); ++i) {
             const deck::Deck& d = deck::at(i);
-            _entries.push_back({d.id, d.nameJa, d.nameEn, ScreenId::Cards, &d, true});
+            _entries.push_back({d.id, capitalised(d.nameEn), d.nameJa, ScreenId::Cards, &d, true});
         }
-        _entries.push_back({"kana", "かな", "kana round", ScreenId::Kana, nullptr, false});
-        _entries.push_back({"settings", "せってい", "settings", ScreenId::Settings, nullptr, false});
+        _entries.push_back({"kana", "Kana", "かな", ScreenId::Kana, nullptr, false});
+        _entries.push_back({"keys", "Keys", "", ScreenId::Keys, nullptr, false});
+        _entries.push_back({"settings", "Settings", "", ScreenId::Settings, nullptr, false});
         if (_selected >= static_cast<int>(_entries.size())) {
             _selected = 0;
         }
@@ -45,7 +48,8 @@ public:
             _selected = (_selected + 1) % count;
         } else if (key.code == Key::Enter || move == Key::Right) {
             open(app, _selected);
-        } else if (key.code == Key::Escape || key.code == Key::Backspace || key.code == Key::Tab) {
+        } else if (key.code == Key::Escape || key.code == Key::Backspace || key.code == Key::Tab ||
+                   move == Key::Left) {
             app.show(ScreenId::Home);
         } else if (key.code == Key::Char && key.ch >= '1' && key.ch < '1' + count && key.ch <= '9') {
             _selected = key.ch - '1';
@@ -56,15 +60,10 @@ public:
     void draw(App& app, Canvas& c) override
     {
         const Theme& t = app.theme();
-        drawFrame(c, t, "メニュー", "", "; . えらぶ", "Enter きめる");
-        if (t.id == ThemeId::Rpg) {
-            daruma(c, 22, 114, true);
-            text(c, 42, 101, "どれに する？", font12(), t.ink);
-        }
-        const Area a        = contentArea(t);
-        const int rowHeight = 17;
-        const int visible   = a.h / rowHeight;
-        const int count     = static_cast<int>(_entries.size());
+        drawFrame(c, t, nullptr, "", "↑↓ choose", "Enter: open");
+        const Area a      = contentArea(t, false);
+        const int visible = a.h / kRowHeight;
+        const int count   = static_cast<int>(_entries.size());
 
         // keep the chosen row in view
         if (_selected < _first) {
@@ -73,24 +72,27 @@ public:
             _first = _selected - visible + 1;
         }
 
-        int y = a.y + ((t.id == ThemeId::Techo) ? 0 : 2);
+        int y = a.y + (a.h - visible * kRowHeight) / 2;
         for (int i = _first; i < count && i < _first + visible; ++i) {
             const Entry& entry = _entries[i];
             const bool chosen  = (i == _selected);
             if (chosen) {
-                c.fillRect(a.x - 2, y - 1, a.w, rowHeight - 1, t.row);
+                c.fillRoundRect(a.x - 2, y, a.w, kRowHeight - 1, 3, t.row);
             }
             char number[4] = {static_cast<char>(i < 9 ? '1' + i : ' '), 0, 0, 0};
-            text(c, a.x, y + 2, number, font12(), chosen ? t.accent : t.dim);
-            const int x = text(c, a.x + 12, y + 2, entry.ja.c_str(), font12(), chosen ? t.rowInk : t.ink);
-            text(c, x + 8, y + 2, entry.en.c_str(), font12(), t.dim);
-            y += rowHeight;
+            text(c, a.x + 2, y + 6, number, font16(), chosen ? t.accent : t.dim);
+            const int x = text(c, a.x + 18, y + 1, entry.en.c_str(), font24(), chosen ? t.rowInk : t.ink);
+            const int japanese = textWidth(c, entry.ja.c_str(), font16());
+            if (japanese > 0 && x + 8 + japanese <= a.x + a.w - 16) {
+                textRight(c, a.x + a.w - 16, y + 6, entry.ja.c_str(), font16(), t.dim);
+            }
+            y += kRowHeight;
         }
         if (_first > 0) {
-            textRight(c, a.x + a.w - 4, a.y + 1, "▲", font12(), t.dim);
+            textRight(c, a.x + a.w - 3, a.y + 2, "▲", font16(), t.dim);
         }
         if (_first + visible < count) {
-            textRight(c, a.x + a.w - 4, a.y + (visible - 1) * rowHeight + 2, "▼", font12(), t.dim);
+            textRight(c, a.x + a.w - 3, a.y + a.h - 18, "▼", font16(), t.dim);
         }
     }
 

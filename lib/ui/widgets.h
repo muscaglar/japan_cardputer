@@ -26,7 +26,10 @@ void daruma(Canvas& c, int centreX, int centreY, bool small = false, bool second
 // A round red stamp with one character, as collected at stations.
 void stamp(Canvas& c, int centreX, int centreY, const char* character, uint32_t colour, uint32_t paper);
 
-// Speech bubble with its tail on the left side.
-void bubble(Canvas& c, int x, int y, int w, int h, uint32_t fill);
+// Speech bubble with its tail on the left side. With an outline when `edge` differs from `fill`.
+void bubble(Canvas& c, int x, int y, int w, int h, uint32_t fill, uint32_t edge);
+
+// "katakana words" -> "Katakana words"
+std::string capitalised(const char* text);
 
 }  // namespace ui

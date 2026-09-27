@@ -17,7 +17,6 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LOOKS = ["techo", "eki", "rpg", "washi"]
 FIELDS = ["bg", "ink", "dim", "faint", "accent", "good", "bad", "wait", "row", "rowInk", "type", "bubble",
           "bubbleInk", "bubbleDim"]
-FONTS = [("lgfxJapanGothic_32", 32), ("efontJA_24", 24), ("efontJA_16", 16), ("efontJA_12", 12)]
 
 
 def themes():
@@ -31,11 +30,20 @@ def themes():
             value = named[token] if token in named else int(token[2:8], 16)
             values.append(rgb565(((value >> 16) & 255, (value >> 8) & 255, value & 255)))
         colours[key] = dict(zip(FIELDS, values))
+    # text that a screen writes into the header: headerInk() and headerAccent() in theme.cpp
+    for key, plain, accent in (("techo", 0x786E64, None), ("eki", named["kNavy"], 0xC85F00),
+                               ("rpg", None, None), ("washi", 0x82786E, None)):
+        def shown(value):
+            return rgb565(((value >> 16) & 255, (value >> 8) & 255, value & 255))
+        colours[key]["headInk"] = shown(plain) if plain is not None else colours[key]["ink"]
+        colours[key]["headAccent"] = shown(accent) if accent is not None else colours[key]["accent"]
     areas = {}
     block = source[source.index("Area contentArea"):]
-    for name, x, y, w, h in re.findall(r"ThemeId::(\w+):\s*return \{(\d+), (\d+), (\d+), (\d+)\}", block):
+    block = block[:block.index("\n}")]
+    box = r"Area\{(\d+), (\d+), (\d+), (\d+)\}"
+    for name, x, y, w, h in re.findall(r"ThemeId::(\w+):\s*return header \? " + box, block):
         areas[name.lower()] = (int(x), int(y), int(w), int(h))
-    default = re.search(r"default:\s*return \{(\d+), (\d+), (\d+), (\d+)\}", block)
+    default = re.search(r"default:\s*return header \? " + box, block)
     for look in LOOKS:
         if look not in areas and default:
             areas[look] = tuple(int(v) for v in default.groups())
@@ -62,6 +70,7 @@ def decks():
             row = dict(zip(header, cells))
             items[row["id"]] = {
                 "deck": deck, "prompt": row["prompt"], "reading": row["reading"], "gloss": row.get("gloss", ""),
+                "note": row.get("note", ""),
                 "accepted": [a for a in row.get("accepted", "").split("|") if a],
             }
     return items
@@ -110,6 +119,42 @@ def find_text(rows, colour, text, font_name, left, top, slack=0):
         if seen == {(x + left, y + top + dy) for (x, y) in points}:
             return top + dy
     return None
+
+
+def scaled(points, scale):
+    if scale == 1:
+        return set(points)
+    return {(x * scale + dx, y * scale + dy) for (x, y) in points for dx in range(scale) for dy in range(scale)}
+
+
+def find_anywhere(rows, colour, text, faces):
+    """Looks for the text in that colour anywhere on the screen.
+
+    faces: (font name, scale) pairs to try. Returns (left, top, font name, scale) of the first
+    place where exactly the pixels of the text are in that colour, and no other pixel of that
+    colour lies within the box of the text. None if it is nowhere.
+    """
+    seen = coloured(rows, colour, 0, 0, len(rows[0]), len(rows))
+    for font_name, scale in faces:
+        points, w = mask(text, font_name)
+        if not points:
+            continue
+        points = scaled(points, scale)
+        height = font(font_name).height * scale
+        width_px = w * scale
+        anchor = min(points, key=lambda p: (p[1], p[0]))
+        for (sx, sy) in seen:
+            left, top = sx - anchor[0], sy - anchor[1]
+            if all((x + left, y + top) in seen for (x, y) in points):
+                inside = {(x, y) for (x, y) in seen if left <= x < left + width_px and top <= y < top + height}
+                if len(inside) == len(points):
+                    return left, top, font_name, scale
+    return None
+
+
+PROMPT_FACES = [("lgfxJapanGothic_32", 2), ("efontJA_24", 2), ("lgfxJapanGothic_32", 1), ("efontJA_16", 2),
+                ("efontJA_24", 1), ("efontJA_16", 1)]
+TEXT_FACES = [("efontJA_24", 1), ("efontJA_16", 1)]
 
 
 def hiragana(text):
@@ -171,6 +216,18 @@ def to_romaji(kana):
                 out += "t" if following.startswith("ch") else following[0]
         else:
             out += roma
+    return out
+
+
+def romaji_as_shown(kana):
+    """The romaji the device shows for the kana: as to_romaji, with the long mark as a vowel."""
+    out = ""
+    for c in to_romaji(kana):
+        if c == "-":
+            vowels = [v for v in out if v in "aiueo"]
+            out += vowels[-1] if vowels else "-"
+        else:
+            out += c
     return out
 
 

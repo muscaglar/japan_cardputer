@@ -63,6 +63,7 @@ App::App(Platform& platform) : _platform(platform), _store(platform), _queue(_st
     _screens[static_cast<size_t>(ScreenId::Settings)] = makeSettingsScreen();
     _screens[static_cast<size_t>(ScreenId::Cards)]    = makeCardsScreen();
     _screens[static_cast<size_t>(ScreenId::Summary)]  = makeSummaryScreen();
+    _screens[static_cast<size_t>(ScreenId::Keys)]     = makeKeysScreen();
 }
 
 App::~App() = default;

@@ -7,13 +7,7 @@ namespace {
 
 enum Row { kLook, kLevel, kRomaji, kSound, kTyping, kRowCount };
 
-const char* const kLabels[kRowCount][2] = {
-    {"みため", "look"},
-    {"レベル", "level"},
-    {"ローマじ", "romaji"},
-    {"おと", "sound"},
-    {"ん", "typing n"},
-};
+const char* const kLabels[kRowCount] = {"Look", "Cards", "Romaji", "Sound", "Typing ん"};
 
 class SettingsScreen : public Screen {
 public:
@@ -60,44 +54,39 @@ public:
     {
         const Theme& t    = app.theme();
         const Settings& s = app.settings();
-        drawFrame(c, t, "せってい", "settings", "; . えらぶ  , / かえる", "");
-        if (t.id == ThemeId::Rpg) {
-            daruma(c, 22, 114, true);
-            text(c, 42, 101, "すきな ように どうぞ。", font12(), t.ink);
-        }
+        drawFrame(c, t, "Settings", "", "↑↓ choose", "←→ change");
         const Area a        = contentArea(t);
-        const int rowHeight = (t.id == ThemeId::Rpg) ? 14 : 17;
-        int y               = a.y + ((t.id == ThemeId::Techo) ? 1 : 2);
+        const int rowHeight = a.h / kRowCount;
+        int y               = a.y + (a.h - rowHeight * kRowCount) / 2;
         for (int row = 0; row < kRowCount; ++row) {
             const bool chosen = (row == _row);
             if (chosen) {
-                c.fillRect(a.x - 2, y - 1, a.w, rowHeight - 1, t.row);
+                c.fillRoundRect(a.x - 2, y, a.w, rowHeight, 3, t.row);
             }
-            const int x = text(c, a.x, y + 1, kLabels[row][0], font12(), chosen ? t.rowInk : t.ink);
-            text(c, x + 6, y + 1, kLabels[row][1], font12(), t.dim);
+            const int textY = y + (rowHeight - 16) / 2;
+            text(c, a.x + 2, textY, kLabels[row], font16(), chosen ? t.rowInk : t.ink);
 
             const char* value = "";
             switch (row) {
                 case kLook:
-                    value = theme(s.theme).nameJa;
+                    value = theme(s.theme).nameEn;
                     break;
                 case kLevel:
-                    value = (s.level == 1) ? "かな だけ kana" : (s.level == 2) ? "かんじ すこし" : "ぜんぶ all";  // 3 is the default
+                    value = (s.level == 1) ? "kana only" : (s.level == 2) ? "easy kanji too" : "all";
                     break;
                 case kRomaji:
-                    value = (s.romaji == RomajiMode::Always) ? "いつも always"
-                            : (s.romaji == RomajiMode::Never) ? "なし never" : "キーで on a key";
+                    value = (s.romaji == RomajiMode::Always) ? "always" : (s.romaji == RomajiMode::Never) ? "never" : "with Tab";
                     break;
                 case kSound:
-                    value = s.sound ? "あり on" : "なし off";
+                    value = s.sound ? "on" : "off";
                     break;
                 case kTyping:
-                    value = s.textbookN ? "minna=みんな" : "minnna=みんな";
+                    value = s.textbookN ? "minna = みんな" : "minnna = みんな";
                     break;
                 default:
                     break;
             }
-            textRight(c, a.x + a.w - 6, y + 1, value, font12(), chosen ? t.accent : t.ink);
+            textRight(c, a.x + a.w - 6, textY, value, font16(), chosen ? t.accent : t.dim);
             y += rowHeight;
         }
     }

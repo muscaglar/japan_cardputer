@@ -23,3 +23,7 @@ Settled on 27 September 2026. Each line is a choice the design now depends on.
 | Company | Travelling with a non-speaker | Missions assume the owner speaks for two. |
 | Long-term use | Keep studying with it | A general scheduler with long intervals, not one tuned to a two-week stay. Words can be exported for a desktop flashcard program. |
 | Add-ons | None | No GPS: the station quiz runs in line mode, and caught words are stamped with time only. |
+| Language of the controls | English | Decided on the device, 27 September 2026: labels, menus, hints and settings are in English, so that someone with little or no Japanese can use it. Japanese is what is learnt, never what steers. |
+| Size of text | Nothing under 16 px | Decided on the device the same day: 12 px is 1.3 mm on this screen. Readings and typed answers are 24 px, prompts 32 px, single kana 64 px. |
+| Help | One key, Tab | First the romaji, then the answer. After a mark it shows the note. |
+| microSD, as found | The 122 GB card mounted as it was | No reformatting was needed on the owner's device. |

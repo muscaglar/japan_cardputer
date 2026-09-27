@@ -64,7 +64,9 @@ public:
         }
         switch (key.code) {
             case Key::Tab:
-                _katakana = !_katakana;
+                if (app.settings().romaji != RomajiMode::Never) {
+                    _peek = true;
+                }
                 break;
             case Key::Backspace:
                 if (!_typed.empty()) {
@@ -77,8 +79,12 @@ public:
                 }
                 break;
             case Key::Char:
-                if (key.fn && (key.ch == 'r' || key.ch == 'R')) {
-                    _peek = !_peek;
+                if (key.ch == ' ') {
+                    _katakana = !_katakana;
+                } else if (key.fn && (key.ch == 'r' || key.ch == 'R')) {
+                    if (app.settings().romaji != RomajiMode::Never) {
+                        _peek = true;
+                    }
                 } else if (_typed.size() < 8 && key.ch > ' ') {
                     _typed.push_back(key.ch);
                 }
@@ -92,64 +98,72 @@ public:
     {
         const Theme& t    = app.theme();
         const Settings& s = app.settings();
-        char right[32];
-        std::snprintf(right, sizeof(right), "%s %d/%d", _katakana ? "カタカナ" : "ひらがな",
-                      _asked + (_state == State::Done ? 0 : 1), kRound);
+        const Area a      = contentArea(t);
+        const int centre  = a.x + a.w / 2;
 
         if (_state == State::Done) {
-            drawFrame(c, t, "かな", "おわり", "Enter もういちど", "");
-            if (t.id == ThemeId::Rpg) {
-                daruma(c, 22, 114, true);
-            }
-            const Area a = contentArea(t);
-            textCentre(c, a.x + a.w / 2, a.y + 6, "おつかれさま！", font16(), t.ink);
+            drawFrame(c, t, "Kana", "done", "Enter: again", "Any key: home");
             char score[32];
-            std::snprintf(score, sizeof(score), "%d / %d", _correct, kRound);
-            textCentre(c, a.x + a.w / 2, a.y + 28, score, font24(), t.good);
-            drawMessage(c, t, _correct == kRound ? "ぜんぶ せいかい！" : "もういちど やって みよう。", t.dim);
+            std::snprintf(score, sizeof(score), "%d of %d right", _correct, kRound);
+            textCentre(c, centre, a.y + 18, score, font24(), t.good);
+            drawMessage(c, t, _correct == kRound ? "Every one right!" : "Once more?", t.dim);
             return;
         }
 
-        const char* footer = (_state == State::Typing) ? "Enter こたえる" : "キーで つぎへ";
-        drawFrame(c, t, "かな", right, footer, _state == State::Typing ? "Tab きりかえ" : "");
-        if (t.id == ThemeId::Rpg) {
-            daruma(c, 22, 114, true);
-        }
+        char title[32];
+        std::snprintf(title, sizeof(title), "Kana %d/%d", _asked + 1, kRound);
+        const bool typing = (_state == State::Typing);
+        drawFrame(c, t, title, _katakana ? "Space: あ" : "Space: ア", typing ? "Enter: answer" : "Any key: next",
+                  typing ? "Tab: help" : "");
 
-        const Area a              = contentArea(t);
-        const std::string shown   = _katakana ? kana::toKatakana(_prompt) : _prompt;
-        const int centre          = a.x + a.w / 2;
-        const int bigTop          = a.y + ((t.id == ThemeId::Rpg) ? 0 : 4);
-        textCentre(c, centre, bigTop, shown.c_str(), fontBig(), t.ink);
+        const std::string shown = _katakana ? kana::toKatakana(_prompt) : _prompt;
+        const Face large        = fitFace(c, shown.c_str(), a.w - 4, 64);
+        faceCentre(c, centre, a.y, shown.c_str(), large, t.ink);
 
-        const bool showRomaji = (s.romaji == RomajiMode::Always) || (_peek && s.romaji != RomajiMode::Never) ||
-                                _state != State::Typing;
+        const bool showRomaji    = (s.romaji == RomajiMode::Always) || _peek;
         const std::string answer = kana::toRomaji(_prompt, !s.textbookN);
-        const int lineY          = bigTop + 38;
+        const int lineY          = a.y + 66;
 
-        if (_state == State::Typing) {
+        if (typing) {
             std::string typed = _typed;
             typed.push_back('_');
-            textCentre(c, centre, lineY, typed.c_str(), font16(), t.type);
             if (showRomaji) {
-                drawMessage(c, t, answer.c_str(), t.dim);
-            } else if (s.romaji == RomajiMode::Peek) {
-                drawMessage(c, t, "Fn+R ローマじ", t.faint);
+                // the help on the left, what is typed on the right of it
+                const int width = textWidth(c, answer.c_str(), font24()) + 16 + textWidth(c, typed.c_str(), font24());
+                int x           = centre - width / 2;
+                x               = text(c, x, lineY, answer.c_str(), font24(), t.accent);
+                text(c, x + 16, lineY, typed.c_str(), font24(), t.type);
+            } else {
+                textCentre(c, centre, lineY, typed.c_str(), font24(), t.type);
             }
             return;
         }
 
-        const bool right_ = (_state == State::Right);
-        std::string line  = right_ ? "〇 " : "× ";
+        const bool right = (_state == State::Right);
+        std::string line = right ? "〇 " : "× ";
         line += answer;
-        textCentre(c, centre, lineY, line.c_str(), font16(), right_ ? t.good : t.bad);
-        if (right_) {
-            drawMessage(c, t, "せいかい！", t.good);
-        } else {
-            std::string said = "you typed ";
-            said += _typed;
-            drawMessage(c, t, said.c_str(), t.dim);
+        if (!right) {
+            line += "  not ";
+            line += _typed;
         }
+        const lgfx::IFont* font = (textWidth(c, line.c_str(), font24()) <= a.w) ? font24() : font16();
+        textCentre(c, centre, lineY + (font == font24() ? 0 : 4), line.c_str(), font, right ? t.good : t.bad);
+    }
+
+    void describe(std::string& json) const override
+    {
+        const char* state = (_state == State::Typing) ? "typing" : (_state == State::Right) ? "right"
+                            : (_state == State::Wrong) ? "wrong" : "done";
+        json += ",\"kana\":\"";
+        json += _prompt;
+        json += "\",\"script\":\"";
+        json += _katakana ? "katakana" : "hiragana";
+        json += "\",\"kanaState\":\"";
+        json += state;
+        json += "\",\"asked\":";
+        json += std::to_string(_asked);
+        json += ",\"correct\":";
+        json += std::to_string(_correct);
     }
 
 private:

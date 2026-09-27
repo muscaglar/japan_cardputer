@@ -123,10 +123,26 @@ void stamp(Canvas& c, int cx, int cy, const char* character, uint32_t colour, ui
     textCentre(c, cx, cy - 8, character, font16(), colour);
 }
 
-void bubble(Canvas& c, int x, int y, int w, int h, uint32_t fill)
+void bubble(Canvas& c, int x, int y, int w, int h, uint32_t fill, uint32_t edge)
 {
     c.fillRoundRect(x, y, w, h, 5, fill);
-    c.fillRect(x - 4, y + h / 2 - 3, 6, 6, fill);
+    c.fillRect(x - 4, y + 16, 6, 6, fill);
+    if (edge != fill) {
+        c.drawRoundRect(x, y, w, h, 5, edge);
+        c.drawFastVLine(x - 4, y + 16, 6, edge);
+        c.drawFastHLine(x - 4, y + 16, 4, edge);
+        c.drawFastHLine(x - 4, y + 21, 4, edge);
+        c.drawFastVLine(x, y + 17, 4, fill);
+    }
+}
+
+std::string capitalised(const char* text)
+{
+    std::string out = text ? text : "";
+    if (!out.empty() && out[0] >= 'a' && out[0] <= 'z') {
+        out[0] = static_cast<char>(out[0] - 'a' + 'A');
+    }
+    return out;
 }
 
 }  // namespace ui

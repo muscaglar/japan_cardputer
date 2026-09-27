@@ -13,5 +13,6 @@ std::unique_ptr<Screen> makeKanaScreen();
 std::unique_ptr<Screen> makeSettingsScreen();
 std::unique_ptr<Screen> makeCardsScreen();
 std::unique_ptr<Screen> makeSummaryScreen();
+std::unique_ptr<Screen> makeKeysScreen();
 
 }  // namespace ui

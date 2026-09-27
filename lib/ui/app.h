@@ -24,7 +24,7 @@ struct Settings {
     int level         = 3;      // 1 kana only, 2 kanji of the first school years too, 3 everything
 };
 
-enum class ScreenId : uint8_t { Home, Menu, Kana, Settings, Cards, Summary, Count };
+enum class ScreenId : uint8_t { Home, Menu, Kana, Settings, Cards, Summary, Keys, Count };
 
 // What happened in the sitting that is running or has just ended.
 struct Sitting {

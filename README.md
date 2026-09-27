@@ -80,16 +80,25 @@ To enter download mode if the upload cannot connect: switch the device off, hold
 ## How a sitting works
 
 A sitting takes what is due first and then up to four new cards. A new card shows its answer and
-asks the learner to type it; a little later it comes back as a question. Answers are typed in
-romaji, which turns into kana while typing, and are marked at once: 〇 right, △ nearly (a long
-vowel, a small っ, an ん or a voicing mark away), × wrong. What was missed comes back in the same
-sitting. Cards that are known come back after one day, then three, eight, twenty and so on.
+asks the learner to type it, after a page with its note where it has one; a little later it comes
+back as a question. Answers are typed in romaji, which turns into kana while typing, and are
+marked at once: 〇 right, △ nearly (a long vowel, a small っ, an ん or a voicing mark away),
+× wrong. What was missed comes back in the same sitting. Cards that are known come back after one
+day, then three, eight, twenty and so on.
 
 The device has no clock. After a day on which cards were answered, the next start asks whether a
 new day has begun.
 
-Keys: `Enter` answers, `Tab` shows the answer, `Fn` + `R` shows the romaji, `Esc` (`Fn` + `` ` ``)
-or the button on the edge goes back.
+Everything that steers the device is in English, and nothing on the screen is smaller than
+16 pixels: the screen measures 1.14 inches, and 12 pixels on it are 1.3 mm. Japanese appears where
+it is the thing being learnt, with its meaning beside it.
+
+| Key | What it does |
+|---|---|
+| `Enter` | answer, next |
+| `Tab` | help: first the romaji, then the answer; after a mark, the note; on the home screen, the menu |
+| `Esc` (`Fn` + `` ` ``) or the button on the edge | back |
+| `;` `.` `,` `/` | up, down, left, right in lists, with or without `Fn` |
 
 ## The simulator
 

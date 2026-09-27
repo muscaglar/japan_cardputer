@@ -4,6 +4,7 @@
 #include <M5GFX.h>
 
 #include <cstdint>
+#include <string>
 
 namespace ui {
 
@@ -43,16 +44,26 @@ const Theme& themeByKey(const char* key);
 ThemeId nextTheme(ThemeId id);
 
 const lgfx::IFont* font12();
-const lgfx::IFont* font16();
+const lgfx::IFont* font16();  // the smallest size used for anything that has to be read
 const lgfx::IFont* font24();
 const lgfx::IFont* fontBig();  // 32 px, for a single word or kana
 
 // Whether the font can draw every character of the text. The 32 px font lacks rarer kanji.
 bool hasGlyphs(const lgfx::IFont* font, const char* utf8);
 
-// The largest font, of at most `tallest` pixels (32, 24, 16 or 12), that can draw the text and
-// keeps it within `width`. The 12 px font is returned when nothing fits.
-const lgfx::IFont* fitFont(Canvas& c, const char* utf8, int width, int tallest);
+// A font at a size: the fonts are bitmaps, so sizes above 32 px are a font drawn twice as large.
+struct Face {
+    const lgfx::IFont* font;
+    int scale;
+    int height;  // in pixels, scale included
+};
+
+Face face16();
+Face face24();
+
+// The largest face, of at most `tallest` pixels (64, 48, 32, 24 or 16), that can draw the text
+// and keeps it within `width`. The 16 px face is returned when nothing fits.
+Face fitFace(Canvas& c, const char* utf8, int width, int tallest);
 
 struct Area {
     int x;
@@ -61,26 +72,40 @@ struct Area {
     int h;
 };
 
-// Where a screen may draw between header and footer.
-Area contentArea(const Theme& t);
+// Where a screen may draw between header and footer. Without a header the area starts higher.
+Area contentArea(const Theme& t, bool header = true);
 
-// One line for what the app says to the user: a result, a hint. The game look puts it in the
-// lower window next to the buddy; the others put it at the bottom of the content area.
+// One line at the bottom of the content area, for what the app says: a hint, a comment.
 void drawMessage(Canvas& c, const Theme& t, const char* utf8, uint32_t colour);
 
-// Clears the canvas and draws header and footer in the theme's manner.
+// Colours for text that a screen writes into the header itself: plain, and standing out.
+uint32_t headerInk(const Theme& t);
+uint32_t headerAccent(const Theme& t);
+
+// Clears the canvas and draws header and footer in the theme's manner, in the 16 px font.
+// title == nullptr leaves the header out.
 void drawFrame(Canvas& c, const Theme& t, const char* title, const char* right, const char* footerLeft,
                const char* footerRight);
 
-// Text helpers. Coordinates are the top-left corner unless the name says otherwise.
+// Text helpers. All take UTF-8 and return the x position after the text.
 int text(Canvas& c, int x, int y, const char* utf8, const lgfx::IFont* font, uint32_t colour);
 int textRight(Canvas& c, int rightX, int y, const char* utf8, const lgfx::IFont* font, uint32_t colour);
 int textCentre(Canvas& c, int centreX, int y, const char* utf8, const lgfx::IFont* font, uint32_t colour);
 int textWidth(Canvas& c, const char* utf8, const lgfx::IFont* font);
 
+int faceText(Canvas& c, int x, int y, const char* utf8, const Face& face, uint32_t colour);
+int faceCentre(Canvas& c, int centreX, int y, const char* utf8, const Face& face, uint32_t colour);
+int faceWidth(Canvas& c, const char* utf8, const Face& face);
+
 // Draws text broken at spaces so that no line is wider than `width`. Returns the y below the
-// last line. At most `maxLines` lines are drawn.
+// last line. At most `maxLines` lines are drawn; what does not fit is left out.
 int textWrapped(Canvas& c, int x, int y, int width, const char* utf8, const lgfx::IFont* font, uint32_t colour,
                 int lineHeight, int maxLines);
+
+// How many lines textWrapped would need.
+int linesNeeded(Canvas& c, int width, const char* utf8, const lgfx::IFont* font);
+
+// The start of the text that fits into `width`, ending in … when something was cut off.
+std::string headThatFits(Canvas& c, const std::string& utf8, const lgfx::IFont* font, int width);
 
 }  // namespace ui

@@ -110,6 +110,9 @@ def main():
         # where a page may not compile WebAssembly.
         script = os.path.join(BUILD, "sim_web.js")
         run(link + ["-sENVIRONMENT=web", "-sWASM=0", "-sSINGLE_FILE=1", "-o", script], env)
+        # The same plain JavaScript for Node, so that the build a browser runs can be checked
+        # against the reference pictures: SIM_JS=build/sim/sim_plain.js node sim/shots.js --check
+        run(link + ["-sENVIRONMENT=node", "-sWASM=0", "-o", os.path.join(BUILD, "sim_plain.js")], env)
         shell = open(os.path.join(ROOT, "sim", "shell.html"), encoding="utf-8").read()
         code = open(script, encoding="utf-8").read().replace("</script", "<\\/script")
         page = shell.replace("/*SIMULATOR*/", code)

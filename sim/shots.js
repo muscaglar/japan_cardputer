@@ -90,7 +90,8 @@ async function main() {
   const out = outIndex >= 0 ? args[outIndex + 1] : (check ? fs.mkdtempSync(path.join(require("os").tmpdir(), "shots-")) : golden);
   fs.mkdirSync(out, { recursive: true });
 
-  const createSim = require(path.join(ROOT, "build", "sim", "sim.js"));
+  // SIM_JS names another build of the simulator, for example the one that runs in a browser.
+  const createSim = require(process.env.SIM_JS ? path.resolve(process.env.SIM_JS) : path.join(ROOT, "build", "sim", "sim.js"));
   const scenarios = JSON.parse(fs.readFileSync(path.join(__dirname, "scenarios.json"), "utf8"));
   let failed = 0;
 
