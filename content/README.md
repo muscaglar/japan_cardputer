@@ -43,7 +43,8 @@ row carry what belongs to the deck as a whole:
 | `stage` | Place in the course | a number from 1 to 9; 1 when the line is missing |
 
 In the course, new cards come from the lowest stage that still has a card never seen. Decks of one
-stage are learnt side by side.
+stage are learnt side by side. A line that starts with the word stage and is written otherwise,
+such as `# stage 2` or `# Stage: 2`, is an error: the deck would be of stage 1 without a word.
 
 | Column | Meaning | Rules |
 |---|---|---|
@@ -77,7 +78,8 @@ Moods: greeting, start, right, streak, wrong, almost, finish, back, low-battery,
 
 One row for each kanji of the prompts. From these rows the build puts together the line that a
 card shows about its prompt: every kanji of the prompt once, in the order in which they stand, each
-with its meaning, two spaces between them. 出口 gets `出 go out  口 opening`.
+with its meaning, two spaces between them. 出口 gets `出 go out  口 opening`. The mark 々, which
+repeats the kanji before it, is left out.
 
 | Column | Meaning | Rules |
 |---|---|---|
@@ -102,10 +104,15 @@ for each kanji does not explain: 交番 is not "alternate" and "number".
 | Column | Meaning | Rules |
 |---|---|---|
 | `prompt` | The word | the prompt of an item, as it is written there; once in the table |
-| `parts` | The line to show | every kanji in it is a kanji of the prompt; at most 54 letters wide; empty for a card that is to show no line |
+| `parts` | The line to show | pieces with two spaces between them; every kanji in it is a kanji of the prompt; at most 54 letters wide, and each piece at most 27; `EMPTY` or nothing for a card that is to show no line |
 | `reason` | Why the line from `kanji.tsv` will not do | not empty |
 
 A row holds for every item with that prompt. The kanji of such a word need no row in `kanji.tsv`.
+
+The card breaks the line only where two spaces stand, and a line of the screen holds 27 letters:
+a piece that is wider would be cut off. `自由 freedom  席 seat` has two pieces. The line names at
+least one character of the prompt; the word `EMPTY`, in capitals, is the only other thing it may
+hold, and is never shown.
 
 ## guide.tsv
 
@@ -117,6 +124,9 @@ One row for each page of the guide, in the order in which they are shown.
 | `title` | Heading of the page | at most 20 letters wide |
 | `body` | The text | lines separated by `\|`; at most 5 lines, each at most 27 letters wide; not empty |
 | `clips` | What can be heard on the page | kana, separated by `\|`; empty if nothing |
+
+A clip is known by its page and its place in the row, not by its kana. The same kana may
+therefore stand twice, for two words that are spelt alike and differ in pitch: `はし\|はし`.
 
 ## What the build checks
 

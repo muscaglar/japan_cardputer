@@ -1,0 +1,6 @@
+# Test fixture: EMPTY stands for no line. Any other word says nothing about the prompt.
+prompt	parts	reason
+駅	EMPTY	one kanji is the whole word
+大	empty	one kanji is the whole word
+小	-	one kanji is the whole word
+交番	police box	the kanji do not explain the word

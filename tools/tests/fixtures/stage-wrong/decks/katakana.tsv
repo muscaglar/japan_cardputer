@@ -1,0 +1,7 @@
+# Test fixture with deliberate mistakes. This is not content.
+# name-ja: カタカナ
+# name-en: katakana
+# kind: kana
+# Stage: 2
+id	prompt	reading	accent	accepted	gloss	note	level	source
+kana-kata-a	ア	ア			a		1	

@@ -11,8 +11,14 @@ void soundBegin();
 
 // Starts a clip and returns at once. What was playing ends, also when the answer is false.
 // path: from the root of the card, for example "/audio/f/signs/sign-eki.wav". volume: 1 to 5.
-// false: no card, no such file, or a file that cannot be played. soundWhyNot() says which.
+// false: no card, a card that does not answer, no such file, or a file that cannot be played.
+// soundWhyNot() says which.
 bool soundPlay(const char* path, int volume);
+
+// false for ten seconds after the card did not answer: it was taken out or has lost its contact.
+// Clips are refused for that long without asking the card, because every question put to such a
+// card holds loop() up for about a second.
+bool soundCardAnswers();
 
 // true from soundPlay() until the speaker has taken the last sample.
 bool soundPlaying();

@@ -1,0 +1,9 @@
+# Test fixture without mistakes.
+# name-ja: かんばん
+# name-en: signs
+# kind: word
+id	prompt	reading	accent	accepted	gloss	note	level	source
+sign-eki	駅	えき	1		station		2	JMdict
+sign-dai	大	だい	1		large		2	JMdict
+sign-shou	小	しょう	1		small		2	JMdict
+sign-kouban	交番	こうばん	0		police box		2	JMdict

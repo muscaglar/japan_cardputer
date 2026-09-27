@@ -8,6 +8,8 @@
   accents.txt         the accent list of the Kanjium project (CC BY-SA 4.0)
   jmdict_index.json   JMdict (EDRDG, CC BY-SA 4.0) from the jmdict-simplified releases, reduced to
                       what the checks need: written form or kana -> readings, meanings, common or not
+  kanjidic_index.json KANJIDIC (EDRDG, CC BY-SA 4.0) from the same release: kanji -> meanings,
+                      readings, school grade
 
 Neither file goes into the repository. About 12 MB are downloaded, 120 MB unpacked.
 
@@ -80,6 +82,33 @@ def fetch_dictionary(target, newest):
         dictionary.get("version"), dictionary.get("dictDate"), len(dictionary["words"]), len(index)))
 
 
+def fetch_kanji(target, newest):
+    plain = JMDICT_RELEASE
+    if newest:
+        landed, _ = fetch(RELEASES + "/latest")
+        plain = urllib.request.unquote(landed.rsplit("/", 1)[-1])
+    url = "%s/download/%s/kanjidic2-en-%s.json.zip" % (RELEASES, urllib.request.quote(plain), plain)
+    print("downloading " + url)
+    _, data = fetch(url)
+    archive = zipfile.ZipFile(io.BytesIO(data))
+    names = [n for n in archive.namelist() if n.endswith(".json")]
+    if len(names) != 1:
+        sys.exit("unexpected contents of the archive: %s" % ", ".join(archive.namelist()))
+    dictionary = json.loads(archive.read(names[0]).decode("utf-8"))
+    index = {}
+    for character in dictionary["characters"]:
+        groups = character.get("readingMeaning", {}).get("groups", [])
+        index[character["literal"]] = {
+            "meanings": [m["value"] for g in groups for m in g.get("meanings", []) if m.get("lang") == "en"],
+            "on": [r["value"] for g in groups for r in g.get("readings", []) if r.get("type") == "ja_on"],
+            "kun": [r["value"] for g in groups for r in g.get("readings", []) if r.get("type") == "ja_kun"],
+            "grade": character.get("misc", {}).get("grade"),
+            "strokes": (character.get("misc", {}).get("strokeCounts") or [None])[0],
+        }
+    json.dump(index, open(target, "w", encoding="utf-8"), ensure_ascii=False)
+    print("kanjidic_index.json: KANJIDIC %s, %d kanji" % (dictionary.get("version"), len(index)))
+
+
 def main():
     newest = "--newest" in sys.argv[1:]
     again = newest or "--again" in sys.argv[1:]
@@ -94,6 +123,11 @@ def main():
         fetch_dictionary(index, newest)
     else:
         print("jmdict_index.json is there")
+    kanji = os.path.join(CACHE, "kanjidic_index.json")
+    if again or not os.path.exists(kanji):
+        fetch_kanji(kanji, newest)
+    else:
+        print("kanjidic_index.json is there")
 
 
 if __name__ == "__main__":

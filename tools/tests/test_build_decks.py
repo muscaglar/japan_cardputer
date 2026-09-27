@@ -89,7 +89,10 @@ CASES = {
     "stage-wrong": (False, 1, [
         ("decks/counters.tsv", 5, E, "stage \"0\" is not a number from 1 to 9"),
         ("decks/food.tsv", 5, E, "stage \"10\" is not a number from 1 to 9"),
+        ("decks/greetings.tsv", 5, E, "\"#stage=2\" is not read as the stage; write it as \"# stage: 2\""),
+        ("decks/hiragana.tsv", 5, E, "\"# stage 2\" is not read as the stage"),
         ("decks/katakana-words.tsv", 5, E, "stage \"1.5\" is not a number from 1 to 9"),
+        ("decks/katakana.tsv", 5, E, "\"# Stage: 2\" is not read as the stage"),
         ("decks/numbers.tsv", 5, E, "stage \"two\" is not a number from 1 to 9"),
         ("decks/replies.tsv", 5, E, "stage \"\" is not a number from 1 to 9"),
         (SIGNS, 6, E, "stage is given twice"),
@@ -333,6 +336,16 @@ CASES = {
         (PARTS, 4, E, "parts is 55 letters wide, at most 54 fit"),
         (PARTS, 6, E, "parts is 55 letters wide, at most 54 fit"),
     ], []),
+    "parts-piece": (False, 1, [
+        (PARTS, 4, E, "parts: the piece \"普通 ordinary: a single word\" is 28 letters wide, at most 27 fit one line"),
+        (PARTS, 5, E, "parts: more than two spaces between two pieces"),
+        (PARTS, 6, E, "parts: more than two spaces between two pieces"),
+    ], []),
+    "parts-no-line": (False, 1, [
+        (PARTS, 4, E, "parts: \"empty\" names no character of 大; write EMPTY for a card without a line"),
+        (PARTS, 5, E, "parts: \"-\" names no character of 小"),
+        (PARTS, 6, E, "parts: \"police box\" names no character of 交番"),
+    ], []),
     "parts-reason": (False, 1, [
         (PARTS, 3, E, "reason is empty"),
         (PARTS, 4, E, "reason is empty"),
@@ -371,7 +384,6 @@ CASES = {
         (GUIDE, 5, E, "clips: あめ です is not kana only (a space)"),
         (GUIDE, 6, E, "clips: an empty clip"),
         (GUIDE, 7, E, "clips: an empty clip"),
-        (GUIDE, 8, W, "clips: あ is given twice"),
     ], []),
     "guide-glyph": (False, 1, [
         (GUIDE, 3, E, "title: no glyph for ✔ in efontJA_16, ✔ in efontJA_12"),
@@ -396,8 +408,8 @@ CLEAN_ACCENTS = {
 # these accents are not in the deck: the tool fills them in
 CLEAN_FILLED = ["kata-koohii", "kata-konbini", "kata-paatii", "sign-deguchi", "sign-kinen", "sign-kouban",
                 "food-mizu", "food-gohan", "reply-daijoubu"]
-# The line about the kanji of a prompt. That of 交番 is written in parts.tsv. 大丈夫 has none, because
-# parts.tsv says so; the other items have none, because their prompts have no kanji.
+# The line about the kanji of a prompt. That of 交番 is written in parts.tsv. 大丈夫 and 結構 have none,
+# because parts.tsv says so; the other items have none, because their prompts have no kanji.
 CLEAN_PARTS = {
     "num-300-yen": "円 yen", "num-9-ji": "時 hour",
     "sign-deguchi": "出 go out  口 opening", "sign-iriguchi": "入 enter  口 opening",
@@ -405,7 +417,6 @@ CLEAN_PARTS = {
     "sign-kippu": "切 cut  符 token", "sign-seisanki": "精 exact  算 calculate  機 machine",
     "sign-kouban": "交 take turns  番 watch",
     "food-mizu": "水 water", "food-ocha": "茶 tea", "food-gohan": "飯 meal",
-    "reply-kekkou": "結 tie  構 build",
 }
 CLEAN_ITEMS = 29
 KIND_NUMBER = {"kana": 0, "word": 1, "counter": 2, "number": 3}
@@ -613,10 +624,10 @@ def test_clean_builds():
                "katakana-words: 5 rows, 0 errors, 0 warnings", "signs: 8 rows, 0 errors, 0 warnings",
                "food: 3 rows, 0 errors, 0 warnings", "replies: 2 rows, 0 errors, 0 warnings",
                "buddy: 4 lines, 0 errors, 0 warnings", "kanji: 21 rows, 0 errors, 0 warnings",
-               "parts: 2 rows, 0 errors, 0 warnings", "guide: 3 pages, 0 errors, 0 warnings"]
+               "parts: 3 rows, 0 errors, 0 warnings", "guide: 4 pages, 0 errors, 0 warnings"]
     same(lines[:len(summary)], summary, "summary lines")
     expect("total: 8 decks, 29 rows, 0 errors, 0 warnings" in lines, "total line\n" + output)
-    expect("wrote build/test_build_decks/clean/deck_data.cpp: 8 decks, 29 items, 4 buddy lines, 3 guide pages"
+    expect("wrote build/test_build_decks/clean/deck_data.cpp: 8 decks, 29 items, 4 buddy lines, 4 guide pages"
            in lines, output)
     expect("wrote build/test_build_decks/clean/ids.txt: 29 ids, 26 new" in lines, output)
 
@@ -645,8 +656,9 @@ def test_clean_builds():
             # written in parts.tsv: not "交 alternate  番 number", which kanji.tsv would give
             '    {"sign-kouban", "交番", "こうばん", "", "police box", "", "交 take turns  番 watch", 0, 2, '
             'deck::Kind::Word},',
-            # parts.tsv gives an empty line
+            # parts.tsv gives no line: with the word EMPTY, and with nothing
             '    {"reply-daijoubu", "大丈夫", "だいじょうぶ", "", "all right; OK", "", "", 3, 2, deck::Kind::Word},',
+            '    {"reply-kekkou", "結構", "けっこう", "", "fine; no, thank you", "", "", 1, 3, deck::Kind::Word},',
             '    {"num-300-yen", "300円", "さんびゃくえん", "", "300 yen", "a typed \\\\ can show as ¥", "円 yen", -1, 2, '
             'deck::Kind::Number},',
             '    {"kana-a", "あ", "あ", "", "a", "", "", -1, 1, deck::Kind::Kana},',
@@ -659,12 +671,14 @@ def test_clean_builds():
             '    {"buddy-start-02", "start", "じゅんびは いい？", "Are you ready?\\?"},',
             '    {"guide-vowels", "Five vowels", "a i u e o, always the same.\\nあ い う え お", "あ|い|う|え|お"},',
             '    {"guide-pitch", "Pitch", "Japanese has high and low\\nbeats, not loud and soft.", ""},',
+            # two clips that are spelt alike: the page tells them apart by their place
+            '    {"guide-pair", "High and low", "はし chopsticks: high, low.\\nはし bridge: low, high.", "はし|はし"},',
             "extern const deck::Deck kDeckTable[] = {",
             "extern const size_t kDeckTableSize = sizeof(kDeckTable) / sizeof(kDeckTable[0]);",
             "extern const deck::BuddyLine kBuddyLines[] = {",
             "extern const size_t kBuddyLineCount = 4;",
             "extern const deck::GuidePage kGuidePages[] = {",
-            "extern const size_t kGuidePageCount = 3;"):
+            "extern const size_t kGuidePageCount = 4;"):
         expect(wanted in source.split("\n"), "line not in the C++ file: " + wanted)
     source.encode("utf-8")
     expect("\t" not in source and "\r" not in source, "tabs or carriage returns in the C++ file")
@@ -947,7 +961,8 @@ def test_a_deck_that_cannot_be_read_is_reported_once():
     write(os.path.join(work, "decks", "signs.tsv"), good)
     code, output = run_tool("--check", "--offline", "--decks", os.path.join(work, "decks"))
     same(code, 1, "exit code with the deck as it should be\n" + output)
-    same([f[3] for f in findings_of(output) if f[2] == E], ["大丈夫 is not a prompt of a deck"], "errors")
+    same([f[3] for f in findings_of(output) if f[2] == E],
+         ["大丈夫 is not a prompt of a deck", "結構 is not a prompt of a deck"], "errors")
     same(len([f for f in findings_of(output) if "the row is not used" in f[3]]), 7, "rows that are not used")
 
 
@@ -1188,6 +1203,21 @@ def test_columns_and_kanji():
         expect(not build_decks.is_kana(ch), ch + " is not kana")
 
 
+def test_the_line_names_every_kanji_once():
+    """In the order in which they stand in the prompt, and a kanji that stands twice is named once."""
+    deck = build_decks.Deck(os.path.join("decks", "signs.tsv"))
+    for number, prompt in enumerate(["日曜日", "人々", "出入口", "お茶", "トイレ"]):
+        deck.items.append(build_decks.Item(number + 1, ["id-%d" % number, prompt, "", "", "", "", "", "2", ""]))
+    meanings = {"日": "day", "曜": "weekday", "人": "person", "出": "go out", "入": "enter", "口": "opening",
+                "茶": "tea"}
+    findings = build_decks.Findings()
+    build_decks.add_parts([deck], meanings, {"出入口": "出入 in and out  口 opening"}, "kanji.tsv", findings)
+    same([item.parts for item in deck.items],
+         ["日 day  曜 weekday", "人 person", "出入 in and out  口 opening", "茶 tea", ""], "the lines")
+    # 々 repeats the kanji before it: it needs no meaning of its own
+    same([found[2] for found in findings.found], [], "findings")
+
+
 def test_moods_are_the_documented_ten():
     same(len(build_decks.MOODS), 10, "number of moods")
     for path in (os.path.join(TESTS, "README.md"), os.path.join(ROOT, "content", "README.md")):
@@ -1205,7 +1235,7 @@ def test_readme_describes_every_table():
         "Deck files": (build_decks.COLUMNS, [build_decks.GLOSS_COLUMNS, build_decks.NOTE_COLUMNS]),
         "buddy.tsv": (build_decks.BUDDY_COLUMNS, [build_decks.BUDDY_JA_LENGTH, build_decks.BUDDY_EN_LENGTH]),
         "kanji.tsv": (build_decks.KANJI_COLUMNS, [build_decks.KANJI_MEANING_LENGTH, build_decks.PARTS_COLUMNS]),
-        "parts.tsv": (build_decks.PARTS_FILE_COLUMNS, [build_decks.PARTS_COLUMNS]),
+        "parts.tsv": (build_decks.PARTS_FILE_COLUMNS, [build_decks.PARTS_COLUMNS, build_decks.PARTS_PIECE_COLUMNS]),
         "guide.tsv": (build_decks.GUIDE_COLUMNS, [build_decks.GUIDE_TITLE_COLUMNS, build_decks.GUIDE_LINES,
                                                   build_decks.GUIDE_LINE_COLUMNS]),
     }
@@ -1217,6 +1247,8 @@ def test_readme_describes_every_table():
         for limit in limits:
             expect(re.search(r"at most %d\b" % limit, sections[title]),
                    "the section \"%s\" does not say: at most %d" % (title, limit))
+    expect("`%s`" % build_decks.NO_LINE in sections["parts.tsv"],
+           "the section on parts.tsv does not name the word for a card without a line")
     for kind in build_decks.KINDS:
         expect("`%s`" % kind in sections["Deck files"], "the section on deck files does not name the kind " + kind)
     expect(", ".join(build_decks.DECK_ORDER) in " ".join(sections["Deck files"].split()),

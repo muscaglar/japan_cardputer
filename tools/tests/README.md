@@ -30,14 +30,14 @@ says so in its first line. The Japanese in the fixtures is real, apart from the 
 
 | Folder | What it shows |
 |---|---|
-| `clean` | eight decks of all four kinds with every table beside them and an older list of ids; one deck has no stage; one word has its line in `parts.tsv`, one has an empty line there; builds |
+| `clean` | eight decks of all four kinds with every table beside them and an older list of ids; one deck has no stage; one word has its line in `parts.tsv`, two have none there, one by the word `EMPTY` and one by an empty value; a page of the guide has two clips that are spelt alike; builds |
 | `first-build` | one deck and nothing beside it; builds |
 | `header-wrong`, `header-missing` | the header row has another column name, or is not there |
 | `empty-file` | a deck file with nothing in it |
 | `columns`, `row-of-tabs` | a row with 8 columns and one with 10; a row that holds tabs and no values |
 | `names-missing`, `names-wrong`, `names-twice` | the `# name-ja`, `# name-en` and `# kind` lines |
 | `names-below-header` | name lines that stand below the header row |
-| `stage-wrong` | a stage that is not a number from 1 to 9: 0, 10, 1.5, a word, nothing; a stage given twice |
+| `stage-wrong` | a stage that is not a number from 1 to 9: 0, 10, 1.5, a word, nothing; a stage given twice; a line that was meant to give the stage and is not read: no colon, a capital letter, an equals sign |
 | `file-name` | a deck file whose name is not a deck id |
 | `no-decks`, `no-rows` | a folder without deck files, a deck without rows |
 | `other-files` | a file in the deck folder that is not a deck: warning, because it is left out |
@@ -76,13 +76,15 @@ says so in its first line. The Japanese in the fixtures is real, apart from the 
 | `parts-prompt` | a row of `parts.tsv` for what is no prompt, for a reading, for nothing; a prompt with two rows |
 | `parts-kanji` | a line that names a kanji the prompt does not have |
 | `parts-long` | a line of 55 letters next to one of 54, in English and with kana |
+| `parts-piece` | a piece of 28 letters next to one of 27; pieces three and four spaces apart |
+| `parts-no-line` | a line that names no character of its prompt: `empty`, a hyphen, the meaning alone; next to `EMPTY`, which stands for no line |
 | `parts-reason` | no reason, with a line and without one |
 | `parts-glyph` | a line with a character the fonts lack |
 | `guide-id` | ids of `guide.tsv` that are not well formed, used twice, or used by an item or a line of the buddy |
 | `guide-title` | a title of 21 letters next to one of 20, with and without kana; no title |
 | `guide-line-wide` | a line of 28 letters next to one of 27, with and without kana |
 | `guide-lines` | six lines next to five; no body; a body of bars alone |
-| `guide-clips` | clips in Latin letters, in kanji, with a space; a stray bar; a clip given twice: warning |
+| `guide-clips` | clips in Latin letters, in kanji, with a space; a stray bar; next to two clips that are spelt alike, which is no mistake |
 | `guide-glyph` | a title, a body and a clip with a character the fonts lack |
 | `kanji-header`, `parts-header`, `guide-header` | another column name in the header row of each table |
 

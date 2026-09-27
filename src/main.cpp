@@ -66,7 +66,7 @@ public:
         M5Cardputer.Speaker.tone(static_cast<float>(hertz), static_cast<uint32_t>(milliseconds));
     }
 
-    bool hasCard() override { return cardReady(); }
+    bool hasCard() override { return cardReady() && soundCardAnswers(); }
     bool play(const char* path, int volume) override { return soundPlay(path, volume); }
     bool playing() override { return soundPlaying(); }
     void hush() override { soundHush(); }

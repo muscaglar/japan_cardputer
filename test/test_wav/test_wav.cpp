@@ -242,6 +242,30 @@ void test_a_list_chunk_before_the_samples()
     TEST_ASSERT_EQUAL_UINT32(2500, h.samples);
 }
 
+// What afconvert writes, for one: a chunk that fills the header up to 4096 bytes.
+void test_a_header_filled_up_to_4096_bytes()
+{
+    Bytes file = riff();
+    format(file);
+    chunk(file, "FLLR", 4044);
+    data(file, 5526);
+    file = finish(file);
+
+    Header h;
+    TEST_VERDICT(Verdict::Plays, whole(file, h));
+    TEST_ASSERT_EQUAL_UINT32(4096, h.start);
+    TEST_ASSERT_EQUAL_UINT32(2763, h.samples);
+    TEST_ASSERT_EQUAL_UINT32(172, wav::milliseconds(h));
+
+    // As the device reads it: 96 bytes from the start, 96 from where the header goes on.
+    int hops = 0;
+    TEST_VERDICT(Verdict::Plays, inWindows(file, 96, h, hops));
+    TEST_ASSERT_EQUAL_INT(1, hops);
+    TEST_ASSERT_EQUAL_UINT32(4096, h.start);
+    TEST_ASSERT_EQUAL_UINT32(5526, h.bytes);
+    TEST_ASSERT_EQUAL_UINT32(16000, h.rate);
+}
+
 void test_chunks_before_the_format_and_after_the_samples()
 {
     Bytes file = riff();
@@ -632,6 +656,10 @@ void test_every_window_tells_the_same()
             TEST_ASSERT_EQUAL_UINT16_MESSAGE(expected.bits, h.bits, at.c_str());
             // One window for each chunk before the samples at most.
             TEST_ASSERT_LESS_OR_EQUAL_INT_MESSAGE(4, hops, at.c_str());
+            // The device reads four windows of 96 bytes and then gives up.
+            if (window >= 96) {
+                TEST_ASSERT_LESS_OR_EQUAL_INT_MESSAGE(3, hops, at.c_str());
+            }
         }
     }
 }
@@ -654,6 +682,53 @@ void test_a_window_too_small_asks_for_the_same_place_again()
     TEST_VERDICT(Verdict::Plays, wav::readOn(file.data() + 36, 8, size, h));
     TEST_ASSERT_EQUAL_UINT32(44, h.start);
     TEST_ASSERT_EQUAL_UINT32(4000, h.bytes);
+}
+
+void test_nothing_handed_over_when_reading_on()
+{
+    const Bytes file = plain(4000);
+    const uint32_t size = static_cast<uint32_t>(file.size());
+    Header h;
+    TEST_VERDICT(Verdict::More, wav::read(file.data(), 36, size, h));
+    TEST_ASSERT_EQUAL_UINT32(36, h.next);
+    // A length without bytes: nothing is looked at, and the same place is asked for again.
+    TEST_VERDICT(Verdict::More, wav::readOn(nullptr, 96, size, h));
+    TEST_ASSERT_EQUAL_UINT32(36, h.next);
+    TEST_ASSERT_EQUAL_UINT32(0, h.samples);
+    TEST_VERDICT(Verdict::Plays, wav::readOn(file.data() + 36, 96, size, h));
+    TEST_ASSERT_EQUAL_UINT32(4000, h.bytes);
+}
+
+void test_bytes_beyond_the_end_of_the_file_are_not_looked_at()
+{
+    // The caller's buffer holds what an earlier file left in it.
+    const Bytes other = plain(4000);
+    const std::string text = "not a sound";
+    Bytes stale(text.begin(), text.end());
+    stale.resize(96, 0);
+    for (uint32_t size = 0; size < 4; ++size) {
+        Header h;
+        TEST_VERDICT(Verdict::TooShort, wav::read(stale.data(), stale.size(), size, h));
+        TEST_VERDICT(Verdict::TooShort, wav::read(other.data(), other.size(), size, h));
+    }
+    for (uint32_t size = 4; size < 44; ++size) {
+        const std::string at = "a file of " + std::to_string(size);
+        Header h;
+        TEST_VERDICT_MESSAGE(Verdict::NotRiff, wav::read(stale.data(), stale.size(), size, h), at.c_str());
+        TEST_VERDICT_MESSAGE(Verdict::TooShort, wav::read(other.data(), other.size(), size, h), at.c_str());
+        TEST_ASSERT_EQUAL_UINT32_MESSAGE(0, h.samples, at.c_str());
+    }
+    // Reading on: the samples seem to be there, but the file ends before them.
+    Header h;
+    TEST_VERDICT(Verdict::More, wav::read(other.data(), 36, 44, h));
+    TEST_VERDICT(Verdict::CutShort, wav::readOn(other.data() + 36, 96, 44, h));
+    h        = Header();
+    h.format = true;
+    h.next   = 36;
+    TEST_VERDICT(Verdict::TooShort, wav::readOn(other.data() + 36, 96, 43, h));
+    TEST_VERDICT(Verdict::More, wav::read(other.data(), 36, 1044, h));
+    TEST_VERDICT(Verdict::CutShort, wav::readOn(other.data() + 36, 96, 1044, h));
+    TEST_ASSERT_EQUAL_UINT32(0, h.bytes);
 }
 
 void test_reading_on_beyond_the_end()
@@ -707,6 +782,7 @@ int main(int, char**)
     RUN_TEST(test_the_first_bytes_are_enough);
     RUN_TEST(test_rates);
     RUN_TEST(test_a_list_chunk_before_the_samples);
+    RUN_TEST(test_a_header_filled_up_to_4096_bytes);
     RUN_TEST(test_chunks_before_the_format_and_after_the_samples);
     RUN_TEST(test_a_chunk_of_odd_length_with_its_padding_byte);
     RUN_TEST(test_a_format_chunk_longer_than_16_bytes);
@@ -729,6 +805,8 @@ int main(int, char**)
     RUN_TEST(test_a_header_longer_than_the_bytes_given);
     RUN_TEST(test_every_window_tells_the_same);
     RUN_TEST(test_a_window_too_small_asks_for_the_same_place_again);
+    RUN_TEST(test_nothing_handed_over_when_reading_on);
+    RUN_TEST(test_bytes_beyond_the_end_of_the_file_are_not_looked_at);
     RUN_TEST(test_reading_on_beyond_the_end);
     RUN_TEST(test_every_refusal_has_its_words);
     RUN_TEST(test_how_long_it_plays);

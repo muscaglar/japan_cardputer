@@ -4,6 +4,7 @@
 // under that. A kana card has the kana on the left, as large as fits, and beside it what to type
 // and what there is to say about it.
 #include <cstdio>
+#include <cstring>
 #include <string>
 #include <vector>
 
@@ -955,7 +956,15 @@ class SummaryScreen : public Screen {
 public:
     void enter(App& app) override
     {
-        _line = buddy::say("finish", app.platform().random());
+        // A line whose English fits one line of this look: a letter is 8 pixels wide.
+        const size_t letters = static_cast<size_t>(contentArea(app.theme()).w - 4) / 8;
+        _line = nullptr;
+        for (int attempt = 0; attempt < 12 && !_line; ++attempt) {
+            const deck::BuddyLine* line = buddy::say("finish", app.platform().random());
+            if (line && std::strlen(line->en) <= letters) {
+                _line = line;
+            }
+        }
     }
 
     void key(App& app, const Key& key) override

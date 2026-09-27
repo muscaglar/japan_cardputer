@@ -1,8 +1,8 @@
-# Test fixture with deliberate mistakes. This is not content.
+# Test fixture with deliberate mistakes. This is not content. The two clips of guide-pair are no mistake.
 id	title	body	clips
 guide-vowels	Five vowels	a i u e o	aiueo
 guide-rain	Rain and sweets	あめ: rain or sweets	雨|あめ
 guide-space	Two words	あめ です	あめ です
 guide-bar	A stray bar	あ い	あ||い
 guide-end	A bar at the end	あ い	あ|い|
-guide-twice	The same twice	あ い あ	あ|い|あ
+guide-pair	High and low	はし chopsticks|はし bridge	はし|はし

@@ -7,6 +7,9 @@
 
 namespace ui {
 
+// In home.cpp: what a sitting of the course would hold if it began now.
+void nextSitting(App& app, int& review, int& fresh);
+
 namespace {
 
 constexpr int kRows  = 4;  // on the screen at a time
@@ -19,6 +22,7 @@ struct Entry {
     bool course;
     std::string says;        // at the right end of the row: what is worth knowing before it is opened
     std::string saysShort;   // the same in fewer letters, for when the long form does not fit
+    std::string shown;       // the one of the two that is drawn; empty when neither fits
 };
 
 class MenuScreen : public Screen {
@@ -26,28 +30,38 @@ public:
     void enter(App& app) override
     {
         _entries.clear();
-        _entries.push_back({"course", "Course", ScreenId::Cards, true, "", ""});
-        _entries.push_back({"decks", "Decks", ScreenId::Decks, false, "", ""});
-        _entries.push_back({"kana", "Kana quiz", ScreenId::Kana, false, "", ""});
-        _entries.push_back({"chart", "Kana chart", ScreenId::Chart, false, "", ""});
-        _entries.push_back({"guide", "Sounds", ScreenId::Guide, false, "", ""});
-        _entries.push_back({"keys", "Keys", ScreenId::Keys, false, "", ""});
-        _entries.push_back({"settings", "Settings", ScreenId::Settings, false, "", ""});
+        _entries.push_back({"course", "Course", ScreenId::Cards, true, "", "", ""});
+        _entries.push_back({"decks", "Decks", ScreenId::Decks, false, "", "", ""});
+        _entries.push_back({"kana", "Kana quiz", ScreenId::Kana, false, "", "", ""});
+        _entries.push_back({"chart", "Kana chart", ScreenId::Chart, false, "", "", ""});
+        _entries.push_back({"guide", "Sounds", ScreenId::Guide, false, "", "", ""});
+        _entries.push_back({"keys", "Keys", ScreenId::Keys, false, "", "", ""});
+        _entries.push_back({"settings", "Settings", ScreenId::Settings, false, "", "", ""});
         if (_selected >= static_cast<int>(_entries.size())) {
             _selected = 0;
         }
 
-        // Course: what waits today
-        _due   = app.dueToday();
-        _fresh = app.newAvailable();
+        int seen  = 0;
+        int total = 0;
+        int due   = 0;
+        for (size_t i = 0; i < deck::count(); ++i) {
+            const DeckProgress progress = app.progressOf(deck::at(i));
+            seen += progress.seen;
+            total += progress.total;
+            due += progress.due;
+        }
+
+        // Course: what waits today within the level that is set, and the new cards that the
+        // next sitting has room for
+        nextSitting(app, _review, _fresh);
         char words[40];
-        if (_due > 0 && _fresh > 0) {
-            std::snprintf(words, sizeof(words), "%d due, %d new", _due, _fresh);
+        if (due > 0 && _fresh > 0) {
+            std::snprintf(words, sizeof(words), "%d due, %d new", due, _fresh);
             _entries[0].says = words;
-            std::snprintf(words, sizeof(words), "%d due", _due);
+            std::snprintf(words, sizeof(words), "%d due", due);
             _entries[0].saysShort = words;
-        } else if (_due > 0) {
-            std::snprintf(words, sizeof(words), "%d due", _due);
+        } else if (due > 0) {
+            std::snprintf(words, sizeof(words), "%d due", due);
             _entries[0].says = words;
         } else if (_fresh > 0) {
             std::snprintf(words, sizeof(words), "%d new", _fresh);
@@ -57,13 +71,6 @@ public:
         }
 
         // Decks: how many cards were seen, of all there are
-        int seen  = 0;
-        int total = 0;
-        for (size_t i = 0; i < deck::count(); ++i) {
-            const DeckProgress progress = app.progressOf(deck::at(i));
-            seen += progress.seen;
-            total += progress.total;
-        }
         std::snprintf(words, sizeof(words), "%d of %d", seen, total);
         _entries[1].says = words;
         std::snprintf(words, sizeof(words), "%d", seen);
@@ -74,6 +81,18 @@ public:
             _entries[4].says = "no card";
         } else if (!app.settings().sound) {
             _entries[4].says = "sound off";
+        }
+
+        // Which form has room beside the name: a letter of the name is 12 wide, one of these 8.
+        const Area a = contentArea(app.theme(), false);
+        for (Entry& entry : _entries) {
+            const int room = a.w - kTrack - 5 - 18 - 12 * static_cast<int>(entry.en.size()) - 8;
+            for (const std::string* says : {&entry.says, &entry.saysShort}) {
+                if (!says->empty() && 8 * static_cast<int>(says->size()) <= room) {
+                    entry.shown = *says;
+                    break;
+                }
+            }
         }
     }
 
@@ -124,12 +143,9 @@ public:
             }
             char number[4] = {static_cast<char>(i < 9 ? '1' + i : ' '), 0, 0, 0};
             text(c, a.x + 2, textY + 5, number, font16(), chosen ? t.accent : t.dim);
-            const int x = text(c, a.x + 18, textY, entry.en.c_str(), font24(), chosen ? t.rowInk : t.ink);
-            for (const std::string* says : {&entry.says, &entry.saysShort}) {
-                if (!says->empty() && x + 8 + textWidth(c, says->c_str(), font16()) <= right) {
-                    textRight(c, right, textY + 5, says->c_str(), font16(), chosen ? t.accent : t.dim);
-                    break;
-                }
+            text(c, a.x + 18, textY, entry.en.c_str(), font24(), chosen ? t.rowInk : t.ink);
+            if (!entry.shown.empty()) {
+                textRight(c, right, textY + 5, entry.shown.c_str(), font16(), chosen ? t.accent : t.dim);
             }
             y += rowHeight;
         }
@@ -158,7 +174,7 @@ public:
         json += ",\"says\":[";
         for (size_t i = 0; i < _entries.size(); ++i) {
             json += (i ? ",\"" : "\"");
-            json += _entries[i].says;
+            json += _entries[i].shown;
             json += "\"";
         }
         json += "]";
@@ -169,7 +185,7 @@ private:
     {
         const Entry& entry = _entries[index];
         if (entry.course) {
-            if (_due > 0 || _fresh > 0) {
+            if (_review > 0 || _fresh > 0) {
                 app.startCourse();
             }
         } else {
@@ -180,7 +196,7 @@ private:
     std::vector<Entry> _entries;
     int _selected = 0;
     int _first    = 0;
-    int _due      = 0;
+    int _review   = 0;  // what a sitting of the course would hold
     int _fresh    = 0;
 };
 

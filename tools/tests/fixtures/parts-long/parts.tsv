@@ -1,6 +1,6 @@
-# Test fixture with deliberate mistakes. This is not content.
+# Test fixture: lines of 54 and of 55 letters. No piece of them is wider than 27.
 prompt	parts	reason
-交番	交 take turns  番 keeping watch over the neighbourhood	54 letters wide
-出口	出 going out of a building  口 the opening in its walls	55 letters wide
-入口	入 はいる to go in  口 くち a mouth, and so an opening	54 letters wide with kana
-切符	切 きる to cut  符 しるし a token that is cut in halves	55 letters wide with kana
+交番	交 take turns with another  番 keeping watch on a town	54 letters wide
+出口	出 going out from buildings  口 the opening in its wall	55 letters wide
+入口	入 はいる to go inside it  口 くち a mouth, an opening	54 letters wide with kana
+切符	切 きる to cut into halves  符 ふ a token cut in halves	55 letters wide with kana

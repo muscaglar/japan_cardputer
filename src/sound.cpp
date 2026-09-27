@@ -6,6 +6,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <cerrno>
 #include <cstdio>
 
 #include "card.h"
@@ -36,16 +37,34 @@ constexpr size_t kPieceBytes   = kPieceSamples * sizeof(int16_t);
 constexpr uint32_t kLetGo = 100;  // ms
 
 // The least time between two pieces. The speaker says "one" both for a piece that plays and for
-// one it has not yet taken from the queue; after this long it has taken it. No piece is shorter
-// than 64 ms, so nothing is lost by waiting.
+// one it has not yet taken from the queue; after this long it has taken it. No piece but the
+// last is shorter than 58 ms, so nothing is lost by waiting.
 constexpr uint32_t kTaken = 16;  // ms
 
-// The speaker multiplies every sample by (volume / 255)² of the whole and of the channel. With
-// the whole at 255, a channel at 255 plays a clip as loud as it was recorded: anything louder
-// would cut the peaks off. Each step below halves the height of the wave (6 dB).
+// What the speaker makes of a sample, in parts of 65536 of its recorded height:
+// 2 x magnification x whole² x channel² / 2^20. The 2 is there because a clip of one channel
+// counts as left and right, and the speaker adds the two. The magnification is what M5Unified
+// sets for the Cardputer.
+constexpr uint32_t kMagnification = 16;
+constexpr uint32_t height(uint32_t whole, uint32_t channel)
+{
+    return static_cast<uint32_t>((2ull * kMagnification * whole * whole * channel * channel) >> 20);
+}
+
+// With the whole at 255, a channel at 181 plays a clip at 0.99 of the height it was recorded
+// with: anything louder would cut the peaks off. Each step below halves the height (6 dB), so
+// volume 3 is a quarter.
 constexpr uint8_t kWhole        = 255;
-constexpr uint8_t kLoudness[5]  = {64, 90, 128, 181, 255};
+constexpr uint8_t kLoudness[5]  = {45, 64, 90, 128, 181};
 constexpr uint8_t kBeepLoudness = 140;  // beeps stay as loud as they were with the whole at 140
+
+static_assert(height(kWhole, kLoudness[4]) <= 65536, "volume 5 cuts the peaks off");
+static_assert(height(kWhole, kLoudness[4] + 1) > 65536, "volume 5 could be louder");
+
+// A card that was taken out, or has lost its contact, answers nothing, and every question put
+// to it holds loop() up for about a second. After one such answer it is left alone for this
+// long: clips are refused without asking it.
+constexpr uint32_t kLeftAlone = 10000;  // ms
 
 enum class State : uint8_t {
     Silent,
@@ -63,6 +82,8 @@ uint32_t since   = 0;      // when the clip was asked for
 uint32_t fedAt   = 0;      // when the speaker was given the last piece
 size_t turn      = 0;      // the piece to fill next
 uint8_t loudness = 0;
+uint32_t lostAt  = 0;      // when the card did not answer
+bool lost        = false;  // it is left alone for now
 bool fresh       = false;  // nothing of this clip has gone to the speaker yet
 const char* whyNot = "";
 SoundCount count;
@@ -83,12 +104,33 @@ void closeFile()
     }
 }
 
+// After open(), read() or lseek() said no: whether it was the card that did not answer, and not
+// the file that was missing or wrong. These are the numbers the file system of the framework
+// gives for a card that fails, is not ready, or takes too long.
+bool cardSilent()
+{
+    if (errno != EIO && errno != ENODEV && errno != ETIMEDOUT) {
+        return false;
+    }
+    lost   = true;
+    lostAt = millis();
+    return true;
+}
+
+const char* unread()
+{
+    return cardSilent() ? "card does not answer" : "cannot be read";
+}
+
 // Opens the file and reads its header. Returns why it cannot be played, or "" with the file
 // open at its first sample.
 const char* openClip(const char* path)
 {
     if (!cardReady()) {
         return "no card";
+    }
+    if (!soundCardAnswers()) {
+        return "card does not answer";
     }
     if (!M5Cardputer.Speaker.isEnabled()) {
         return "no speaker";
@@ -101,9 +143,10 @@ const char* openClip(const char* path)
     if (length < 0 || length >= static_cast<int>(sizeof(full))) {
         return "path too long";
     }
-    file = ::open(full, O_RDONLY);
+    errno = 0;
+    file  = ::open(full, O_RDONLY);
     if (file < 0) {
-        return "no such file";
+        return cardSilent() ? "card does not answer" : "no such file";
     }
     struct stat about;
     if (::fstat(file, &about) != 0 || about.st_size < 0) {
@@ -119,11 +162,11 @@ const char* openClip(const char* path)
     wav::Verdict verdict = wav::Verdict::More;
     for (int i = 0; i < kWindows && verdict == wav::Verdict::More; ++i) {
         if (::lseek(file, static_cast<off_t>(header.next), SEEK_SET) < 0) {
-            return "cannot be read";
+            return unread();
         }
         const ssize_t got = ::read(file, window, sizeof(window));
         if (got < 0) {
-            return "cannot be read";
+            return unread();
         }
         verdict = wav::readOn(window, static_cast<size_t>(got), size, header);
     }
@@ -131,7 +174,7 @@ const char* openClip(const char* path)
         return wav::why(verdict);
     }
     if (::lseek(file, static_cast<off_t>(header.start), SEEK_SET) < 0) {
-        return "cannot be read";
+        return unread();
     }
     start = header.start;
     left  = header.bytes;
@@ -150,8 +193,12 @@ void feed(size_t waiting)
     if (want > left) {
         want = left;
     }
-    int16_t* piece       = pieces[turn];
-    const ssize_t got    = ::read(file, piece, want);
+    int16_t* piece    = pieces[turn];
+    errno             = 0;
+    const ssize_t got = ::read(file, piece, want);
+    if (got < 0) {
+        cardSilent();
+    }
     const size_t samples = got > 0 ? static_cast<size_t>(got) / sizeof(int16_t) : 0;
 
     bool taken = false;
@@ -247,6 +294,14 @@ void soundTick()
     const uint32_t begun = micros();
     feed(waiting);
     note(count.longestTick, begun);
+}
+
+bool soundCardAnswers()
+{
+    if (lost && millis() - lostAt >= kLeftAlone) {
+        lost = false;
+    }
+    return !lost;
 }
 
 const char* soundWhyNot()

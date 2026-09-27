@@ -1,0 +1,6 @@
+# Test fixture: a piece of 28 letters next to one of 27, and pieces that stand three and four spaces apart.
+prompt	parts	reason
+交番	交番 a police box: one word	27 letters wide in one piece
+普通	普通 ordinary: a single word	28 letters wide in one piece
+出口	出 go out   口 opening	three spaces
+入口	入 enter    口 opening	four spaces

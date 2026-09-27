@@ -11,16 +11,20 @@ What is checked, in every look:
   walk    from the first kana to the last with the key for right: the app names each kana, what
           to type and the page; the picture shows the kana large, what to type, the note in
           full, "met" or "new", and the three rows of the page as a grid with the mark on the
-          chosen kana, a bar under each kana that was met, and nothing where the table has gaps
+          chosen kana, a bar under each kana that was met, and nothing where the table has gaps;
+          on every page the hints in header and footer, with room between them
+  glance  the other script, of which no kana was met, at a few kana of every part
   edges   the mark stops at the four ends; up and down keep their column across the gaps of the
           ya and wa rows; Tab goes from part to part; Space changes the script and keeps the
           place; leaving and coming back keeps both
-  keys    several hundred keys chosen by chance, compared after each one with the rules
-          written down here
-  sound   Enter and / ask for the clip of the chosen kana and do not move the mark; with sound
-          off, or without a memory card, the screen says so and nothing is played
+  keys    several hundred keys chosen by chance, the keys for sound among them, compared after
+          each one with the rules written down here
+  sound   Enter and / ask for the clip of the chosen kana, in either script, and do not move the
+          mark; with sound off, or without a memory card, the screen says so in place of the
+          note and nothing is played
 
 The hiragana chart is walked in the first and third look, the katakana chart in the others.
+That every note fits its two lines is worked out for both scripts in all four looks.
 On a device the owner's settings and progress are kept aside first and put back at the end.
 """
 import os
@@ -73,6 +77,8 @@ ON_A_PAGE = 3     # rows of the table
 NOTE_LINES = 2
 LEARN = 7         # kana to meet before the walk
 KEYS_BY_CHANCE = 300
+GLANCE = ["a", "yu", "wo", "nn", "ji", "po", "kya", "sho", "pyo"]   # and the kana with the longest note
+HINT_GAP = 8      # pixels between two hints on one line: the width of a letter
 
 LARGE = [("lgfxJapanGothic_32", 2), ("efontJA_24", 2), ("lgfxJapanGothic_32", 1), ("efontJA_16", 2)]
 SMALL = [("efontJA_16", 1)]
@@ -161,6 +167,7 @@ WAYS = {
     "Right": [("key", "Right"), ("fn", "/")],
     "Tab": [("key", "Tab")],
     "Space": [("type", " ")],
+    "Sound": [("key", "Enter"), ("type", "/")],
     "nothing": [("type", "q"), ("type", "5"), ("type", "-"), ("type", "A")],
 }
 
@@ -196,6 +203,20 @@ def places(rows, colour, text, faces, box):
                 inside = sum(1 for (x, y) in seen if left <= x < left + width and top <= y < top + height)
                 if inside == len(points):
                     found.append((left, top, width, height))
+    return found
+
+
+def in_any_colour(rows, text, box):
+    """As places(), for a text whose colour depends on the look: every colour in the box is tried."""
+    seen = {}
+    for y in range(max(0, box[1]), min(len(rows), box[3])):
+        for x in range(max(0, box[0]), min(len(rows[0]), box[2])):
+            seen[rows[y][x]] = seen.get(rows[y][x], 0) + 1
+    ground = max(seen, key=seen.get) if seen else None
+    found = []
+    for colour in seen:
+        if colour != ground:
+            found += places(rows, colour, text, SMALL, box)
     return found
 
 
@@ -241,36 +262,45 @@ def go_home(target):
     return target.info()["screen"] == HOME
 
 
-def set_look(target, wanted):
-    """From the home screen. The look is the first row of the settings."""
-    current = target.look()
-    target.open("settings")
-    for _ in range((reader.LOOKS.index(wanted) - reader.LOOKS.index(current)) % len(reader.LOOKS)):
-        target.key("Right")
-    go_home(target)
-    return target.look() == wanted
+SETTINGS = ("look", "romaji", "sound", "volume", "voice", "textbookN", "level")
 
 
-def settings_of(state):
-    return tuple(state.get(name) for name in ("look", "romaji", "sound", "volume", "voice", "textbookN", "level"))
+def settings_of(state, but=None):
+    return tuple(state.get(name) for name in SETTINGS if name != but)
 
 
-def set_sound(target, wanted):
-    """From the home screen. Finds the row that switches the sound by trying, and changes nothing else."""
-    if target.info()["sound"] == wanted:
+def set_setting(target, name, wanted):
+    """From the home screen. Finds the row of the settings that changes it by trying, and changes nothing else.
+
+    The settings open on the row they were left on, which may be any row.
+    """
+    before = target.info()
+    if before[name] == wanted:
         return True
     target.open("settings")
     for _ in range(12):
-        before = target.info()
         target.key("Right")
-        if target.info()["sound"] == wanted:
+        after = target.info()
+        if after[name] != before[name]:
+            for _ in range(8):
+                if target.info()[name] == wanted:
+                    break
+                target.key("Right")
             break
-        target.key("Left")
-        if settings_of(target.info()) != settings_of(before):
-            target.key("Right")   # a value at the end of its range: Right did nothing, Left did
+        if settings_of(after) != settings_of(before):
+            target.key("Left")   # the row of another setting: back to what it was
         target.key("Down")
     go_home(target)
-    return target.info()["sound"] == wanted
+    after = target.info()
+    return after[name] == wanted and settings_of(after, but=name) == settings_of(before, but=name)
+
+
+def set_look(target, wanted):
+    return set_setting(target, "look", wanted)
+
+
+def set_sound(target, wanted):
+    return set_setting(target, "sound", wanted)
 
 
 def learn(target, script, items, wanted):
@@ -321,6 +351,26 @@ def said(state):
                                                         state.get("column"), state.get("page"), state.get("pages"))
 
 
+def hints(rows, colours, look, area, mark):
+    """What is wrong with the hints around the chart. An empty list when nothing is."""
+    wrong = []
+    head = (0, 0, WIDTH, area[1])
+    foot = (0, area[1] + area[3], WIDTH, HEIGHT)
+    title = "%s %d/%d" % (mark.script.capitalize(), page_of(mark.row), PAGES)
+    other = "Space: " + ("ア" if mark.script == "hiragana" else "あ")
+    lines = [(title, places(rows, title_colour(colours, look), title, SMALL, head), other,
+              in_any_colour(rows, other, head))]
+    lines.append(("Enter: sound", in_any_colour(rows, "Enter: sound", foot), "Tab: more",
+                  in_any_colour(rows, "Tab: more", foot)))
+    for left, at_left, right, at_right in lines:
+        for text, found in ((left, at_left), (right, at_right)):
+            if len(found) != 1:
+                wrong.append("the hint %r is drawn %d times" % (text, len(found)))
+        if len(at_left) == 1 and len(at_right) == 1 and at_right[0][0] - (at_left[0][0] + at_left[0][2]) < HINT_GAP:
+            wrong.append("%r and %r have less than %d px between them" % (left, right, HINT_GAP))
+    return wrong
+
+
 def look_at(rows, look, colours, area, mark, kana, met):
     """What is wrong with the picture of the chart. An empty list when nothing is."""
     wrong = []
@@ -338,7 +388,7 @@ def look_at(rows, look, colours, area, mark, kana, met):
     large = places(rows, c["ink"], item["prompt"], LARGE, above)
     if len(large) != 1:
         wrong.append("%s is drawn large %d times" % (item["prompt"], len(large)))
-    elif large[0][3] < 32:
+    elif large[0][3] < (32 if ROWS[mark.row][0] == "pairs" else 48):
         wrong.append("%s is only %d px high" % (item["prompt"], large[0][3]))
     if len(places(rows, c["accent"], item["gloss"], TYPED, above)) != 1:
         wrong.append("what to type, %r, is not drawn at 24 px" % item["gloss"])
@@ -432,6 +482,8 @@ def walk(target, look, script, colours, area, kana, met, check):
     flags = []
     visited = []
     pages = set()
+    hinted = set()
+    unhinted = []
     while True:
         state = target.info()
         item = kana[script][mark.typed()]
@@ -444,12 +496,16 @@ def walk(target, look, script, colours, area, kana, met, check):
         _, rows = target.frame()
         for problem in look_at(rows, look, colours, area, mark, kana, met):
             undrawn.append("%s %s: %s" % (look, item["prompt"], problem))
+        if state.get("page") not in hinted:
+            hinted.add(state.get("page"))
+            for problem in hints(rows, colours, look, area, mark):
+                unhinted.append("%s %s: %s" % (look, item["prompt"], problem))
         before = (mark.row, mark.column)
         mark.press("Right")
         if (mark.row, mark.column) == before:
             break
         target.key("Right")
-    for line in unnamed[:8] + undrawn[:8]:
+    for line in unnamed[:8] + undrawn[:8] + unhinted[:8]:
         print("     " + line, flush=True)
     expected = [kana[script][typed]["id"] for _, row in ROWS for typed in row if typed]
     check.expect(visited == expected, "%s: the key for right leads through all %d %s in the order of the table "
@@ -461,7 +517,42 @@ def walk(target, look, script, colours, area, kana, met, check):
                               "table with mark, bars and gaps (%d problems)" % (look, len(undrawn)))
     check.expect(not flags, "%s: the %d kana met say so, the others do not (wrong: %s)" % (
         look, len(met), " ".join(flags) or "none"))
+    check.expect(not unhinted and len(hinted) == PAGES,
+                 "%s: on each of the %d pages the header names script and page and the key for the other script, "
+                 "the footer the keys for sound and for more, with room between them (%d problems)" % (
+                     look, PAGES, len(unhinted)))
     return mark
+
+
+def glance(target, look, script, colours, area, kana, met, check):
+    """The script that was not walked, at a few kana of every part. None of its kana was met."""
+    longest = max(kana[script], key=lambda typed: len(kana[script][typed]["note"]))
+    wanted = set(GLANCE) | {longest}
+    to_start(target, script)
+    mark = Mark(script=script)
+    problems = []
+    looked = set()
+    while True:
+        if mark.typed() in wanted:
+            state = target.info()
+            item = kana[script][mark.typed()]
+            if not agrees(state, mark, kana) or state.get("met"):
+                problems.append("%s: expected %s, not met, the app says %s, met %s" % (
+                    look, item["prompt"], said(state), state.get("met")))
+            _, rows = target.frame()
+            for problem in look_at(rows, look, colours, area, mark, kana, met) + hints(rows, colours, look, area, mark):
+                problems.append("%s %s: %s" % (look, item["prompt"], problem))
+            looked.add(mark.typed())
+        before = (mark.row, mark.column)
+        mark.press("Right")
+        if (mark.row, mark.column) == before:
+            break
+        target.key("Right")
+    for line in problems[:8]:
+        print("     " + line, flush=True)
+    check.expect(not problems and looked == wanted,
+                 "%s: in %s, of which nothing was met, %d kana of every part are drawn as they should be, the one "
+                 "with the longest note among them (%d problems)" % (look, script, len(looked), len(problems)))
 
 
 def edges(target, look, script, kana, check):
@@ -533,7 +624,7 @@ def edges(target, look, script, kana, check):
 
 def by_chance(target, look, mark, kana, check, seed):
     chooser = random.Random(seed)
-    names = ["Up", "Down", "Left", "Right"] * 3 + ["Tab", "Space", "nothing"]
+    names = ["Up", "Down", "Left", "Right"] * 3 + ["Tab", "Space", "Sound", "nothing"]
     wrong = []
     for index in range(KEYS_BY_CHANCE):
         name = chooser.choice(names)
@@ -547,8 +638,8 @@ def by_chance(target, look, mark, kana, check, seed):
             break
     for line in wrong:
         print("     " + line, flush=True)
-    check.expect(not wrong, "%s: %d keys chosen by chance, the arrows also as ; , . and with Fn, left the mark "
-                            "where the rules put it" % (look, KEYS_BY_CHANCE))
+    check.expect(not wrong, "%s: %d keys chosen by chance, the arrows also as ; , . and with Fn, the keys for "
+                            "sound among them, left the mark where the rules put it" % (look, KEYS_BY_CHANCE))
 
 
 def sound(target, look, colours, area, kana, check, in_simulator):
@@ -556,8 +647,9 @@ def sound(target, look, colours, area, kana, check, in_simulator):
     below = (area[0], area[1] + area[3] - NOTE_LINES * 16, area[0] + area[2], area[1] + area[3])
 
     def message(text):
+        """Whether the screen says so where the note was, and the note is not under it."""
         _, rows = target.frame()
-        return len(places(rows, c["bad"], text, SMALL, below)) == 1
+        return len(places(rows, c["bad"], text, SMALL, below)) == 1 and count(rows, c["ink"], below) == 0
 
     def note_drawn(item):
         _, rows = target.frame()
@@ -574,8 +666,8 @@ def sound(target, look, colours, area, kana, check, in_simulator):
         check.expect(state["heard"] == "sound off" and state.get("plays", 0) == here.get("plays", 0) and
                      state["item"] == here["item"],
                      "%s: with sound off %s plays nothing and the mark stays (heard %r)" % (look, name, state["heard"]))
-        check.expect(message("Sound is off in Settings"), "%s: after %s the screen says that the sound is off" % (
-            look, name))
+        check.expect(message("Sound is off in Settings"), "%s: after %s the screen says that the sound is off, in "
+                     "place of the note" % (look, name))
         target.type("q")
         check.expect(target.info()["heard"] == "" and note_drawn(item),
                      "%s: the next key brings the note of %s back" % (look, item["prompt"]))
@@ -612,6 +704,15 @@ def sound(target, look, colours, area, kana, check, in_simulator):
         state = target.info()
         check.expect(state["played"].endswith("/%s.wav" % moved["item"]) and moved["item"] != here["item"],
                      "%s: after a step to the right the clip is that of %s" % (look, moved["kana"]))
+        target.type(" ")
+        turned = target.info()
+        target.type("/")
+        state = target.info()
+        check.expect(turned["script"] != moved["script"] and turned["types"] == moved["types"] and
+                     state["played"] in ["/audio/%s/%s/%s.wav" % (voice, turned["script"], turned["item"])
+                                         for voice in "fm"] and state["plays"] == turned["plays"] + 1,
+                     "%s: after Space the clip is that of %s, from the folder of %s (%s)" % (
+                         look, turned["kana"], turned["script"], state["played"]))
         target.card(False)
         before = target.info()
         target.key("Enter")
@@ -636,8 +737,9 @@ def check_look(target, look, colours, areas, items, kana, check, in_simulator):
 
     target.open("chart")
     check.expect(target.info()["screen"] == CHART, "%s: the menu leads to the chart" % look)
+    glance(target, look, "katakana" if script == "hiragana" else "hiragana", colours, areas[look], kana, met, check)
     walk(target, look, script, colours, areas[look], kana, met, check)
-    mark = edges(target, look, script, kana, check)
+    mark = edges(target, look, script, kana, check)   # goes on from the last kana, where the walk ended
     by_chance(target, look, mark, kana, check, 40 + reader.LOOKS.index(look))
     sound(target, look, colours, areas[look], kana, check, in_simulator)
 
@@ -662,6 +764,15 @@ def table_of(items, check):
     return kana
 
 
+def notes_fit(kana, areas, check):
+    """The walk shows each script in two looks only, and the looks differ in width."""
+    for look in reader.LOOKS:
+        long = [item["prompt"] for script in sorted(kana) for item in kana[script].values()
+                if len(wrapped(item["note"], areas[look][2] - 4)) > NOTE_LINES]
+        check.expect(not long, "table: in the look %s the note of every kana of both scripts fits %d lines "
+                               "(too long: %s)" % (look, NOTE_LINES, " ".join(long) or "none"))
+
+
 def main():
     arguments = sys.argv[1:]
     on_device = "--device" in arguments
@@ -673,6 +784,7 @@ def main():
     items = reader.decks()
     check = Check()
     kana = table_of(items, check)
+    notes_fit(kana, areas, check)
     if check.failed:
         print("%d checks passed, %d failed" % (len(check.passed), len(check.failed)))
         return 1

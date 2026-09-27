@@ -53,6 +53,8 @@ GUIDE_LINE_COLUMNS = 27
 GUIDE_LINES = 5
 KANJI_MEANING_LENGTH = 12
 PARTS_COLUMNS = 54     # two lines of 27 letters
+PARTS_PIECE_COLUMNS = 27  # the card breaks the line between two pieces only, where two spaces stand
+NO_LINE = "EMPTY"      # in parts.tsv: the card shows no line
 JMDICT_BASIS = "JMdict: "
 MOODS = ["greeting", "start", "right", "streak", "wrong", "almost", "finish", "back", "low-battery", "idle"]
 
@@ -71,6 +73,7 @@ MEASURE_UNIT = 6                                   # pixels per Latin letter in 
 
 ID_PATTERN = re.compile(r"[a-z0-9]+(-[a-z0-9]+)*\Z")
 META_PATTERN = re.compile(r"#\s*(name-ja|name-en|kind|stage)\s*:(.*)\Z")
+STAGE_PATTERN = re.compile(r"#\s*stage\b", re.IGNORECASE)  # a line that was meant to give the stage
 MEANING_PATTERN = re.compile(r"[a-z]+([ -][a-z]+)*\Z")
 BUDDY_PUNCTUATION = "、。！？「」〜・"
 
@@ -367,10 +370,13 @@ def fnv1a(text):
 # Reading the tables
 # ---------------------------------------------------------------------------------------------
 
-def read_table(path, wanted, findings):
+def read_table(path, wanted, findings, deck=False):
     """Returns (names, rows). names: {"name-ja": (text, line), ...} from the comments above the
     header row. rows: [(line number, fields)]; fields is None for a row that cannot be used.
-    Returns (names, None) when there is no table in the file, (None, None) when it cannot be read."""
+    Returns (names, None) when there is no table in the file, (None, None) when it cannot be read.
+
+    deck: the file is a deck. A comment that starts with the word stage and is not read as the
+    stage is then an error: the deck would be of stage 1 and nothing would say so."""
     try:
         with open(path, encoding="utf-8", newline="") as handle:
             text = handle.read()
@@ -401,6 +407,9 @@ def read_table(path, wanted, findings):
     for number, line in enumerate(lines, 1):
         name = META_PATTERN.match(line)
         if line.startswith("#") and not name:
+            if deck and STAGE_PATTERN.match(line):
+                findings.error(path, number, "\"%s\" is not read as the stage; write it as \"# stage: 2\""
+                               % line.strip())
             continue
         hidden = "".join(dict.fromkeys(ch for ch in line if ch != "\t" and
                                        unicodedata.category(ch) in ("Cc", "Cf", "Zl", "Zp")))
@@ -513,7 +522,7 @@ def read_deck(path, findings, seen_ids):
     deck = Deck(path)
     if not ID_PATTERN.match(deck.id):
         findings.error(path, 1, "file name: the deck id %s must be lower case letters, digits and hyphens" % deck.id)
-    names, rows = read_table(path, COLUMNS, findings)
+    names, rows = read_table(path, COLUMNS, findings, deck=True)
     if names is None:
         return deck
 
@@ -774,8 +783,9 @@ def read_kanji(path, findings, kanjidic, reference, prompts):
 
 def read_parts(path, findings, prompts):
     """content/parts.tsv: the line of a word written by hand, where the one put together from
-    kanji.tsv would not explain it. Returns ({prompt: line}, number of rows). The line may be empty:
-    the card then shows none. prompts: as for read_kanji."""
+    kanji.tsv would not explain it. Returns ({prompt: line}, number of rows). The line is empty
+    where the table has nothing or the word EMPTY: the card then shows none. prompts: as for
+    read_kanji."""
     _, rows = read_table(path, PARTS_FILE_COLUMNS, findings)
     lines = {}
     seen = {}
@@ -790,6 +800,8 @@ def read_parts(path, findings, prompts):
             findings.error(path, number, "%s is given twice: first in line %d" % (prompt, seen[prompt]))
             continue
         seen[prompt] = number
+        if parts == NO_LINE:
+            parts = ""
         lines[prompt] = parts
         if prompts is not None and prompt not in prompts:
             findings.error(path, number, "%s is not a prompt of a deck" % prompt)
@@ -798,10 +810,21 @@ def read_parts(path, findings, prompts):
             foreign = "".join(dict.fromkeys(ch for ch in parts if is_kanji(ch) and ch not in prompt))
             if foreign:
                 findings.error(path, number, "parts: %s is not a kanji of %s" % (foreign, prompt))
+            elif not any(ch in prompt for ch in parts if ch != " "):
+                findings.error(path, number, "parts: \"%s\" names no character of %s; write %s for a card "
+                               "without a line" % (parts, prompt, NO_LINE))
             width = columns(parts)
             if width > PARTS_COLUMNS:
                 findings.error(path, number, "parts is %d letters wide, at most %d fit (a Japanese character "
                                "counts as 2)" % (width, PARTS_COLUMNS))
+            pieces = parts.split("  ")
+            if any(piece != piece.strip() or not piece for piece in pieces):
+                findings.error(path, number, "parts: more than two spaces between two pieces")
+            for piece in pieces:
+                if columns(piece) > PARTS_PIECE_COLUMNS:
+                    findings.error(path, number, "parts: the piece \"%s\" is %d letters wide, at most %d fit one "
+                                   "line of the screen; two spaces start a new piece"
+                                   % (piece.strip(), columns(piece), PARTS_PIECE_COLUMNS))
         if not reason:
             findings.error(path, number, "reason is empty")
     return lines, len(rows or [])
@@ -819,7 +842,8 @@ def add_parts(decks, meanings, written, kanji_path, findings):
             if item.prompt in written:
                 item.parts = written[item.prompt]
                 continue
-            kanji = list(dict.fromkeys(ch for ch in item.prompt if is_kanji(ch)))
+            # 々 repeats the kanji before it and has no meaning of its own
+            kanji = list(dict.fromkeys(ch for ch in item.prompt if is_kanji(ch) and ch != "々"))
             if not kanji or meanings is None:
                 continue
             for ch in kanji:
@@ -886,15 +910,14 @@ def read_guide(path, findings, used_ids):
             clips = page.clips.split("|")
             if "" in clips:
                 findings.error(path, number, "clips: an empty clip, remove the stray |")
-            for k, clip in enumerate(clips):
+            # a clip may stand twice: two words that are spelt alike and differ in pitch
+            for clip in clips:
                 other = "".join(dict.fromkeys(ch for ch in clip if not is_kana(ch)))
                 if other:
                     shown = "a space" if other.isspace() else other
                     findings.error(path, number, "clips: %s is not kana only (%s)" % (clip, shown))
                 elif clip:
                     check_text(findings, path, number, "clips", clip)
-                if clip and clip in clips[:k]:
-                    findings.warning(path, number, "clips: %s is given twice" % clip)
     return pages, len(rows or [])
 
 

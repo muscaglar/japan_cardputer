@@ -48,6 +48,35 @@ int width16(const char* utf8)
     return width;
 }
 
+}  // namespace
+
+// What a sitting of the course would hold if it began now: cards to review and new ones. The
+// cards are chosen as App::startCourse() has them chosen, with the sizes session::Plan starts
+// with, so these are the figures of the sitting itself. The menu asks for them too.
+void nextSitting(App& app, int& review, int& fresh)
+{
+    std::vector<const deck::Deck*> decks;
+    for (size_t i = 0; i < deck::count(); ++i) {
+        decks.push_back(&deck::at(i));
+    }
+    session::Plan plan;
+    plan.today  = app.today();
+    plan.level  = static_cast<uint8_t>(app.settings().level);
+    plan.course = true;
+    plan.seed   = static_cast<uint32_t>(app.settings().dayNumber);
+    session::Queue queue(app.store());
+    queue.start(plan, decks);
+
+    review = 0;
+    fresh  = 0;
+    session::Pick pick;
+    while (queue.next(pick)) {
+        ++(pick.isNew ? fresh : review);
+    }
+}
+
+namespace {
+
 // The course as a row of boxes, one for each deck, each filled as far as its cards were seen.
 // The box of the deck that is being learnt has a line around it.
 void drawCourse(Canvas& c, const Theme& t, const std::vector<Step>& steps, const deck::Deck* now, int x, int y,
@@ -106,7 +135,7 @@ public:
             app.show(ScreenId::Menu);
         } else if (key.code == Key::Escape || key.code == Key::Backspace) {
             // nothing to go back to
-        } else if (_due > 0 || _fresh > 0) {
+        } else if (_review > 0 || _fresh > 0) {
             app.startCourse();
         }
     }
@@ -121,7 +150,7 @@ public:
         if (battery >= 0) {
             std::snprintf(right, sizeof(right), "%d%%", battery);
         }
-        const bool waits = (_due > 0 || _fresh > 0);
+        const bool waits = (_review > 0 || _fresh > 0);
         if (_askDay) {
             drawFrame(c, t, title, right, "Enter: yes", "Space: no");
         } else {
@@ -170,6 +199,8 @@ public:
         json += ",\"says\":\"";
         json += (_line && !_askDay) ? _line->id : "";
         json += "\",\"deckSeen\":" + std::to_string(_seen) + ",\"deckTotal\":" + std::to_string(_total);
+        json += ",\"dueToday\":" + std::to_string(_due) + ",\"nextReview\":" + std::to_string(_review);
+        json += ",\"nextNew\":" + std::to_string(_fresh);
         json += ",\"steps\":[";
         for (size_t i = 0; i < _steps.size(); ++i) {
             json += (i ? ",[" : "[") + std::to_string(_steps[i].progress.seen) + "," +
@@ -184,11 +215,12 @@ private:
     {
         _steps = course(app);
         _now   = app.courseDeck();
-        _due   = app.dueToday();
-        _fresh = app.newAvailable();
+        nextSitting(app, _review, _fresh);
+        _due   = 0;
         _seen  = 0;
         _total = 0;
         for (const Step& step : _steps) {
+            _due += step.progress.due;
             if (_now == nullptr || step.deck == _now) {
                 _seen += step.progress.seen;
                 _total += step.progress.total;
@@ -219,16 +251,17 @@ private:
         _en = _line ? _line->en : "Hello!";
     }
 
+    // What the sitting brings that a key starts. When more is due than a sitting holds, it
+    // says how many of them come now.
     std::string next(Canvas& c, int width) const
     {
         char words[64];
-        if (_due > 0 && _fresh > 0) {
-            std::snprintf(words, sizeof(words), "Next: %d to review, %d new", _due, _fresh);
-            if (textWidth(c, words, font16()) > width) {
-                std::snprintf(words, sizeof(words), "%d to review, %d new", _due, _fresh);
-            }
-        } else if (_due > 0) {
-            std::snprintf(words, sizeof(words), "Next: %d to review", _due);
+        if (_review > 0 && _fresh > 0) {
+            std::snprintf(words, sizeof(words), "Next: %d to review, %d new", _review, _fresh);
+        } else if (_review > 0 && _due > _review) {
+            std::snprintf(words, sizeof(words), "Next: %d of %d to review", _review, _due);
+        } else if (_review > 0) {
+            std::snprintf(words, sizeof(words), "Next: %d to review", _review);
         } else if (_fresh > 0) {
             std::snprintf(words, sizeof(words), "Next: %d new", _fresh);
         } else {
@@ -243,8 +276,9 @@ private:
     const deck::BuddyLine* _line = nullptr;
     const char* _ja              = "";
     const char* _en              = "";
-    int _due         = 0;
-    int _fresh       = 0;
+    int _due         = 0;  // today, within the level that is set
+    int _review      = 0;  // of them, in the sitting that a key starts
+    int _fresh       = 0;  // new cards in that sitting
     int _seen        = 0;
     int _total       = 0;
     bool _askDay     = false;

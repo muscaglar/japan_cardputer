@@ -1,4 +1,5 @@
-# Test fixture without mistakes.
+# Test fixture without mistakes. 大丈夫 and 結構 show no line: the two ways to say so.
 prompt	parts	reason
 交番	交 take turns  番 watch	one meaning for each kanji gives "alternate number"
-大丈夫		the three kanji do not explain the word
+大丈夫	EMPTY	the three kanji do not explain the word
+結構		the two kanji do not explain the word

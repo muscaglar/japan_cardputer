@@ -135,23 +135,30 @@ jobs:
       - name: The build for the browser draws the same pictures
         run: SIM_JS=build/sim/sim_plain.js node sim/shots.js --check
 
-      - name: Whole kana rounds play correctly
-        run: python tools/kana_round_check.py
-
-      - name: Sittings over two days play correctly
-        run: python tools/cards_check.py
-
-      - name: The deck tool catches every kind of mistake
-        run: python tools/tests/test_build_decks.py
+      - name: Every screen plays correctly in every look
+        run: |
+          python tools/kana_round_check.py
+          python tools/cards_check.py
+          python tools/menu_check.py
+          python tools/chart_check.py
+          python tools/guide_check.py
+          python tools/settings_check.py
 
       - name: The decks are sound and the compiled deck data is up to date
         run: |
           python tools/fetch_reference.py
+          python tools/tests/test_build_decks.py
           python tools/build_decks.py --check
+          mkdir -p build
           cp content/ids.txt build/ids.txt
           python tools/build_decks.py --out build/deck_data.cpp --ids build/ids.txt
           diff -u lib/core/deck_data.cpp build/deck_data.cpp
           diff -u content/ids.txt build/ids.txt
+
+      - name: The tools that make and install the clips pass their tests
+        run: |
+          python tools/tests/test_sd_sync.py
+          if [ -f tools/tests/test_make_audio.py ]; then python tools/tests/test_make_audio.py; fi
 
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()

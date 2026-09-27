@@ -1,0 +1,7 @@
+# Test fixture with deliberate mistakes. This is not content.
+# name-ja: あいさつ
+# name-en: greetings
+# kind: word
+#stage=2
+id	prompt	reading	accent	accepted	gloss	note	level	source
+greet-konnichiha	こんにちは	こんにちは			hello		1	JMdict
