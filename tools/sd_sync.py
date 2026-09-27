@@ -15,7 +15,8 @@ it was sent, and sent again if the card holds something else. Stopping is harmle
 card whole or not at all, and the next run sends only what is still missing.
 
 Files and folders whose names start with a dot are left out. Names may hold letters, digits and
-. _ - only, and a path on the card at most 120 letters: the device takes nothing else.
+. _ - only, and a path on the card at most 120 letters: the device takes nothing else. A name
+that ends in a dot is refused too, because the card would keep it without the dot.
 
 The device's side is src/files.cpp, and src/files.h says what is sent to and fro. Nothing here reads
 what a file on the card holds, and the device has no word for it.
@@ -94,28 +95,38 @@ def duration(seconds):
 
 
 class SerialLink:
-    """The USB port, as pyserial opened it."""
+    """The USB port, as pyserial opened it.
+
+    When the cable is pulled or the device starts anew, the port is gone and pyserial raises an
+    OSError. That ends the run: it must not be taken for a file here that cannot be read.
+    """
 
     def __init__(self, port):
         self.port = port
 
     def write(self, data):
-        self.port.write(data)
-        self.port.flush()
+        try:
+            self.port.write(data)
+            self.port.flush()
+        except OSError as error:
+            raise Silent("the USB port is gone (%s)" % (error.strerror or error))
 
     def read_some(self, seconds):
         """What has arrived, at once; else what arrives first within that time; else nothing."""
         end = time.time() + seconds
-        while True:
-            waiting = self.port.in_waiting
-            if waiting:
-                return self.port.read(waiting)
-            if time.time() >= end:
-                return b""
-            # Returns with the first byte, or empty after the short time the port was opened with.
-            first = self.port.read(1)
-            if first:
-                return first
+        try:
+            while True:
+                waiting = self.port.in_waiting
+                if waiting:
+                    return self.port.read(waiting)
+                if time.time() >= end:
+                    return b""
+                # Returns with the first byte, or empty after the short time the port was opened with.
+                first = self.port.read(1)
+                if first:
+                    return first
+        except OSError as error:
+            raise Silent("the USB port is gone (%s)" % (error.strerror or error))
 
 
 class Card:
@@ -255,20 +266,30 @@ class Card:
         if not 0 < piece <= 65536:
             raise self._lost("a piece of %d bytes makes no sense" % piece)
         sent = 0
-        while sent < size:
-            want = min(piece, size - sent)
-            data = read(want)
-            # A file that became shorter meanwhile is filled up, so that both sides stay in step.
-            # Its CRC-32 will not be the one announced, and the device throws it away.
-            data += bytes(want - len(data))
-            self.link.write(data)
-            sent += want
-            _, rest = self._answer(("#got",), self.slow)
-            if self._number(rest) != sent:
-                raise self._lost("the device counts %s bytes, %d were sent" % (rest, sent))
-            if tick:
-                tick(sent)
-        _, rest = self._answer(("#done",), self.slow)
+        try:
+            while sent < size:
+                want = min(piece, size - sent)
+                data = read(want)
+                # A file that became shorter meanwhile is filled up, so that both sides stay in step.
+                # Its CRC-32 will not be the one announced, and the device throws it away.
+                data += bytes(want - len(data))
+                self.link.write(data)
+                sent += want
+                _, rest = self._answer(("#got",), self.slow)
+                if self._number(rest) != sent:
+                    raise self._lost("the device counts %s bytes, %d were sent" % (rest, sent))
+                if tick:
+                    tick(sent)
+            _, rest = self._answer(("#done",), self.slow)
+        except Refused as refused:
+            if refused.why == "timeout":
+                # The device gave up waiting while bytes were on their way: they came late, and
+                # it took them for words.
+                self.unsure = True
+            raise
+        except OSError:
+            self.unsure = True  # the file here cannot be read on: the device still waits for the rest
+            raise
         if self._number(rest, 16) != crc:
             raise self._lost("the device kept a file with CRC-32 %s, not %08x" % (rest, crc))
 
@@ -280,9 +301,16 @@ class Folder:
         self.folders = []  # paths on the card, those above before those below
         self.files = []    # (path on the card, path here, size)
         self.refused = []  # (path here, why)
+        self.unread = set()  # folders that cannot be read here: paths on the card, in small letters
         self.hidden = 0
         taken = {}
-        for here, folders, names in os.walk(top):
+
+        def cannot(error):
+            inside = os.path.relpath(error.filename, top).replace(os.sep, "/")
+            self.refused.append((error.filename, "the folder cannot be read: %s" % (error.strerror or error)))
+            self.unread.add(("/" + inside).lower())
+
+        for here, folders, names in os.walk(top, onerror=cannot):
             inside = os.path.relpath(here, top).replace(os.sep, "/")
             above = "" if inside == "." else "/" + inside
             kept = []
@@ -301,11 +329,15 @@ class Folder:
                 if is_folder:
                     kept.append(name)
                     self.folders.append(path)
-                else:
+                    continue
+                try:
                     self.files.append((path, whole, os.path.getsize(whole)))
+                except OSError as error:
+                    self.refused.append((whole, error.strerror or str(error)))
             folders[:] = kept  # what was refused or left out is not entered
         self.folders.sort(key=lambda path: (path.count("/"), path))
         self.files.sort()
+        self.names = set(taken)  # all that is here and could be on the card, in small letters
 
     @staticmethod
     def wrong(whole, path, taken):
@@ -319,6 +351,8 @@ class Folder:
             return "the device takes no name with two dots in a row"
         if not good_path(path):
             return "the device takes letters, digits and . _ - only"
+        if path.endswith("."):
+            return "the card drops a dot at the end of a name"
         if path.lower() == INCOMING:
             return "the device uses this name itself"
         if path.lower() in taken:
@@ -435,8 +469,7 @@ class Sync:
         for index, (path, whole, size) in enumerate(local.files):
             self.file("%*d/%d" % (len(str(len(local.files))), index + 1, len(local.files)), path, whole, size)
         if self.delete:
-            self.tidy("/audio", set(path.lower() for path in local.folders),
-                      set(path.lower() for path, _, _ in local.files))
+            self.tidy("/audio", local)
 
         would = "would be " if self.dry_run else ""
         parts = ["%d %ssent" % (self.sent, would)]
@@ -529,7 +562,8 @@ class Sync:
             self.sent_bytes += size
             self.report.line("%s  would send  %s  %9s  %s" % (place, path.ljust(self.widest), amount(size), reason))
             return
-        if size > self.free + (there if there and there > 0 else 0):
+        # What a file replaces makes no room for it: that goes only when the new one is on the card.
+        if size > self.free:
             self.fail(path, "the card has no room for %s" % amount(size))
             return
         try:
@@ -543,7 +577,7 @@ class Sync:
         self.sent += 1
         self.sent_bytes += size
         self.sending += took
-        self.free -= size
+        self.free -= size - (there if there and there > 0 else 0)
         speed = amount(size / took) + "/s" if size and took > 0 else ""
         self.report.line("%s  sent     %s  %9s  %11s  %s%s" % (
             place, path.ljust(self.widest), amount(size), speed, reason,
@@ -578,17 +612,20 @@ class Sync:
                 self.card.settle()  # if the device is gone for good, this ends the run
         raise Failed("%s, in %d tries" % (why, self.tries))
 
-    def tidy(self, folder, folders, files):
+    def tidy(self, folder, local):
         """Removes from a folder of the card what the folder here does not have."""
+        if folder.lower() in local.unread:
+            return  # nobody knows what the folder here has: nothing goes from the one on the card
         entries = self.listing(folder)
         if not isinstance(entries, dict):
             return
+        folders = set(path.lower() for path in local.folders)
         for name, size in sorted(entries.values(), key=lambda entry: entry[0]):
             path = folder + "/" + name
-            if path.lower() in folders or path.lower() in files:
+            if path.lower() in local.names:
                 # Where one side has a file and the other a folder, that was reported above.
                 if size is None and path.lower() in folders:
-                    self.tidy(path, folders, files)
+                    self.tidy(path, local)
                 continue
             if not good_path(path):
                 self.fail(shown(path), "cannot be removed: the device takes no such name")

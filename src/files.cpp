@@ -371,7 +371,8 @@ void receive(const std::string& rest, Reply reply)
         return;
     }
     File part = card.open(kIncoming, FILE_WRITE);
-    if (!part) {
+    if (!part || part.isDirectory()) {
+        part.close();  // a folder of that name opens too, but takes no bytes
         reply("#error cannot open");
         return;
     }

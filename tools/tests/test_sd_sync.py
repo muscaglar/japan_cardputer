@@ -9,8 +9,8 @@ No device is needed. Two stand in for it, each with a folder as its memory card:
 
   the pretended device  The device's side written once more, here, in Python, from what src/files.h
                         says. It speaks over a pair of sockets, and can be told to go wrong: to find
-                        a wrong CRC-32, to lose an answer, to write a damaged file, to start anew, to
-                        fall silent for good.
+                        a wrong CRC-32, to lose an answer or give it late, to write a damaged file,
+                        to start anew, to fall silent for good.
   the compiled device   src/files.cpp itself, compiled to WebAssembly with Emscripten and run by
                         Node, with a pretended Arduino around it: the USB port is a pair of files,
                         the card a folder. Without Emscripten or Node those tests are reported as
@@ -282,6 +282,9 @@ class Pretended(threading.Thread):
             return
         fault = self.faults.pop(0) if self.faults else None
         part = self.real(self.INCOMING)
+        if os.path.isdir(part):
+            self.reply("#error cannot open")
+            return
         out = open(part, "wb")
         self.reply("#ready %d" % self.piece)
         crc = 0
@@ -310,6 +313,8 @@ class Pretended(threading.Thread):
             got += want
             if fault == "loses an answer" and got == want:
                 continue
+            if fault == "answers late" and got == want:
+                time.sleep(self.slow * 0.8)  # longer than the tool waits before it knocks elsewhere
             self.reply("#got %d" % got)
         out.close()
         crc &= 0xFFFFFFFF
@@ -367,6 +372,18 @@ public:
 };
 
 extern UsbPort Serial;
+"""
+
+STAND_IN["hal/usb_serial_jtag_ll.h"] = r"""
+// Stands in for the driver of the USB port: only what src/files.cpp uses, to stop it listening
+// while its queue is replaced.
+#pragma once
+#include <cstdint>
+
+#define USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT (1u << 2)
+
+void usb_serial_jtag_ll_disable_intr_mask(uint32_t mask);
+void usb_serial_jtag_ll_ena_intr_mask(uint32_t mask);
 """
 
 STAND_IN["FS.h"] = r"""
@@ -431,6 +448,7 @@ STAND_IN["stand_in.cpp"] = r"""
 
 #include "card.h"
 #include "files.h"
+#include "hal/usb_serial_jtag_ll.h"
 
 namespace {
 
@@ -439,7 +457,9 @@ bool cardIn = true;
 int fromComputer = -1;
 int toComputer   = -1;
 std::string unread;
-size_t queueHolds = 256;
+size_t queueHolds = 256;  // 0: there is no queue
+bool canWiden     = false;
+bool listening    = true;  // whether what arrives is put into the queue
 fs::FS theCard;
 
 std::string real(const char* path)
@@ -469,8 +489,31 @@ void delay(uint32_t ms)
 
 UsbPort Serial;
 
+void usb_serial_jtag_ll_disable_intr_mask(uint32_t mask)
+{
+    if (mask & USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT) {
+        listening = false;
+    }
+}
+
+void usb_serial_jtag_ll_ena_intr_mask(uint32_t mask)
+{
+    if (mask & USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT) {
+        listening = true;
+    }
+}
+
 int UsbPort::available()
 {
+    if (!listening) {
+        // On the real port nothing would arrive any more.
+        listening = true;
+        println("#error the port was left deaf");
+        exit(5);
+    }
+    if (queueHolds == 0) {
+        return -1;
+    }
     char chunk[4096];
     for (;;) {
         const ssize_t got = ::read(fromComputer, chunk, sizeof(chunk));
@@ -512,10 +555,17 @@ size_t UsbPort::println(const char* line)
     return static_cast<size_t>(::write(toComputer, whole.data(), whole.size()));
 }
 
+// As the real one: the old queue is gone in any case, and what it held with it.
 size_t UsbPort::setRxBufferSize(size_t size)
 {
-    queueHolds = size;
-    return size;
+    if (listening) {
+        // On the real port what arrives just then would be put into a queue that is gone.
+        println("#error the queue was replaced while the port listened");
+        exit(4);
+    }
+    unread.clear();
+    queueHolds = (size > 256 && !canWiden) ? 0 : size;
+    return queueHolds;
 }
 
 namespace fs {
@@ -716,6 +766,7 @@ int main(int count, char** arguments)
     fromComputer = open(arguments[2], O_RDONLY);
     toComputer   = open(arguments[3], O_WRONLY | O_APPEND);
     cardIn       = std::string(arguments[4]) == "card";
+    canWiden     = count > 5 && std::string(arguments[5]) == "wide";
     if (fromComputer < 0 || toComputer < 0) {
         return 2;
     }
@@ -760,19 +811,30 @@ int main(int count, char** arguments)
 
 
 class FileLink:
-    def __init__(self, to_device, from_device):
+    def __init__(self, to_device, from_device, process):
         self.out = os.open(to_device, os.O_WRONLY | os.O_APPEND)
         self.back = os.open(from_device, os.O_RDONLY)
+        self.from_device = from_device
+        self.process = process
 
     def write(self, data):
         os.write(self.out, data)
 
+    def last_words(self):
+        with open(self.from_device, "rb") as said:
+            lines = said.read().decode("utf-8", "replace").splitlines()
+        return lines[-1] if lines else ""
+
     def read_some(self, seconds):
         end = time.time() + seconds
         while True:
+            ended = self.process.poll()
             data = os.read(self.back, 65536)
             if data or time.time() >= end:
                 return data
+            if ended is not None:
+                # Waiting for every answer of a device that is no more would take minutes.
+                raise Failure("the compiled device ended with %s, saying %r" % (ended, self.last_words()))
             time.sleep(0.001)
 
     def close(self):
@@ -806,12 +868,14 @@ def built():
         shutil.rmtree(folder, ignore_errors=True)
         os.makedirs(folder)
         for name, text in STAND_IN.items():
+            os.makedirs(os.path.dirname(os.path.join(folder, name)), exist_ok=True)
             with open(os.path.join(folder, name), "w", encoding="utf-8") as out:
                 out.write(text.lstrip("\n"))
         program = os.path.join(folder, "device.js")
-        # The firmware is built as gnu++11, so this is too.
+        # The firmware is built as gnu++11 and for the USB port of the chip itself, so this is too.
         result = subprocess.run(["em++", "-O1", "-std=gnu++11", "-Wall", "-Wextra", "-sNODERAWFS=1",
-                                 "-sEXIT_RUNTIME=1", "-I" + folder, "-I" + os.path.join(ROOT, "src"),
+                                 "-sEXIT_RUNTIME=1", "-DARDUINO_USB_MODE=1", "-DARDUINO_USB_CDC_ON_BOOT=1",
+                                 "-I" + folder, "-I" + os.path.join(ROOT, "src"),
                                  os.path.join(ROOT, "src", "files.cpp"), os.path.join(folder, "stand_in.cpp"),
                                  "-o", program], env=environment(), capture_output=True, text=True)
         noise = ("cache:INFO", "system_libs:INFO", "ports:INFO", "shared:INFO")
@@ -827,11 +891,12 @@ def built():
 class Compiled:
     name_of_kind = "compiled"
 
-    def __init__(self, card, has_card=True):
+    def __init__(self, card, has_card=True, wide=False):
+        """wide: whether the queue of its USB port can be made wider, as on the device."""
         self.card = card
         self.patience = 3.0
         self.slow = 10.0
-        self.piece = 192
+        self.piece = 2048 if wide else 192
         self.words = None
         folder = os.path.dirname(card)
         to_device = os.path.join(folder, "to_device.bin")
@@ -839,9 +904,9 @@ class Compiled:
         for path in (to_device, from_device):
             open(path, "wb").close()
         self.process = subprocess.Popen(["node", built(), card, to_device, from_device,
-                                         "card" if has_card else "no card"],
+                                         "card" if has_card else "no card", "wide" if wide else "narrow"],
                                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        self.link = FileLink(to_device, from_device)
+        self.link = FileLink(to_device, from_device, self.process)
 
     def stop(self):
         self.link.write(b"switch off\n")
@@ -852,8 +917,8 @@ class Compiled:
             said, _ = self.process.communicate()
         self.link.close()
         if self.process.returncode != 0:
-            raise Failure("the compiled device ended with %s: %s" % (self.process.returncode,
-                                                                    said.decode("utf-8", "replace")))
+            raise Failure("the compiled device ended with %s, saying %r %s" % (
+                self.process.returncode, self.link.last_words(), said.decode("utf-8", "replace")))
 
 
 # ---------------------------------------------------------------------------------------------
@@ -1133,6 +1198,15 @@ def test_part_left_on_the_card_is_removed():
         same(ended, 0, "the tool ended with\n" + said)
         same(tree(bench.card), tree(bench.here), "the card")
 
+        # Also when no file is sent: the next file that arrives would else hide that it stayed.
+        write_files(bench.card, {"incoming.part": b"half a clip"})
+        del bench.device.words[:]
+        ended, said = bench.sync()
+        same(ended, 0, "with nothing to send the tool ended with\n" + said)
+        same(bench.words("put"), [], "files sent")
+        same(bench.words("rm"), ["rm /incoming.part"], "words that remove")
+        same(tree(bench.card), tree(bench.here), "the card when nothing was sent")
+
 
 def test_silent_device_is_reported():
     with Bench("silent") as bench:
@@ -1180,10 +1254,163 @@ def test_started_again_at_once():
         same(tree(bench.card), tree(bench.here), "the card")
 
 
+def test_tool_never_knocks_while_a_file_is_sent():
+    """A knock there would be taken for a byte of the file."""
+    with Bench("late answer") as bench:
+        bench.device.faults = ["answers late"]
+        ended, said = bench.sync()
+        same(ended, 0, "the tool ended with\n" + said)
+        same(tree(bench.card), tree(bench.here), "the card")
+        expect("at try" not in said, "a file had to be sent again:\n" + said)
+        same(len(bench.words("put")), 7, "files sent")
+        same(bench.device.taken, sum(len(data) for data in clips().values() if data), "bytes taken for files")
+
+
+class StallingLink:
+    """Holds back the second piece of the first file for some time, once: a computer that was busy."""
+
+    def __init__(self, link, seconds):
+        self.link = link
+        self.seconds = seconds
+        self.pieces = None  # None before the first file, then the pieces sent of it
+
+    def write(self, data):
+        if data.startswith(b"put ") and self.pieces is None:
+            self.pieces = 0
+        elif self.pieces is not None and self.pieces < 2:
+            self.pieces += 1
+            if self.pieces == 2:
+                time.sleep(self.seconds)
+        self.link.write(data)
+
+    def read_some(self, seconds):
+        return self.link.read_some(seconds)
+
+
+def test_piece_that_comes_too_late():
+    """The device has given up by then and takes the piece for words. The tool has to find back."""
+    def check(kind):
+        files = {"audio/a.wav": bytes_of(1, 5000), "audio/b.wav": bytes_of(2, 600)}
+        with Bench("late piece", files, kind=kind) as bench:
+            bench.link = StallingLink(bench.device.link, bench.device.patience + 0.3)
+            ended, said = bench.sync()
+            same(ended, 0, "the tool ended with\n" + said)
+            same(tree(bench.card), tree(bench.here), "the card")
+            expect("/audio/a.wav" in said and "at try 2" in said, "the second try is not mentioned:\n" + said)
+    return on_both(check)
+
+
+class BreakingFile:
+    """A file here that cannot be read on after its first piece."""
+
+    def __init__(self, real):
+        self.real = real
+        self.pieces = 0
+
+    def read(self, count=-1):
+        if 0 < count < (1 << 16):  # a piece for the device, not the reading for the CRC-32
+            self.pieces += 1
+            if self.pieces > 1:
+                raise OSError(5, "Input/output error")
+        return self.real.read(count)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *failure):
+        self.real.close()
+
+
+def test_file_here_that_cannot_be_read_on():
+    """The device is left waiting for the rest. The next word must not be taken for it."""
+    files = {"audio/a.wav": bytes_of(1, 5000), "audio/b.wav": bytes_of(2, 600), "audio/c.wav": bytes_of(3, 600)}
+    with Bench("cannot read on", files) as bench:
+        write_files(bench.card, {"audio/b.wav": files["audio/b.wav"]})
+
+        def breaking(path, mode="r", *more):
+            real = open(path, mode, *more)
+            return BreakingFile(real) if path.endswith("a.wav") else real
+        sd_sync.open = breaking
+        try:
+            ended, said = bench.sync()
+        finally:
+            del sd_sync.open
+        same(ended, 1, "the tool ended with\n" + said)
+        lines = [line for line in said.splitlines() if line.startswith("FAILED")]
+        expect(len(lines) == 1 and "a.wav: Input/output error" in lines[0], "what failed:\n" + said)
+        expect("1 sent" in said and "1 the same" in said and "1 failed" in said, "the total is wrong:\n" + said)
+        expect("at try" not in said, "the file after it had to be sent again:\n" + said)
+        del files["audio/a.wav"]
+        files["audio/"] = None
+        same(tree(bench.card), files, "the card")
+
+
+class SocketPort:
+    """What the tool uses of a port opened by pyserial, over a socket. With a number of files
+    given, it is gone after the first piece of the last of them."""
+
+    def __init__(self, end, files=None):
+        self.end = end
+        self.files = files
+        self.pieces = 0
+        self.timeout = 0.05
+
+    def gone(self):
+        if self.files == 0 and self.pieces > 1:
+            raise OSError(6, "Device not configured")
+
+    @property
+    def in_waiting(self):
+        self.gone()
+        ready, _, _ = select.select([self.end], [], [], 0)
+        return len(self.end.recv(65536, socket.MSG_PEEK)) if ready else 0
+
+    def read(self, count):
+        self.gone()
+        ready, _, _ = select.select([self.end], [], [], self.timeout)
+        return self.end.recv(count) if ready else b""
+
+    def write(self, data):
+        if self.files and data.startswith(b"put "):
+            self.files -= 1
+        elif self.files == 0:
+            self.pieces += 1
+        self.gone()
+        self.end.sendall(data)
+
+    def flush(self):
+        self.gone()
+
+
+def test_usb_port_that_goes_away():
+    """As when the cable is pulled. It is not the files here that fail then."""
+    with Bench("port gone") as bench:
+        bench.link = sd_sync.SerialLink(SocketPort(bench.device.far, files=3))
+        ended, said = bench.sync()
+        same(ended, 2, "the tool ended with\n" + said)
+        expect("the USB port is gone (Device not configured)" in said and "Start again" in said,
+               "it does not say so:\n" + said)
+        expect("FAILED" not in said, "files are said to have failed:\n" + said)
+        same(len(bench.words("put")), 3, "files sent or begun")
+        same(len(bench.device.arrived), 2, "files that arrived")
+        time.sleep(bench.device.patience + 0.2)
+        for path, data in tree(bench.card).items():
+            if data is not None:
+                same(data, tree(bench.here).get(path), "half a file on the card: " + path)
+
+    with Bench("port stays") as bench:
+        bench.link = sd_sync.SerialLink(SocketPort(bench.device.far))
+        ended, said = bench.sync()
+        same(ended, 0, "with a port that stays the tool ended with\n" + said)
+        same(tree(bench.card), tree(bench.here), "the card")
+
+
 def test_bad_names_are_refused():
     files = clips()
     bad = {
         "audio/f/two words.wav": "letters, digits",
+        "audio/f/dot-at-the-end.": "drops a dot",
+        "audio/dots./inside.wav": "drops a dot",
         "audio/f/eki\u99c5.wav": "letters, digits",
         "audio/f/semi;colon.wav": "letters, digits",
         "audio/f/two..dots.wav": "two dots in a row",
@@ -1204,7 +1431,7 @@ def test_bad_names_are_refused():
             refused = path.split("/inside")[0]
             lines = [line for line in said.splitlines() if line.startswith("FAILED") and refused in line]
             expect(len(lines) == 1 and why in lines[0], "%r is not refused for %r:\n%s" % (refused, why, said))
-        expect("7 failed" in said, "the total is wrong:\n" + said)
+        expect("9 failed" in said, "the total is wrong:\n" + said)
         expect("2 left out" in said, "what was left out is not counted:\n" + said)
         for line in bench.device.words:
             expect(line == "df" or bench.device.good(line.split(" ")[1]), "the device was told %r" % line)
@@ -1254,6 +1481,34 @@ def test_delete_removes_from_audio_only():
             want.update({"own/": None, "own/words.tsv": extra["own/words.tsv"], "key.txt": extra["key.txt"]})
             same(tree(bench.card), want, "the card")
     return on_both(check)
+
+
+def test_delete_spares_what_cannot_be_read_here():
+    """Of a folder that cannot be read here nobody knows what it holds."""
+    for closed in ("audio/f/signs", "audio"):
+        with Bench("delete unread " + closed.replace("/", " ")) as bench:
+            bench.sync()
+            write_files(bench.card, {"audio/m/old.wav": b"gone from the folder"})
+            before = tree(bench.card)
+            shut = os.path.join(bench.here, *closed.split("/"))
+            os.chmod(shut, 0)
+            try:
+                try:
+                    os.listdir(shut)
+                    return "not tried: this user reads a folder that is closed to all"
+                except OSError:
+                    pass
+                ended, said = bench.sync("--delete")
+            finally:
+                os.chmod(shut, 0o755)
+            same(ended, 1, "with %s closed the tool ended with\n%s" % (closed, said))
+            lines = [line for line in said.splitlines() if line.startswith("FAILED")]
+            expect(len(lines) == 1 and shut in lines[0] and "cannot be read" in lines[0], "what failed:\n" + said)
+            if closed == "audio":
+                same(tree(bench.card), before, "the card")
+            else:
+                del before["audio/m/old.wav"]
+                same(tree(bench.card), before, "the card: only what is known to be gone may go")
 
 
 def test_delete_needs_an_audio_folder():
@@ -1345,20 +1600,34 @@ def test_older_firmware():
 
 
 def test_card_without_room():
-    with Bench("no room", {"audio/large.wav": bytes_of(1, 4000), "audio/small.wav": b"fits"}) as bench:
+    def nearly_full(bench):
         real = bench.device.carry_out
 
-        def nearly_full(line):
+        def carry_out(line):
             if line == "df":
                 bench.device.words.append(line)
                 bench.device.reply("#df 8000000000 7999999000")
             else:
                 real(line)
-        bench.device.carry_out = nearly_full
+        bench.device.carry_out = carry_out
+
+    files = {"audio/large.wav": bytes_of(1, 4000), "audio/small.wav": b"fits"}
+    with Bench("no room", files) as bench:
+        nearly_full(bench)
         ended, said = bench.sync()
         same(ended, 1, "the tool ended with\n" + said)
         expect("FAILED   /audio/large.wav: the card has no room" in said, said)
         same([line.split(" ")[1] for line in bench.words("put")], ["/audio/small.wav"], "files sent")
+
+    # What is replaced makes no room: the old file goes only when the new one is on the card.
+    with Bench("no room to replace", files) as bench:
+        nearly_full(bench)
+        write_files(bench.card, {"audio/large.wav": bytes_of(2, 4000), "audio/small.wav": b"FITS"})
+        ended, said = bench.sync()
+        same(ended, 1, "with files to replace the tool ended with\n" + said)
+        expect("FAILED   /audio/large.wav: the card has no room" in said, said)
+        same([line.split(" ")[1] for line in bench.words("put")], ["/audio/small.wav"], "files sent to replace")
+        same(tree(bench.card)["audio/large.wav"], bytes_of(2, 4000), "the file that could not be replaced")
 
 
 def test_answer_nobody_expected():
@@ -1558,6 +1827,14 @@ def conversation(link, piece):
     say("rm /a")
     say("rm /top.wav")
     say("ls /")
+    # a folder where the file that arrives is written
+    say("mkdir /incoming.part/below")
+    say(put_line("/late.wav", two), two)
+    say("ls /")
+    say("rm /incoming.part")
+    say(put_line("/late.wav", two), two)
+    say("rm /late.wav")
+    say("ls /")
     # no word reads what a file holds
     for word in ("get", "cat", "read", "send", "type2", "cp", "mv", "dump", "open", "show"):
         say(word + " /top.wav")
@@ -1577,6 +1854,9 @@ def test_both_devices_answer_alike():
             same(tree(bench.card), {}, "the card of the %s device at the end" % kind.name_of_kind)
     for ours, theirs in zip(told[Pretended], told[Compiled]):
         same(theirs[1], ours[1], "the compiled device answers %r otherwise than the pretended one" % ours[0])
+    late = [answer for line, answer in told[Compiled] if line.startswith("put /late.wav")]
+    same(late, [["#error cannot open"], ["#ready", "#done %08x" % (zlib.crc32(bytes_of(22, 192)) & 0xFFFFFFFF)]],
+         "a file that arrives while a folder has the name of the part, and after the folder is gone")
     answers = dict(told[Compiled])
     same(answers["mkdir /a/b/c"], ["#ok"], "mkdir")
     same(answers["rm /a/b"], ["#ok"], "rm of a folder with folders in it")
@@ -1635,6 +1915,35 @@ def test_compiled_device_takes_a_large_file():
         ended, said = bench.sync()
         same(ended, 0, "the tool ended with\n" + said)
         same(tree(bench.card), tree(bench.here), "the card")
+
+
+def test_compiled_device_widens_its_queue():
+    """Where the queue of the USB port can be made wider, the pieces are larger. The pretended port
+    ends the device if its queue is replaced while it listens, is left deaf, or runs over."""
+    program = built()
+    if program.startswith("SKIPPED"):
+        return program
+    files = {"audio/large.wav": bytes_of(42, 150000), "audio/piece.wav": bytes_of(43, 2048),
+             "audio/more.wav": bytes_of(44, 2049), "audio/small.wav": bytes_of(45, 100)}
+    with Bench("wide", files, kind=Compiled, wide=True) as bench:
+        same(ask(bench.link, "")[0], "#", "a knock before the first file")
+        first = bytes_of(46, 5000)
+        answers = ask(bench.link, put_line("/first.wav", first), data=first)
+        same(answers, ["#ready 2048", "#got 2048", "#got 4096", "#got 5000",
+                       "#done %08x" % (zlib.crc32(first) & 0xFFFFFFFF)], "the answers to the first file")
+        same(ask(bench.link, "")[0], "#", "a knock after the first file")
+        ended, said = bench.sync()
+        same(ended, 0, "the tool ended with\n" + said)
+        files["first.wav"] = first
+        files["audio/"] = None
+        same(tree(bench.card), files, "the card")
+
+    with Bench("narrow", {}, kind=Compiled) as bench:
+        first = bytes_of(47, 500)
+        answers = ask(bench.link, put_line("/first.wav", first), data=first)
+        same(answers[0], "#ready 192", "the answer to the first file where the queue stays as it is")
+        same(answers[-1], "#done %08x" % (zlib.crc32(first) & 0xFFFFFFFF), "the end of the first file")
+        same(ask(bench.link, "")[0], "#", "a knock after the first file")
 
 
 def test_tool_never_sends_more_than_a_piece_ahead():

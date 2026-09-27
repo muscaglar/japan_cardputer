@@ -17,3 +17,4 @@ docs/sim/
 .claude/worktrees/
 # Sound clips and what else goes onto the memory card: made on the computer, not kept here
 sd/
+card/
