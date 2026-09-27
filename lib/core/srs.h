@@ -16,6 +16,7 @@ enum class Grade : uint8_t {
     Again,  // wrong
     Hard,   // right after a look at the romaji, or almost right
     Good,   // right
+    Known,  // right at first sight, before it was taught: the learning is spared
 };
 
 struct Card {
@@ -28,6 +29,7 @@ struct Card {
 };
 
 constexpr uint8_t kGraduateAfter    = 2;    // right answers in a row that end the learning stage
+constexpr uint16_t kKnownInterval   = 4;    // days until a card known at first sight is asked again
 constexpr uint16_t kLongestInterval = 365;
 
 // The card after an answer given on day `today`.

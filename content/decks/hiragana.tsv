@@ -1,0 +1,115 @@
+# name-ja: ひらがな
+# name-en: hiragana
+# kind: kana
+# stage: 1
+# Written by tools/make_kana_decks.py. Change the program, not this file.
+# The gloss is what to type. The note says how it sounds, or, for katakana that are
+# taken for one another, how to tell them apart.
+id	prompt	reading	accent	accepted	gloss	note	level	source
+# the 46 basic kana
+hiragana-a	あ	あ			a	a as in father	1	kana table
+hiragana-i	い	い			i	i as in machine	1	kana table
+hiragana-u	う	う			u	u as in flute, lips relaxed	1	kana table
+hiragana-e	え	え			e	e as in bed	1	kana table
+hiragana-o	お	お			o	o as in more	1	kana table
+hiragana-ka	か	か			ka	ka as in car	1	kana table
+hiragana-ki	き	き			ki	ki as in key	1	kana table
+hiragana-ku	く	く			ku	ku as in cool	1	kana table
+hiragana-ke	け	け			ke	ke as in kettle	1	kana table
+hiragana-ko	こ	こ			ko	ko as in coat	1	kana table
+hiragana-sa	さ	さ			sa	sa as in salsa	1	kana table
+hiragana-shi	し	し			shi	shi as in sheep; there is no si	1	kana table
+hiragana-su	す	す			su	su as in soup	1	kana table
+hiragana-se	せ	せ			se	se as in set	1	kana table
+hiragana-so	そ	そ			so	so as in sort	1	kana table
+hiragana-ta	た	た			ta	ta as in tar	1	kana table
+hiragana-chi	ち	ち			chi	chi as in cheese; there is no ti	1	kana table
+hiragana-tsu	つ	つ			tsu	tsu as in cats; there is no tu	1	kana table
+hiragana-te	て	て			te	te as in ten	1	kana table
+hiragana-to	と	と			to	to as in tall	1	kana table
+hiragana-na	な	な			na	na as in nacho	1	kana table
+hiragana-ni	に	に			ni	ni as in knee	1	kana table
+hiragana-nu	ぬ	ぬ			nu	nu as in noon	1	kana table
+hiragana-ne	ね	ね			ne	ne as in net	1	kana table
+hiragana-no	の	の			no	no as in north	1	kana table
+hiragana-ha	は	は			ha	ha as in harp; as topic marker said wa	1	kana table
+hiragana-hi	ひ	ひ			hi	hi as in he	1	kana table
+hiragana-fu	ふ	ふ			fu	fu: a soft f, lips only	1	kana table
+hiragana-he	へ	へ			he	he as in hen; as direction marker said e	1	kana table
+hiragana-ho	ほ	ほ			ho	ho as in horn	1	kana table
+hiragana-ma	ま	ま			ma	ma as in mama	1	kana table
+hiragana-mi	み	み			mi	mi as in me	1	kana table
+hiragana-mu	む	む			mu	mu as in moon	1	kana table
+hiragana-me	め	め			me	me as in met	1	kana table
+hiragana-mo	も	も			mo	mo as in more	1	kana table
+hiragana-ya	や	や			ya	ya as in yard	1	kana table
+hiragana-yu	ゆ	ゆ			yu	yu as in you	1	kana table
+hiragana-yo	よ	よ			yo	yo as in your	1	kana table
+hiragana-ra	ら	ら			ra	ra: a light tap, between r, l and d	1	kana table
+hiragana-ri	り	り			ri	ri: a light tap, as in the tt of city	1	kana table
+hiragana-ru	る	る			ru	ru: a light tap	1	kana table
+hiragana-re	れ	れ			re	re: a light tap	1	kana table
+hiragana-ro	ろ	ろ			ro	ro: a light tap	1	kana table
+hiragana-wa	わ	わ			wa	wa as in watt	1	kana table
+hiragana-wo	を	を			wo	o; typed wo; marks the object	1	kana table
+hiragana-nn	ん	ん			nn	n: a hum; typed nn, or n before a consonant	1	kana table
+# with two dots or a circle
+hiragana-ga	が	が			ga	ga: か with two dots	1	kana table
+hiragana-gi	ぎ	ぎ			gi	gi: き with two dots	1	kana table
+hiragana-gu	ぐ	ぐ			gu	gu: く with two dots	1	kana table
+hiragana-ge	げ	げ			ge	ge: け with two dots	1	kana table
+hiragana-go	ご	ご			go	go: こ with two dots	1	kana table
+hiragana-za	ざ	ざ			za	za: さ with two dots	1	kana table
+hiragana-ji	じ	じ			ji	ji as in jeep: し with two dots	1	kana table
+hiragana-zu	ず	ず			zu	zu: す with two dots	1	kana table
+hiragana-ze	ぜ	ぜ			ze	ze: せ with two dots	1	kana table
+hiragana-zo	ぞ	ぞ			zo	zo: そ with two dots	1	kana table
+hiragana-da	だ	だ			da	da: た with two dots	1	kana table
+hiragana-di	ぢ	ぢ			di	ji, rare; typed di: ち with two dots	1	kana table
+hiragana-du	づ	づ			du	zu, rare; typed du: つ with two dots	1	kana table
+hiragana-de	で	で			de	de: て with two dots	1	kana table
+hiragana-do	ど	ど			do	do: と with two dots	1	kana table
+hiragana-ba	ば	ば			ba	ba: は with two dots	1	kana table
+hiragana-bi	び	び			bi	bi: ひ with two dots	1	kana table
+hiragana-bu	ぶ	ぶ			bu	bu: ふ with two dots	1	kana table
+hiragana-be	べ	べ			be	be: へ with two dots	1	kana table
+hiragana-bo	ぼ	ぼ			bo	bo: ほ with two dots	1	kana table
+hiragana-pa	ぱ	ぱ			pa	pa: は with a small circle	1	kana table
+hiragana-pi	ぴ	ぴ			pi	pi: ひ with a small circle	1	kana table
+hiragana-pu	ぷ	ぷ			pu	pu: ふ with a small circle	1	kana table
+hiragana-pe	ぺ	ぺ			pe	pe: へ with a small circle	1	kana table
+hiragana-po	ぽ	ぽ			po	po: ほ with a small circle	1	kana table
+# two kana, one beat
+hiragana-kya	きゃ	きゃ			kya	kya: き and a small ゃ, one beat	1	kana table
+hiragana-kyu	きゅ	きゅ			kyu	kyu: き and a small ゅ, one beat	1	kana table
+hiragana-kyo	きょ	きょ			kyo	kyo: き and a small ょ, one beat	1	kana table
+hiragana-sha	しゃ	しゃ			sha	sha: し and a small ゃ, one beat	1	kana table
+hiragana-shu	しゅ	しゅ			shu	shu: し and a small ゅ, one beat	1	kana table
+hiragana-sho	しょ	しょ			sho	sho: し and a small ょ, one beat	1	kana table
+hiragana-cha	ちゃ	ちゃ			cha	cha: ち and a small ゃ, one beat	1	kana table
+hiragana-chu	ちゅ	ちゅ			chu	chu: ち and a small ゅ, one beat	1	kana table
+hiragana-cho	ちょ	ちょ			cho	cho: ち and a small ょ, one beat	1	kana table
+hiragana-nya	にゃ	にゃ			nya	nya: に and a small ゃ, one beat	1	kana table
+hiragana-nyu	にゅ	にゅ			nyu	nyu: に and a small ゅ, one beat	1	kana table
+hiragana-nyo	にょ	にょ			nyo	nyo: に and a small ょ, one beat	1	kana table
+hiragana-hya	ひゃ	ひゃ			hya	hya: ひ and a small ゃ, one beat	1	kana table
+hiragana-hyu	ひゅ	ひゅ			hyu	hyu: ひ and a small ゅ, one beat	1	kana table
+hiragana-hyo	ひょ	ひょ			hyo	hyo: ひ and a small ょ, one beat	1	kana table
+hiragana-mya	みゃ	みゃ			mya	mya: み and a small ゃ, one beat	1	kana table
+hiragana-myu	みゅ	みゅ			myu	myu: み and a small ゅ, one beat	1	kana table
+hiragana-myo	みょ	みょ			myo	myo: み and a small ょ, one beat	1	kana table
+hiragana-rya	りゃ	りゃ			rya	rya: り and a small ゃ, one beat	1	kana table
+hiragana-ryu	りゅ	りゅ			ryu	ryu: り and a small ゅ, one beat	1	kana table
+hiragana-ryo	りょ	りょ			ryo	ryo: り and a small ょ, one beat	1	kana table
+hiragana-gya	ぎゃ	ぎゃ			gya	gya: ぎ and a small ゃ, one beat	1	kana table
+hiragana-gyu	ぎゅ	ぎゅ			gyu	gyu: ぎ and a small ゅ, one beat	1	kana table
+hiragana-gyo	ぎょ	ぎょ			gyo	gyo: ぎ and a small ょ, one beat	1	kana table
+hiragana-ja	じゃ	じゃ			ja	ja: じ and a small ゃ, one beat	1	kana table
+hiragana-ju	じゅ	じゅ			ju	ju: じ and a small ゅ, one beat	1	kana table
+hiragana-jo	じょ	じょ			jo	jo: じ and a small ょ, one beat	1	kana table
+hiragana-bya	びゃ	びゃ			bya	bya: び and a small ゃ, one beat	1	kana table
+hiragana-byu	びゅ	びゅ			byu	byu: び and a small ゅ, one beat	1	kana table
+hiragana-byo	びょ	びょ			byo	byo: び and a small ょ, one beat	1	kana table
+hiragana-pya	ぴゃ	ぴゃ			pya	pya: ぴ and a small ゃ, one beat	1	kana table
+hiragana-pyu	ぴゅ	ぴゅ			pyu	pyu: ぴ and a small ゅ, one beat	1	kana table
+hiragana-pyo	ぴょ	ぴょ			pyo	pyo: ぴ and a small ょ, one beat	1	kana table

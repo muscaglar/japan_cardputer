@@ -115,7 +115,7 @@ void Store::load()
     if (_storage.load(kLog, text)) {
         lines(text, [this](const std::string& line) {
             unsigned long v[3];
-            if (!numbers(line, v, 3, 1) || v[2] > 2 || v[0] > 0xFFFF) {
+            if (!numbers(line, v, 3, 1) || v[2] > 3 || v[0] > 0xFFFF) {
                 return;
             }
             const uint32_t itemKey = static_cast<uint32_t>(v[1]);

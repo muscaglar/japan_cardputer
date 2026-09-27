@@ -13,18 +13,29 @@
 namespace ui {
 
 enum class RomajiMode : uint8_t { Peek, Always, Never, Count };
+enum class Voice : uint8_t { Both, Female, Male, Count };  // Both: they take turns
 
 struct Settings {
     ThemeId theme     = ThemeId::Techo;
     RomajiMode romaji = RomajiMode::Peek;
     bool textbookN    = true;   // minna -> みんな. Off: as on a PC, minnna -> みんな
     bool sound        = false;  // the speaker stays silent unless switched on
+    int volume        = 3;      // 1 to 5
+    Voice voice       = Voice::Both;
     int dayNumber     = 1;      // the device has no clock: the owner confirms each new day
     int answeredToday = 0;      // answers given on this day number
     int level         = 3;      // 1 kana only, 2 kanji of the first school years too, 3 everything
 };
 
-enum class ScreenId : uint8_t { Home, Menu, Kana, Settings, Cards, Summary, Keys, Count };
+enum class ScreenId : uint8_t { Home, Menu, Kana, Settings, Cards, Summary, Keys, Decks, Chart, Guide, Count };
+
+// How far a deck is learnt, counting the cards within the level that is set.
+struct DeckProgress {
+    int total  = 0;
+    int seen   = 0;  // answered at least once
+    int learnt = 0;  // past the learning stage
+    int due    = 0;  // waiting today
+};
 
 // What happened in the sitting that is running or has just ended.
 struct Sitting {
@@ -69,6 +80,18 @@ public:
 
     // Cards. A sitting takes its cards from one deck, or from all of them when deck is nullptr.
     void startSitting(const deck::Deck* deck);
+    // A sitting of the course: what is due from every deck, and new cards from the lowest
+    // stage that still has unseen ones, so that kana come before words.
+    void startCourse();
+    // The deck the course takes its new cards from now. nullptr when every card was seen.
+    const deck::Deck* courseDeck() const;
+    DeckProgress progressOf(const deck::Deck& deck) const;
+
+    // Sound. speak() plays the clip of a card if sound is on, the memory card is in and has it:
+    // "/audio/<f or m>/<deck id>/<item id>.wav", the voice as set. speakFile() plays any file
+    // under the same conditions. Both return whether something is playing now.
+    bool speak(const deck::Deck* deck, const deck::Item* item);
+    bool speakFile(const char* path);
     void endSitting();  // keeps what was learnt; called when the sitting is over or left
     session::Queue& queue() { return _queue; }
     progress::Store& store() { return _store; }
@@ -96,6 +119,7 @@ private:
     progress::Store _store;
     session::Queue _queue;
     Sitting _sitting;
+    bool _maleNext = false;  // whose turn it is when the voices take turns
     std::unique_ptr<Screen> _screens[static_cast<size_t>(ScreenId::Count)];
     ScreenId _current = ScreenId::Home;
     bool _dirty       = true;

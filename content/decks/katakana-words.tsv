@@ -1,6 +1,7 @@
-# name-ja: カタカナ
+# name-ja: カタカナご
 # name-en: katakana words
 # kind: word
+# stage: 3
 # Loanwords a visitor has to decode on menus, in shops, hotels and stations.
 # Readings and meanings: JMdict. Accents: Kanjium accent list, first number, exact entries only.
 id	prompt	reading	accent	accepted	gloss	note	level	source

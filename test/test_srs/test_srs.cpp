@@ -112,6 +112,22 @@ void test_forgetting()
     TEST_ASSERT_EQUAL_UINT(110, c.due);
 }
 
+void test_known_at_first_sight()
+{
+    Card c = srs::answer(Card(), Grade::Known, 3);
+    TEST_ASSERT_EQUAL_INT(static_cast<int>(Stage::Review), static_cast<int>(c.stage));
+    TEST_ASSERT_EQUAL_UINT(4, c.interval);
+    TEST_ASSERT_EQUAL_UINT(7, c.due);
+    TEST_ASSERT_FALSE(srs::due(c, 6));
+    TEST_ASSERT_TRUE(srs::due(c, 7));
+
+    // on a card met before it counts as an ordinary right answer
+    Card learning = srs::answer(Card(), Grade::Good, 1);
+    learning      = srs::answer(learning, Grade::Known, 1);
+    TEST_ASSERT_EQUAL_INT(static_cast<int>(Stage::Review), static_cast<int>(learning.stage));
+    TEST_ASSERT_EQUAL_UINT(1, learning.interval);
+}
+
 void test_limits()
 {
     Card c;
@@ -145,6 +161,7 @@ int main(int, char**)
     RUN_TEST(test_a_late_answer_earns_part_of_the_wait);
     RUN_TEST(test_hard_grows_slowly_and_lowers_the_ease);
     RUN_TEST(test_forgetting);
+    RUN_TEST(test_known_at_first_sight);
     RUN_TEST(test_limits);
     return UNITY_END();
 }

@@ -5,6 +5,8 @@
 // Written by tools/build_decks.py into deck_data.cpp.
 extern const deck::Deck kDeckTable[];
 extern const size_t kDeckTableSize;
+extern const deck::GuidePage kGuidePages[];
+extern const size_t kGuidePageCount;
 
 namespace deck {
 
@@ -45,6 +47,16 @@ const Item* findItem(const char* itemId)
         }
     }
     return nullptr;
+}
+
+size_t guidePageCount()
+{
+    return kGuidePageCount;
+}
+
+const GuidePage& guidePage(size_t index)
+{
+    return kGuidePages[index < kGuidePageCount ? index : 0];
 }
 
 uint32_t key(const char* itemId)

@@ -18,6 +18,7 @@ constexpr int kTriesBeforeHelp  = 2;   // wrong tries on a new card before the r
 constexpr int kLine             = 17;  // line height of the 16 px font
 
 enum class State : uint8_t {
+    Probe,   // a kana never seen is asked first: known at first sight, it is not taught
     Meet,    // a card never seen, with a note: prompt, reading, meaning and the note, to be read
     Copy,    // a card never seen: the answer is shown, the learner types it
     Asking,
@@ -159,7 +160,9 @@ public:
         // the line at the top: the meaning, the question, or the romaji when help was asked for
         std::string top;
         uint32_t topColour = headerInk(t);
-        if (_state == State::Asking && !romajiOn) {
+        if (_state == State::Probe) {
+            top = "Do you know it?";
+        } else if (_state == State::Asking && !romajiOn) {
             top = question(item.kind);
         } else if (romajiOn && _state != State::Marked && !reads) {
             top       = kana::toRomaji(item.reading, !s.textbookN);
@@ -183,6 +186,10 @@ public:
             case State::Copy:
                 footerLeft  = "Type it + Enter";
                 footerRight = (s.romaji == RomajiMode::Never || romajiOn) ? "" : "Tab: help";
+                break;
+            case State::Probe:
+                footerLeft  = "Enter: answer";
+                footerRight = "Tab: no";
                 break;
             case State::Asking:
                 footerLeft  = "Enter: answer";
@@ -218,7 +225,7 @@ public:
         faceCentre(c, centre, y, item.prompt, large, t.ink);
         y += large.height;
 
-        if (_state == State::Asking) {
+        if (_state == State::Asking || _state == State::Probe) {
             drawTyped(c, t, s, item, a, y + 14);
             return;
         }
@@ -299,6 +306,7 @@ public:
         }
         const char* state = "asking";
         switch (_state) {
+            case State::Probe:  state = "probe"; break;
             case State::Meet:   state = "meet"; break;
             case State::Copy:   state = "copy"; break;
             case State::Marked: state = "marked"; break;
@@ -368,13 +376,22 @@ private:
             return;
         }
         _remaining = app.queue().remaining();
-        if (_pick.isNew) {
-            ++app.sitting().introduced;
-            _state = (_pick.item->note[0] != 0) ? State::Meet : State::Copy;
+        if (_pick.probe) {
+            _state = State::Probe;
+        } else if (_pick.isNew) {
+            teach(app);
         } else {
             _state = State::Asking;
         }
         _romajiShown = (app.settings().romaji == RomajiMode::Always);
+    }
+
+    // A new card is met, then copied.
+    void teach(App& app)
+    {
+        ++app.sitting().introduced;
+        _typed.clear();
+        _state = (_pick.item->note[0] != 0 || _pick.item->parts[0] != 0) ? State::Meet : State::Copy;
     }
 
     void leave(App& app)
@@ -387,6 +404,10 @@ private:
     // Tab: first the romaji, then, on a question, the answer itself.
     void help(App& app)
     {
+        if (_state == State::Probe) {
+            teach(app);  // not known: nothing is counted, the card is taught
+            return;
+        }
         const bool romajiAllowed = (app.settings().romaji != RomajiMode::Never);
         const bool romajiOn      = (app.settings().romaji == RomajiMode::Always) || _peeked || _helped;
         if (romajiAllowed && !romajiOn) {
@@ -421,6 +442,17 @@ private:
         _outcome                = match::check(typed, *_pick.item);
         _answered               = startsWithKatakana(_pick.item->reading) ? kana::toKatakana(typed) : typed;
 
+        if (_state == State::Probe) {
+            if (_outcome.verdict == match::Verdict::Right) {
+                ++_streak;
+                _praise = buddy::say("right", app.platform().random());
+                record(app, srs::Grade::Known);
+                _state = State::Marked;
+            } else {
+                teach(app);
+            }
+            return;
+        }
         if (_state == State::Copy) {
             // Copying what is shown is practice, not a test: wrong tries cost nothing.
             if (_outcome.verdict != match::Verdict::Right) {

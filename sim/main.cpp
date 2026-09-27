@@ -90,6 +90,26 @@ public:
     }
     void tone(int hertz, int milliseconds) override { host_tone(hertz, milliseconds); }
 
+    // The simulator has no memory card. It pretends to have one that holds every clip, and
+    // remembers what was asked for, so that checks can see what the app would have played.
+    bool hasCard() override { return _card; }
+    bool play(const char* path, int volume) override
+    {
+        if (!_card) {
+            return false;
+        }
+        _played = path;
+        _volume = volume;
+        ++_plays;
+        return true;
+    }
+    bool playing() override { return false; }
+    void hush() override {}
+    void card(bool in) { _card = in; }
+    const std::string& played() const { return _played; }
+    int plays() const { return _plays; }
+    int volume() const { return _volume; }
+
     void advance(uint32_t milliseconds) { _now += milliseconds; }
     void seed(uint32_t value) { _seed = value ? value : 1; }
     void persist(bool on) { _persist = on; }
@@ -97,9 +117,13 @@ public:
 
 private:
     std::map<std::string, std::string> _files;
+    std::string _played;
     uint32_t _now  = 0;
     uint32_t _seed = 20260927;
+    int _plays     = 0;
+    int _volume    = 0;
     bool _persist  = false;
+    bool _card     = true;
 };
 
 SimPlatform platform;
@@ -197,7 +221,18 @@ EMSCRIPTEN_KEEPALIVE const char* sim_info()
 {
     static std::string text;
     text = app ? app->describe() : std::string("{}");
+    if (app && !text.empty() && text.back() == '}') {
+        text.pop_back();
+        text += ",\"played\":\"" + platform.played() + "\",\"plays\":" + std::to_string(platform.plays()) +
+                ",\"playedAt\":" + std::to_string(platform.volume()) + "}";
+    }
     return text.c_str();
+}
+
+// 1: a memory card is in (the default). 0: it is taken out.
+EMSCRIPTEN_KEEPALIVE void sim_card(int in)
+{
+    platform.card(in != 0);
 }
 
 // what: 0 keeps settings and progress aside, 1 brings them back, 2 forgets all progress.

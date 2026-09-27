@@ -11,7 +11,7 @@ namespace {
 
 deck::Item word(const char* prompt, const char* reading, const char* accepted = "")
 {
-    return deck::Item{"test-item", prompt, reading, accepted, "", "", -1, 2, deck::Kind::Word};
+    return deck::Item{"test-item", prompt, reading, accepted, "", "", "", -1, 2, deck::Kind::Word};
 }
 
 void expect(const char* typed, const deck::Item& item, Verdict verdict, Slip slip, const char* expected = nullptr)
@@ -74,7 +74,7 @@ void test_katakana_words_and_the_long_mark()
 void test_accepted_answers()
 {
     const deck::Item beer =
-        deck::Item{"count-hai-3", "ビール × 3", "さんばい", "みっつ|さんはい", "three glasses", "", -1, 1, deck::Kind::Counter};
+        deck::Item{"count-hai-3", "ビール × 3", "さんばい", "みっつ|さんはい", "three glasses", "", "", -1, 1, deck::Kind::Counter};
     expect("さんばい", beer, Verdict::Right, Slip::None, "さんばい");
     expect("みっつ", beer, Verdict::Right, Slip::None, "みっつ");
     expect("さんはい", beer, Verdict::Right, Slip::None, "さんはい");
@@ -143,11 +143,11 @@ void test_wrong()
 
 void test_kana_items()
 {
-    const deck::Item kya = deck::Item{"kana-kya", "きゃ", "きゃ", "", "kya", "", -1, 1, deck::Kind::Kana};
+    const deck::Item kya = deck::Item{"kana-kya", "きゃ", "きゃ", "", "kya", "", "", -1, 1, deck::Kind::Kana};
     expect("きゃ", kya, Verdict::Right, Slip::None);
     expect("きや", kya, Verdict::Wrong, Slip::Other);
     expect("ぎゃ", kya, Verdict::Almost, Slip::Voicing);
-    const deck::Item n = deck::Item{"kana-n", "ん", "ん", "", "n", "", -1, 1, deck::Kind::Kana};
+    const deck::Item n = deck::Item{"kana-n", "ん", "ん", "", "n", "", "", -1, 1, deck::Kind::Kana};
     expect("ん", n, Verdict::Right, Slip::None);
     expect("な", n, Verdict::Wrong, Slip::Other);
 }

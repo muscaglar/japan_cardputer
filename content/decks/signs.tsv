@@ -1,6 +1,7 @@
 # name-ja: かんばん
 # name-en: signs
 # kind: word
+# stage: 3
 # Words printed on signs, machines and panels. The prompt is the word as it is printed.
 # Readings and meanings: JMdict. Accents: Kanjium accent list, first number, exact entries only.
 # Level 2: every kanji is taught in primary school. Level 3: at least one is taught later.

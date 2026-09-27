@@ -13,8 +13,25 @@ namespace {
 
 const char* const kSettingsFile = "settings.txt";
 
-constexpr uint16_t kCardsPerSitting = 12;
-constexpr uint16_t kNewPerSitting   = 4;
+constexpr uint16_t kCardsPerSitting   = 12;
+constexpr uint16_t kNewPerSitting     = 4;
+constexpr uint16_t kNewKanaPerSitting = 10;
+
+const char* voiceKey(Voice voice)
+{
+    switch (voice) {
+        case Voice::Female: return "female";
+        case Voice::Male:   return "male";
+        default:            return "both";
+    }
+}
+
+Voice voiceFromKey(const std::string& key)
+{
+    if (key == "female") return Voice::Female;
+    if (key == "male") return Voice::Male;
+    return Voice::Both;
+}
 
 const char* romajiKey(RomajiMode mode)
 {
@@ -64,6 +81,9 @@ App::App(Platform& platform) : _platform(platform), _store(platform), _queue(_st
     _screens[static_cast<size_t>(ScreenId::Cards)]    = makeCardsScreen();
     _screens[static_cast<size_t>(ScreenId::Summary)]  = makeSummaryScreen();
     _screens[static_cast<size_t>(ScreenId::Keys)]     = makeKeysScreen();
+    _screens[static_cast<size_t>(ScreenId::Decks)]    = makeDecksScreen();
+    _screens[static_cast<size_t>(ScreenId::Chart)]    = makeChartScreen();
+    _screens[static_cast<size_t>(ScreenId::Guide)]    = makeGuideScreen();
 }
 
 App::~App() = default;
@@ -113,6 +133,19 @@ void App::show(ScreenId id)
     _dirty = true;
 }
 
+namespace {
+
+std::vector<const deck::Deck*> everyDeck()
+{
+    std::vector<const deck::Deck*> decks;
+    for (size_t i = 0; i < deck::count(); ++i) {
+        decks.push_back(&deck::at(i));
+    }
+    return decks;
+}
+
+}  // namespace
+
 void App::startSitting(const deck::Deck* deck)
 {
     _sitting      = Sitting();
@@ -122,19 +155,87 @@ void App::startSitting(const deck::Deck* deck)
     if (deck) {
         decks.push_back(deck);
     } else {
-        for (size_t i = 0; i < deck::count(); ++i) {
-            decks.push_back(&deck::at(i));
-        }
+        decks = everyDeck();
     }
     session::Plan plan;
-    plan.today    = today();
-    plan.maxCards = kCardsPerSitting;
-    plan.maxNew   = kNewPerSitting;
-    plan.level    = static_cast<uint8_t>(_settings.level);
+    plan.today      = today();
+    plan.maxCards   = kCardsPerSitting;
+    plan.maxNew     = kNewPerSitting;
+    plan.maxNewKana = kNewKanaPerSitting;
+    plan.level      = static_cast<uint8_t>(_settings.level);
+    plan.course     = (deck == nullptr);
     // The same day brings the decks in the same turn; the next day starts with another deck.
     plan.seed = static_cast<uint32_t>(_settings.dayNumber);
     _queue.start(plan, decks);
     show(ScreenId::Cards);
+}
+
+void App::startCourse()
+{
+    startSitting(nullptr);
+}
+
+const deck::Deck* App::courseDeck() const
+{
+    const std::vector<const deck::Deck*> decks = everyDeck();
+    const uint8_t stage = session::openStage(_store, decks, static_cast<uint8_t>(_settings.level));
+    for (const deck::Deck* deck : decks) {
+        if (stage != 0 && deck->stage == stage && progressOf(*deck).seen < progressOf(*deck).total) {
+            return deck;
+        }
+    }
+    return nullptr;
+}
+
+DeckProgress App::progressOf(const deck::Deck& deck) const
+{
+    DeckProgress progress;
+    for (uint16_t i = 0; i < deck.count; ++i) {
+        if (deck.items[i].level > _settings.level) {
+            continue;
+        }
+        ++progress.total;
+        const srs::Card card = _store.get(deck::key(deck.items[i].id));
+        if (card.stage != srs::Stage::New) {
+            ++progress.seen;
+        }
+        if (card.stage == srs::Stage::Review) {
+            ++progress.learnt;
+        }
+        if (srs::due(card, today())) {
+            ++progress.due;
+        }
+    }
+    return progress;
+}
+
+bool App::speakFile(const char* path)
+{
+    if (!_settings.sound || !path || !_platform.hasCard()) {
+        return false;
+    }
+    return _platform.play(path, _settings.volume);
+}
+
+bool App::speak(const deck::Deck* deck, const deck::Item* item)
+{
+    if (!deck || !item || !_settings.sound || !_platform.hasCard()) {
+        return false;
+    }
+    bool male = (_settings.voice == Voice::Male);
+    if (_settings.voice == Voice::Both) {
+        male      = _maleNext;
+        _maleNext = !_maleNext;
+    }
+    // The other voice is better than silence when the wanted one has no clip of this card.
+    for (int attempt = 0; attempt < 2; ++attempt) {
+        const std::string path = std::string("/audio/") + (male ? "m" : "f") + "/" + deck->id + "/" + item->id + ".wav";
+        if (_platform.play(path.c_str(), _settings.volume)) {
+            return true;
+        }
+        male = !male;
+    }
+    return false;
 }
 
 void App::endSitting()
@@ -157,31 +258,42 @@ int App::dueToday() const
 
 int App::newAvailable() const
 {
-    int count = 0;
-    for (size_t d = 0; d < deck::count(); ++d) {
-        const deck::Deck& deck = deck::at(d);
-        for (uint16_t i = 0; i < deck.count; ++i) {
-            if (deck.items[i].level <= _settings.level &&
-                _store.get(deck::key(deck.items[i].id)).stage == srs::Stage::New) {
-                if (++count >= kNewPerSitting) {
-                    return count;
-                }
+    // what the next sitting of the course would bring
+    const std::vector<const deck::Deck*> decks = everyDeck();
+    const uint8_t stage = session::openStage(_store, decks, static_cast<uint8_t>(_settings.level));
+    int words = 0;
+    int kana  = 0;
+    for (const deck::Deck* deck : decks) {
+        if (stage == 0 || deck->stage != stage) {
+            continue;
+        }
+        for (uint16_t i = 0; i < deck->count; ++i) {
+            const deck::Item& item = deck->items[i];
+            if (item.level <= _settings.level && _store.get(deck::key(item.id)).stage == srs::Stage::New) {
+                ++(item.kind == deck::Kind::Kana ? kana : words);
             }
         }
     }
-    return count;
+    if (kana > 0) {
+        return kana < kNewKanaPerSitting ? kana : kNewKanaPerSitting;
+    }
+    return words < kNewPerSitting ? words : kNewPerSitting;
 }
 
 std::string App::describe() const
 {
-    char text[320];
+    const deck::Deck* course = courseDeck();
+    char text[420];
     std::snprintf(text, sizeof(text),
-                  "{\"screen\":%d,\"look\":\"%s\",\"romaji\":\"%s\",\"sound\":%s,\"textbookN\":%s,\"level\":%d,"
-                  "\"day\":%d,\"answeredToday\":%d,\"due\":%d,\"new\":%d,\"seen\":%u,\"learnt\":%u",
+                  "{\"screen\":%d,\"look\":\"%s\",\"romaji\":\"%s\",\"sound\":%s,\"volume\":%d,\"voice\":\"%s\","
+                  "\"textbookN\":%s,\"level\":%d,\"day\":%d,\"answeredToday\":%d,\"due\":%d,\"new\":%d,"
+                  "\"seen\":%u,\"learnt\":%u,\"course\":\"%s\",\"memoryCard\":%s",
                   static_cast<int>(_current), theme().key, romajiKey(_settings.romaji),
-                  _settings.sound ? "true" : "false", _settings.textbookN ? "true" : "false", _settings.level,
-                  _settings.dayNumber, _settings.answeredToday, dueToday(), newAvailable(),
-                  static_cast<unsigned>(_store.seen()), static_cast<unsigned>(_store.learnt()));
+                  _settings.sound ? "true" : "false", _settings.volume, voiceKey(_settings.voice),
+                  _settings.textbookN ? "true" : "false", _settings.level, _settings.dayNumber,
+                  _settings.answeredToday, dueToday(), newAvailable(), static_cast<unsigned>(_store.seen()),
+                  static_cast<unsigned>(_store.learnt()), course ? course->id : "",
+                  const_cast<App*>(this)->_platform.hasCard() ? "true" : "false");
     std::string all = text;
     _screens[static_cast<size_t>(_current)]->describe(all);
     all += "}";
@@ -264,6 +376,11 @@ void App::loadSettings()
             _settings.textbookN = (value != "0");
         } else if (name == "sound") {
             _settings.sound = (value == "1");
+        } else if (name == "volume") {
+            const int volume = std::atoi(value.c_str());
+            _settings.volume = (volume >= 1 && volume <= 5) ? volume : 3;
+        } else if (name == "voice") {
+            _settings.voice = voiceFromKey(value);
         } else if (name == "day") {
             const int day = std::atoi(value.c_str());
             _settings.dayNumber = (day > 0 && day < 60000) ? day : 1;
@@ -288,6 +405,10 @@ void App::saveSettings()
     text += _settings.textbookN ? "1" : "0";
     text += "\nsound=";
     text += _settings.sound ? "1" : "0";
+    text += "\nvolume=";
+    text += std::to_string(_settings.volume);
+    text += "\nvoice=";
+    text += voiceKey(_settings.voice);
     text += "\nday=";
     text += std::to_string(_settings.dayNumber);
     text += "\nanswered_today=";

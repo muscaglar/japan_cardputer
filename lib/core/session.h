@@ -11,11 +11,13 @@
 namespace session {
 
 struct Plan {
-    uint16_t today    = 1;
-    uint16_t maxCards = 12;  // a sitting ends after this many answers
-    uint16_t maxNew   = 4;   // of which at most this many are cards never seen before
-    uint8_t level     = 1;   // cards above this level are left out
-    uint32_t seed     = 1;   // the same seed gives the same sitting
+    uint16_t today      = 1;
+    uint16_t maxCards   = 12;  // a sitting ends after this many answers
+    uint16_t maxNew     = 4;   // of which at most this many are words never seen before
+    uint16_t maxNewKana = 10;  // or this many kana: they are quick, and many are known already
+    uint8_t level       = 1;   // cards above this level are left out
+    uint32_t seed       = 1;   // the same seed gives the same sitting
+    bool course         = false;  // new cards only from the lowest stage that still has unseen ones
 };
 
 struct Pick {
@@ -23,7 +25,12 @@ struct Pick {
     const deck::Item* item = nullptr;
     bool isNew             = false;
     bool repeat            = false;  // shown again in this sitting after a wrong answer
+    bool probe             = false;  // a new kana: asked first, taught only if it is not known
 };
+
+// The lowest stage among the decks that still has a card never seen, within the level.
+// 0 when every card was seen.
+uint8_t openStage(const progress::Store& store, const std::vector<const deck::Deck*>& decks, uint8_t level);
 
 class Queue {
 public:

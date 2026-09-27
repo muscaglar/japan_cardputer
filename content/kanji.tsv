@@ -1,0 +1,218 @@
+# What each kanji of the deck words means on its own, for the card line "出 go out + 口 opening".
+# The meanings rest on KANJIDIC; where it lacks the sense of the word, on the JMdict entry of that word
+# (both: Electronic Dictionary Research and Development Group, CC BY-SA 4.0).
+# meaning: the sense the kanji has in the deck words, lower case, at most 12 characters.
+# basis: the KANJIDIC meaning it rests on, spelt as in KANJIDIC, or "JMdict: " and the word whose JMdict entry gives the sense.
+# words: up to three deck words with the kanji. Rows stand in the order of first occurrence in the decks.
+# 風呂 is spelt for sound: 風 and 呂 keep their own meanings and do not explain the word.
+kanji	meaning	basis	words
+駅	station	station	駅 各駅停車
+入	enter	enter	入口 立入禁止 入れ墨
+口	opening	mouth	入口 出口 改札口
+出	go out	go out	出口 呼出
+改	inspect	inspect	改札口
+札	ticket	tag	改札口
+北	north	north	北口
+南	south	south	南口
+東	east	east	東口
+西	west	west	西口
+地	ground	ground	地下鉄
+下	below	below	地下鉄
+鉄	railway	JMdict: 地下鉄	地下鉄
+券	ticket	ticket	券売機 乗車券 特急券
+売	sell	sell	券売機 売切
+機	machine	machine	券売機 精算機
+精	exact	refined	精算機
+算	calculate	calculate	精算機
+方	direction	direction	方面
+面	side	face	方面
+行	go	going	行き 急行 通行止
+番	number	number in a series	番線 交番
+線	line	line	番線 新幹線
+各	each	each	各駅停車
+停	stop	stopping	各駅停車 停止
+車	car	car	各駅停車 号車 女性専用車
+普	general	generally	普通
+通	pass through	pass through	普通 お通し 通行止
+快	pleasant	pleasant	快速
+速	fast	fast	快速
+急	hurry	hurry	急行 特急 特急券
+特	special	special	特急 特急券
+新	new	new	新幹線
+幹	trunk	tree trunk	新幹線
+号	number	number	号車
+自	self	oneself	自由席 自動
+由	reason	a reason	自由席
+席	seat	seat	自由席 指定席 優先席
+指	point	point to	指定席
+定	fix	fix	指定席 定休日 定食
+優	superior	superiority	優先席
+先	ahead	ahead	優先席
+女	woman	woman	女性専用車 女 女湯
+性	gender	gender	女性専用車
+専	exclusive	exclusive	女性専用車 専用
+用	use	use	女性専用車 使用中 専用
+始	begin	begin	始発
+発	depart	departure	始発
+最	most	most	最終 最後尾
+終	end	end	最終
+回	go round	revolve	回送
+送	send	send	回送
+遅	late	late	遅延
+延	prolong	prolong	遅延
+運	transport	transport	運休 運転見合わせ 運賃
+休	rest	rest	運休 定休日 本日休業
+転	turn	turn around	運転見合わせ 運転
+見	see	see	運転見合わせ
+合	join	join	運転見合わせ
+片	one side	one-sided	片道
+道	road	road-way	片道
+往	go	going	往復
+復	return	return to	往復
+賃	charge	charge	運賃
+大	large	large	大人 大盛 大
+人	person	person	大人 小人
+小	small	small	小人 小
+乗	ride	ride	乗車券
+整	organise	organize	整理券
+理	arrange	arrangement	整理券
+両	old coin	old Japanese coin	両替
+替	exchange	exchange	両替 日替わり 替玉
+営	conduct	conduct (business)	営業中 営業時間
+業	business	business	営業中 営業時間 本日休業
+中	in	in	営業中 準備中 故障中
+準	prepare	JMdict: 準備中	準備中
+備	equip	equip	準備中
+時	time	time	営業時間
+間	interval	interval	営業時間
+日	day	day	定休日 本日休業 日替わり
+本	present	present	本日休業
+動	move	move	自動
+押	push	push	押す
+引	pull	pull	引く 割引
+受	receive	receive	受付
+付	attach	attach	受付
+満	full	full	満席 満室
+室	room	room	満室 化粧室
+予	beforehand	beforehand	予約制
+約	promise	promise	予約制
+制	system	system	予約制
+貸	lend	lend	貸切
+切	cut	cut	貸切 品切れ 売切
+会	reckon	JMdict: 会計	お会計
+計	measure	measure	お会計
+料	fee	fee	料金 無料 有料
+金	money	JMdict: 現金	料金 現金のみ
+現	actual	actual	現金のみ
+不	not	non-	不可
+可	can	can	不可
+免	exempt	excuse	免税
+税	tax	tax	免税 税込 税抜
+込	included	included	税込
+抜	remove	remove	税抜
+割	proportion	proportion	割引
+半	half	half	半額
+額	amount	amount	半額
+無	none	none	無料
+有	have	have	有料
+禁	forbid	forbid	禁煙 土足厳禁 撮影禁止
+煙	smoke	smoke	禁煙 喫煙所
+喫	consume	consume	喫煙所
+所	place	place	喫煙所 脱衣所 案内所
+土	soil	soil	土足厳禁
+足	foot	foot	土足厳禁 足元
+厳	strict	strictness	土足厳禁
+閉	shut	shut	閉店 閉める
+店	shop	shop	閉店 店内
+品	goods	goods	品切れ 単品
+持	hold	hold	持ち帰り
+帰	return home	homecoming	持ち帰り
+内	inside	inside	店内 案内所
+撮	photograph	take pictures	撮影禁止
+影	shadow	shadow	撮影禁止
+止	stop	stop	撮影禁止 立入禁止 停止
+立	stand	stand up	立入禁止
+故	accident	happenstance	故障中
+障	hinder	hinder	故障中
+使	use	use	使用中
+清	clean	cleanse	清掃中
+掃	sweep	sweep	清掃中
+後	behind	behind	最後尾
+尾	tail	tail	最後尾
+断	refuse	refuse	お断り
+食	food	food	食券 定食 食べ放題
+注	note	notes	注文 注意
+文	writing	literature	注文
+単	single	single	単品
+盛	serving	JMdict: 大盛	大盛 並盛
+並	normal	JMdict: 並盛	並盛
+玉	ball	ball	替玉
+放	set free	set free	食べ放題 飲み放題
+題	topic	topic	食べ放題 飲み放題
+飲	drink	drink	飲み放題 飲食禁止
+取	take	take	取消
+消	cancel	cancel	取消
+確	firm	firm	確認
+認	recognise	recognize	確認
+戻	go back	go backwards	戻る
+呼	call	call	呼出
+領	receive	JMdict: 領収	領収書
+収	obtain	obtain	領収書
+書	write	write	領収書
+返	return	return	返却口
+却	withdraw	withdraw	返却口
+冷	cool	cool	冷房
+房	room	room	冷房 暖房
+暖	warm	warmth	暖房
+除	remove	remove	除湿
+湿	damp	damp	除湿
+温	warm	warm	温度
+度	degree	degrees	温度
+電	electricity	electricity	電源
+源	source	source	電源
+流	flow	flow	流す
+手	hand	hand	お手洗い
+洗	wash	wash	お手洗い
+化	change	change	化粧室
+粧	adorn	adorn (one's person)	化粧室
+男	man	male	男 男湯
+湯	hot water	hot water	男湯 女湯 かけ湯
+非	not	non-	非常口
+常	usual	usual	非常口
+浴	bathe	bathe	大浴場
+場	place	place	大浴場 駐輪場
+露	expose	expose	露天風呂
+天	sky	sky	露天風呂
+風	wind	wind	露天風呂
+呂	spine	spine	露天風呂
+脱	take off	take off	脱衣所
+衣	clothes	clothes	脱衣所
+墨	ink	black ink	入れ墨
+開	open	open	開く
+工	construction	construction	工事中
+事	matter	matter	工事中
+危	dangerous	dangerous	危険
+険	steep	steep place	危険
+意	mind	mind	注意
+元	origin	origin	足元
+駐	stay	stop-over	駐輪場
+輪	wheel	wheel	駐輪場
+空	empty	empty	空車
+交	alternate	JMdict: 交番	交番
+薬	medicine	medicine	薬局
+局	office	office	薬局 郵便局
+郵	mail	mail	郵便局
+便	letter	letter	郵便局
+案	plan	plan	案内所
+避	avoid	avoid	避難所
+難	trouble	trouble	避難所
+津	harbour	harbor	津波
+波	wave	waves	津波
+拝	worship	worship	拝観料
+観	view	view	拝観料
+順	sequence	order	順路
+路	route	route	順路
+館	building	building	休館日
+平	ordinary	JMdict: 平日	平日
+祝	celebrate	celebrate	祝日
+燃	burn	burn	燃えるゴミ

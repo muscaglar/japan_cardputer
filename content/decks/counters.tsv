@@ -1,6 +1,7 @@
 # name-ja: かぞえかた
 # name-en: counters
 # kind: counter
+# stage: 2
 # A quantity is shown; the answer is how it is said. Generic travel situations only.
 # A row with ? in the prompt asks for the question word: いくつ, なんにん, なんぼん.
 # Readings: JMdict where the form is a headword, otherwise the page named in the source column.

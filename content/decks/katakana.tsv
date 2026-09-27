@@ -1,0 +1,115 @@
+# name-ja: カタカナ
+# name-en: katakana
+# kind: kana
+# stage: 2
+# Written by tools/make_kana_decks.py. Change the program, not this file.
+# The gloss is what to type. The note says how it sounds, or, for katakana that are
+# taken for one another, how to tell them apart.
+id	prompt	reading	accent	accepted	gloss	note	level	source
+# the 46 basic kana
+katakana-a	ア	ア			a	a: マ ma with a leg down	1	kana table
+katakana-i	イ	イ			i	i as in machine; same as い	1	kana table
+katakana-u	ウ	ウ			u	u: a tick on top. ワ wa has none	1	kana table
+katakana-e	エ	エ			e	e as in bed; same as え	1	kana table
+katakana-o	オ	オ			o	o as in more; same as お	1	kana table
+katakana-ka	カ	カ			ka	ka as in car; same as か	1	kana table
+katakana-ki	キ	キ			ki	ki as in key; same as き	1	kana table
+katakana-ku	ク	ク			ku	ku: no bar inside. ケ ke and タ ta have one	1	kana table
+katakana-ke	ケ	ケ			ke	ke: the bar sticks out to the left	1	kana table
+katakana-ko	コ	コ			ko	ko: open to the left. ユ yu has a long base	1	kana table
+katakana-sa	サ	サ			sa	sa as in salsa; same as さ	1	kana table
+katakana-shi	シ	シ			shi	shi: strokes rise from the left. ツ tsu falls	1	kana table
+katakana-su	ス	ス			su	su: ends open. ヌ nu has a stroke across	1	kana table
+katakana-se	セ	セ			se	se as in set; same as せ	1	kana table
+katakana-so	ソ	ソ			so	so: the long stroke falls. ン n rises	1	kana table
+katakana-ta	タ	タ			ta	ta: ク ku with a short stroke inside	1	kana table
+katakana-chi	チ	チ			chi	chi: the top stroke slants. テ te is flat	1	kana table
+katakana-tsu	ツ	ツ			tsu	tsu: strokes fall from the top. シ shi rises	1	kana table
+katakana-te	テ	テ			te	te: two flat bars. チ chi slants on top	1	kana table
+katakana-to	ト	ト			to	to as in tall; same as と	1	kana table
+katakana-na	ナ	ナ			na	na as in nacho; same as な	1	kana table
+katakana-ni	ニ	ニ			ni	ni as in knee; same as に	1	kana table
+katakana-nu	ヌ	ヌ			nu	nu: ス su with a stroke across	1	kana table
+katakana-ne	ネ	ネ			ne	ne as in net; same as ね	1	kana table
+katakana-no	ノ	ノ			no	no: one stroke. ソ so and ン n have two	1	kana table
+katakana-ha	ハ	ハ			ha	ha as in harp; same as は	1	kana table
+katakana-hi	ヒ	ヒ			hi	hi as in he; same as ひ	1	kana table
+katakana-fu	フ	フ			fu	fu: one corner only. ワ wa has a left side	1	kana table
+katakana-he	ヘ	ヘ			he	he as in hen; same as へ	1	kana table
+katakana-ho	ホ	ホ			ho	ho as in horn; same as ほ	1	kana table
+katakana-ma	マ	マ			ma	ma: the dot is inside. ム mu stands on a base	1	kana table
+katakana-mi	ミ	ミ			mi	mi as in me; same as み	1	kana table
+katakana-mu	ム	ム			mu	mu: a base line with a dot. マ ma is a corner	1	kana table
+katakana-me	メ	メ			me	me as in met; same as め	1	kana table
+katakana-mo	モ	モ			mo	mo as in more; same as も	1	kana table
+katakana-ya	ヤ	ヤ			ya	ya as in yard; same as や	1	kana table
+katakana-yu	ユ	ユ			yu	yu: the base is longer than the top	1	kana table
+katakana-yo	ヨ	ヨ			yo	yo: three bars. コ ko has two	1	kana table
+katakana-ra	ラ	ラ			ra	ra: a light tap, between r, l and d; same as ら	1	kana table
+katakana-ri	リ	リ			ri	ri: a light tap, as in the tt of city; same as り	1	kana table
+katakana-ru	ル	ル			ru	ru: a light tap; same as る	1	kana table
+katakana-re	レ	レ			re	re: a light tap; same as れ	1	kana table
+katakana-ro	ロ	ロ			ro	ro: a light tap; same as ろ	1	kana table
+katakana-wa	ワ	ワ			wa	wa: flat on top. ウ u has a tick	1	kana table
+katakana-wo	ヲ	ヲ			wo	o, rare; typed wo; same as を	1	kana table
+katakana-nn	ン	ン			nn	n: the long stroke rises. ソ so falls	1	kana table
+# with two dots or a circle
+katakana-ga	ガ	ガ			ga	ga: カ with two dots	1	kana table
+katakana-gi	ギ	ギ			gi	gi: キ with two dots	1	kana table
+katakana-gu	グ	グ			gu	gu: ク with two dots	1	kana table
+katakana-ge	ゲ	ゲ			ge	ge: ケ with two dots	1	kana table
+katakana-go	ゴ	ゴ			go	go: コ with two dots	1	kana table
+katakana-za	ザ	ザ			za	za: サ with two dots	1	kana table
+katakana-ji	ジ	ジ			ji	ji as in jeep: シ with two dots	1	kana table
+katakana-zu	ズ	ズ			zu	zu: ス with two dots	1	kana table
+katakana-ze	ゼ	ゼ			ze	ze: セ with two dots	1	kana table
+katakana-zo	ゾ	ゾ			zo	zo: ソ with two dots	1	kana table
+katakana-da	ダ	ダ			da	da: タ with two dots	1	kana table
+katakana-di	ヂ	ヂ			di	ji, rare; typed di: チ with two dots	1	kana table
+katakana-du	ヅ	ヅ			du	zu, rare; typed du: ツ with two dots	1	kana table
+katakana-de	デ	デ			de	de: テ with two dots	1	kana table
+katakana-do	ド	ド			do	do: ト with two dots	1	kana table
+katakana-ba	バ	バ			ba	ba: ハ with two dots	1	kana table
+katakana-bi	ビ	ビ			bi	bi: ヒ with two dots	1	kana table
+katakana-bu	ブ	ブ			bu	bu: フ with two dots	1	kana table
+katakana-be	ベ	ベ			be	be: ヘ with two dots	1	kana table
+katakana-bo	ボ	ボ			bo	bo: ホ with two dots	1	kana table
+katakana-pa	パ	パ			pa	pa: ハ with a small circle	1	kana table
+katakana-pi	ピ	ピ			pi	pi: ヒ with a small circle	1	kana table
+katakana-pu	プ	プ			pu	pu: フ with a small circle	1	kana table
+katakana-pe	ペ	ペ			pe	pe: ヘ with a small circle	1	kana table
+katakana-po	ポ	ポ			po	po: ホ with a small circle	1	kana table
+# two kana, one beat
+katakana-kya	キャ	キャ			kya	kya: キ and a small ャ, one beat	1	kana table
+katakana-kyu	キュ	キュ			kyu	kyu: キ and a small ュ, one beat	1	kana table
+katakana-kyo	キョ	キョ			kyo	kyo: キ and a small ョ, one beat	1	kana table
+katakana-sha	シャ	シャ			sha	sha: シ and a small ャ, one beat	1	kana table
+katakana-shu	シュ	シュ			shu	shu: シ and a small ュ, one beat	1	kana table
+katakana-sho	ショ	ショ			sho	sho: シ and a small ョ, one beat	1	kana table
+katakana-cha	チャ	チャ			cha	cha: チ and a small ャ, one beat	1	kana table
+katakana-chu	チュ	チュ			chu	chu: チ and a small ュ, one beat	1	kana table
+katakana-cho	チョ	チョ			cho	cho: チ and a small ョ, one beat	1	kana table
+katakana-nya	ニャ	ニャ			nya	nya: ニ and a small ャ, one beat	1	kana table
+katakana-nyu	ニュ	ニュ			nyu	nyu: ニ and a small ュ, one beat	1	kana table
+katakana-nyo	ニョ	ニョ			nyo	nyo: ニ and a small ョ, one beat	1	kana table
+katakana-hya	ヒャ	ヒャ			hya	hya: ヒ and a small ャ, one beat	1	kana table
+katakana-hyu	ヒュ	ヒュ			hyu	hyu: ヒ and a small ュ, one beat	1	kana table
+katakana-hyo	ヒョ	ヒョ			hyo	hyo: ヒ and a small ョ, one beat	1	kana table
+katakana-mya	ミャ	ミャ			mya	mya: ミ and a small ャ, one beat	1	kana table
+katakana-myu	ミュ	ミュ			myu	myu: ミ and a small ュ, one beat	1	kana table
+katakana-myo	ミョ	ミョ			myo	myo: ミ and a small ョ, one beat	1	kana table
+katakana-rya	リャ	リャ			rya	rya: リ and a small ャ, one beat	1	kana table
+katakana-ryu	リュ	リュ			ryu	ryu: リ and a small ュ, one beat	1	kana table
+katakana-ryo	リョ	リョ			ryo	ryo: リ and a small ョ, one beat	1	kana table
+katakana-gya	ギャ	ギャ			gya	gya: ギ and a small ャ, one beat	1	kana table
+katakana-gyu	ギュ	ギュ			gyu	gyu: ギ and a small ュ, one beat	1	kana table
+katakana-gyo	ギョ	ギョ			gyo	gyo: ギ and a small ョ, one beat	1	kana table
+katakana-ja	ジャ	ジャ			ja	ja: ジ and a small ャ, one beat	1	kana table
+katakana-ju	ジュ	ジュ			ju	ju: ジ and a small ュ, one beat	1	kana table
+katakana-jo	ジョ	ジョ			jo	jo: ジ and a small ョ, one beat	1	kana table
+katakana-bya	ビャ	ビャ			bya	bya: ビ and a small ャ, one beat	1	kana table
+katakana-byu	ビュ	ビュ			byu	byu: ビ and a small ュ, one beat	1	kana table
+katakana-byo	ビョ	ビョ			byo	byo: ビ and a small ョ, one beat	1	kana table
+katakana-pya	ピャ	ピャ			pya	pya: ピ and a small ャ, one beat	1	kana table
+katakana-pyu	ピュ	ピュ			pyu	pyu: ピ and a small ュ, one beat	1	kana table
+katakana-pyo	ピョ	ピョ			pyo	pyo: ピ and a small ョ, one beat	1	kana table

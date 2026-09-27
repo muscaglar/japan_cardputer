@@ -34,15 +34,20 @@ public:
     std::map<std::string, std::string> files;
 };
 
-#define ITEM(id, level) {id, id, "あ", "", "", "", -1, level, deck::Kind::Word}
+#define ITEM(id, level) {id, id, "あ", "", "", "", "", -1, level, deck::Kind::Word}
+#define KANA(id) {id, id, "あ", "", "a", "", "", -1, 1, deck::Kind::Kana}
 
 const deck::Item kSigns[] = {ITEM("s1", 1), ITEM("s2", 1), ITEM("s3", 2), ITEM("s4", 1), ITEM("s5", 1), ITEM("s6", 1)};
 const deck::Item kWords[] = {ITEM("w1", 1), ITEM("w2", 1), ITEM("w3", 1), ITEM("w4", 3)};
 const deck::Item kCount[] = {ITEM("c1", 1), ITEM("c2", 1)};
 
-const deck::Deck kSignDeck  = {"signs", "かんばん", "signs", kSigns, 6};
-const deck::Deck kWordDeck  = {"words", "ことば", "words", kWords, 4};
-const deck::Deck kCountDeck = {"count", "かぞえかた", "counters", kCount, 2};
+const deck::Item kKana[]  = {KANA("k1"), KANA("k2"), KANA("k3"), KANA("k4"), KANA("k5"), KANA("k6"),
+                             KANA("k7"), KANA("k8"), KANA("k9"), KANA("k10"), KANA("k11"), KANA("k12")};
+
+const deck::Deck kSignDeck  = {"signs", "かんばん", "signs", kSigns, 6, 3};
+const deck::Deck kWordDeck  = {"words", "ことば", "words", kWords, 4, 2};
+const deck::Deck kCountDeck = {"count", "かぞえかた", "counters", kCount, 2, 2};
+const deck::Deck kKanaDeck  = {"kana", "かな", "kana", kKana, 12, 1};
 
 std::vector<const deck::Deck*> all()
 {
@@ -251,6 +256,81 @@ void test_the_same_plan_gives_the_same_sitting()
     TEST_ASSERT_EQUAL_STRING(play(one, Grade::Good).c_str(), play(two, Grade::Good).c_str());
 }
 
+void test_a_course_takes_new_cards_from_the_lowest_stage_only()
+{
+    Memory memory;
+    progress::Store store(memory);
+    store.load();
+    const std::vector<const deck::Deck*> decks = {&kSignDeck, &kWordDeck, &kCountDeck, &kKanaDeck};
+    TEST_ASSERT_EQUAL_UINT(1, session::openStage(store, decks, 3));
+
+    session::Queue queue(store);
+    session::Plan plan;
+    plan.course   = true;
+    plan.maxCards = 12;
+    plan.level    = 3;
+    queue.start(plan, decks);
+    session::Pick pick;
+    int count = 0;
+    while (queue.next(pick)) {
+        TEST_ASSERT_EQUAL_STRING("kana", pick.deck->id);
+        TEST_ASSERT_TRUE(pick.isNew);
+        TEST_ASSERT_TRUE(pick.probe);
+        queue.answered(pick, Grade::Known);  // known at first sight: not repeated
+        ++count;
+    }
+    TEST_ASSERT_EQUAL_INT(10, count);  // maxNewKana
+    TEST_ASSERT_EQUAL_UINT(10, store.learnt());
+    TEST_ASSERT_EQUAL_UINT(0, store.dueOn(1));
+    TEST_ASSERT_EQUAL_UINT(10, store.dueOn(5));  // asked again after four days
+
+    // the two kana that are left, then the stage is done and the next one opens
+    queue.start(plan, decks);
+    count = 0;
+    while (queue.next(pick)) {
+        TEST_ASSERT_EQUAL_STRING("kana", pick.deck->id);
+        queue.answered(pick, Grade::Known);
+        ++count;
+    }
+    TEST_ASSERT_EQUAL_INT(2, count);
+    TEST_ASSERT_EQUAL_UINT(2, session::openStage(store, decks, 3));
+
+    queue.start(plan, decks);
+    std::string order;
+    while (queue.next(pick)) {
+        TEST_ASSERT_TRUE(pick.deck == &kWordDeck || pick.deck == &kCountDeck);
+        TEST_ASSERT_FALSE(pick.probe);
+        order += pick.item->id;
+        order += " ";
+    }
+    TEST_ASSERT_EQUAL_STRING("w1 c1 w2 c2 ", order.c_str());  // four new words, from both decks of stage 2
+}
+
+void test_a_kana_that_is_not_known_is_taught_and_comes_back()
+{
+    Memory memory;
+    progress::Store store(memory);
+    store.load();
+    session::Queue queue(store);
+    session::Plan plan;
+    plan.course     = true;
+    plan.maxNewKana = 2;
+    queue.start(plan, {&kKanaDeck});
+    session::Pick pick;
+    TEST_ASSERT_TRUE(queue.next(pick));
+    TEST_ASSERT_TRUE(pick.probe);
+    queue.answered(pick, Grade::Good);  // it was not known: taught and copied
+    TEST_ASSERT_TRUE(queue.next(pick));
+    queue.answered(pick, Grade::Known);
+    TEST_ASSERT_TRUE(queue.next(pick));  // the first one again, now as a question
+    TEST_ASSERT_EQUAL_STRING("k1", pick.item->id);
+    TEST_ASSERT_TRUE(pick.repeat);
+    TEST_ASSERT_FALSE(pick.probe);
+    queue.answered(pick, Grade::Good);
+    TEST_ASSERT_FALSE(queue.next(pick));
+    TEST_ASSERT_EQUAL_INT(3, queue.right());
+}
+
 void test_nothing_to_do()
 {
     Memory memory;
@@ -277,6 +357,8 @@ int main(int, char**)
     RUN_TEST(test_due_cards_come_first_the_longest_overdue_first);
     RUN_TEST(test_same_deck_cards_are_kept_apart_when_possible);
     RUN_TEST(test_the_same_plan_gives_the_same_sitting);
+    RUN_TEST(test_a_course_takes_new_cards_from_the_lowest_stage_only);
+    RUN_TEST(test_a_kana_that_is_not_known_is_taught_and_comes_back);
     RUN_TEST(test_nothing_to_do);
     return UNITY_END();
 }

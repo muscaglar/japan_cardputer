@@ -14,5 +14,8 @@ std::unique_ptr<Screen> makeSettingsScreen();
 std::unique_ptr<Screen> makeCardsScreen();
 std::unique_ptr<Screen> makeSummaryScreen();
 std::unique_ptr<Screen> makeKeysScreen();
+std::unique_ptr<Screen> makeDecksScreen();  // the decks with how far each is learnt
+std::unique_ptr<Screen> makeChartScreen();  // the kana in their table
+std::unique_ptr<Screen> makeGuideScreen();  // how Japanese sounds
 
 }  // namespace ui

@@ -42,6 +42,14 @@ public:
     virtual const char* boardName() = 0;
 
     virtual void tone(int hertz, int milliseconds) = 0;
+
+    // Sound from the memory card. A path names a WAV file (16 bit, one channel) from the root
+    // of the card, for example "/audio/f/signs/sign-eki.wav". Playing does not block: the
+    // sound runs on while the app goes on.
+    virtual bool hasCard()                          = 0;  // a memory card is in and can be read
+    virtual bool play(const char* path, int volume) = 0;  // volume 1 to 5. false: no such file
+    virtual bool playing()                          = 0;
+    virtual void hush()                             = 0;  // stops what is playing
 };
 
 }  // namespace ui

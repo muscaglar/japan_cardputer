@@ -1,6 +1,7 @@
 # name-ja: すうじ
 # name-en: numbers
 # kind: number
+# stage: 2
 # Prices, times and dates as a till, a price tag, a timetable or a ticket prints them.
 # The columns reading, accepted and source are written by tools/number_reading.py --fill, never by hand.
 # Its sources and choices are listed at the top of that file. Accents are left empty.

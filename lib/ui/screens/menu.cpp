@@ -25,12 +25,11 @@ public:
     void enter(App&) override
     {
         _entries.clear();
-        _entries.push_back({"all", "All cards", "", ScreenId::Cards, nullptr, true});
-        for (size_t i = 0; i < deck::count(); ++i) {
-            const deck::Deck& d = deck::at(i);
-            _entries.push_back({d.id, capitalised(d.nameEn), d.nameJa, ScreenId::Cards, &d, true});
-        }
-        _entries.push_back({"kana", "Kana", "かな", ScreenId::Kana, nullptr, false});
+        _entries.push_back({"course", "Course", "", ScreenId::Cards, nullptr, true});
+        _entries.push_back({"decks", "Decks", "", ScreenId::Decks, nullptr, false});
+        _entries.push_back({"kana", "Kana quiz", "", ScreenId::Kana, nullptr, false});
+        _entries.push_back({"chart", "Kana chart", "", ScreenId::Chart, nullptr, false});
+        _entries.push_back({"guide", "Sounds", "", ScreenId::Guide, nullptr, false});
         _entries.push_back({"keys", "Keys", "", ScreenId::Keys, nullptr, false});
         _entries.push_back({"settings", "Settings", "", ScreenId::Settings, nullptr, false});
         if (_selected >= static_cast<int>(_entries.size())) {

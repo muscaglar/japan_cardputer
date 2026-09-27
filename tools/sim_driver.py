@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from cardputer_screen import HEIGHT, WIDTH, font  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SCREENS = ["home", "menu", "kana", "settings", "cards", "summary", "keys"]
+SCREENS = ["home", "menu", "kana", "settings", "cards", "summary", "keys", "decks", "chart", "guide"]
 
 
 class Simulator:
@@ -79,6 +79,10 @@ class Simulator:
 
     def back(self):
         return self._answer("back", "done") == "1"
+
+    def card(self, present):
+        """Puts the pretended memory card in, or takes it out."""
+        self.send("card " + ("in" if present else "out"))
 
     def fresh(self):
         """Forgets all progress and starts at day 1."""

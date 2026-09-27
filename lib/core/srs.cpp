@@ -81,6 +81,17 @@ Card review(Card card, Grade grade, uint16_t today)
 
 Card answer(const Card& card, Grade grade, uint16_t today)
 {
+    if (grade == Grade::Known) {
+        if (card.stage == Stage::New) {
+            Card known     = card;
+            known.stage    = Stage::Review;
+            known.streak   = 0;
+            known.interval = kKnownInterval;
+            known.due      = dayAfter(today, known.interval);
+            return known;
+        }
+        grade = Grade::Good;  // a card met before is known in the ordinary way
+    }
     if (card.stage == Stage::Review) {
         return review(card, grade, today);
     }

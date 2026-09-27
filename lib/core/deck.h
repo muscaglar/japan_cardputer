@@ -21,18 +21,20 @@ struct Item {
     const char* reading;   // the main answer in kana, shown with the result
     const char* accepted;  // further right answers in kana, separated by '|'. Empty if none.
     const char* gloss;     // the meaning in English
-    const char* note;      // one short line shown with the result. Empty if none.
+    const char* note;      // what a learner needs to know about it, in a line or two. Empty if none.
+    const char* parts;     // what each kanji of the prompt means: "出 go out  口 opening". Empty if none.
     int8_t accent;         // pitch accent number of `reading`. -1 when unknown.
     uint8_t level;         // 1 kana only, 2 common kanji with help, 3 kanji without help
     Kind kind;
 };
 
 struct Deck {
-    const char* id;      // "kana", "katakana-words", "signs", "counters", "numbers"
+    const char* id;      // "hiragana", "katakana-words", "signs", ...
     const char* nameJa;  // in kana, for the menu
     const char* nameEn;
     const Item* items;
     uint16_t count;
+    uint8_t stage;       // place in the course: new cards come from the lowest stage that has any
 };
 
 size_t count();
@@ -43,6 +45,17 @@ const Item* findItem(const char* itemId);
 // A number that stands for an item id in the progress files. The same id always gives the same
 // number (FNV-1a, 32 bit).
 uint32_t key(const char* itemId);
+
+// A page of the guide to how Japanese sounds, written in content/guide.tsv.
+struct GuidePage {
+    const char* id;     // "guide-vowels"
+    const char* title;  // at most 20 letters
+    const char* body;   // lines separated by '\n', each at most 27 letters wide, at most 5
+    const char* clips;  // what can be heard on this page: kana, separated by '|'. Empty if nothing.
+};
+
+size_t guidePageCount();
+const GuidePage& guidePage(size_t index);
 
 // One thing the buddy on the home screen can say. The lines are written in content/buddy.tsv and
 // compiled into deck_data.cpp as kBuddyLines and kBuddyLineCount.

@@ -17,6 +17,24 @@ struct Candidate {
 
 }  // namespace
 
+uint8_t openStage(const progress::Store& store, const std::vector<const deck::Deck*>& decks, uint8_t level)
+{
+    uint8_t lowest = 0;
+    for (const deck::Deck* deck : decks) {
+        if (!deck || (lowest != 0 && deck->stage >= lowest)) {
+            continue;
+        }
+        for (uint16_t i = 0; i < deck->count; ++i) {
+            const deck::Item& item = deck->items[i];
+            if (item.level <= level && store.get(deck::key(item.id)).stage == srs::Stage::New) {
+                lowest = deck->stage;
+                break;
+            }
+        }
+    }
+    return lowest;
+}
+
 Queue::Queue(progress::Store& store) : _store(store) {}
 
 void Queue::start(const Plan& plan, const std::vector<const deck::Deck*>& decks)
@@ -53,17 +71,25 @@ void Queue::start(const Plan& plan, const std::vector<const deck::Deck*>& decks)
         due.resize(plan.maxCards);
     }
 
-    // 2. New cards, one deck after the other in turn, each deck in its own order.
+    // 2. New cards, one deck after the other in turn, each deck in its own order. In a course
+    //    they come from the lowest stage that still has unseen cards. Kana count for less than
+    //    words: a sitting takes maxNewKana of them where it would take maxNew words.
     std::vector<Candidate> chosen = due;
     std::vector<uint16_t> cursor(decks.size(), 0);
-    size_t added   = 0;
-    bool anyLeft   = true;
-    size_t rotate  = decks.empty() ? 0 : plan.seed % decks.size();
-    while (anyLeft && added < plan.maxNew && chosen.size() < plan.maxCards) {
+    const uint8_t stage = plan.course ? openStage(_store, decks, plan.level) : 0;
+    // A sitting has room for maxNew words or maxNewKana kana: counted in parts of that room.
+    const uint32_t room = static_cast<uint32_t>(plan.maxNew) * plan.maxNewKana;
+    uint32_t filled     = 0;
+    bool anyLeft        = true;
+    size_t rotate       = decks.empty() ? 0 : plan.seed % decks.size();
+    while (anyLeft && filled < room && chosen.size() < plan.maxCards) {
         anyLeft = false;
-        for (size_t step = 0; step < decks.size() && added < plan.maxNew && chosen.size() < plan.maxCards; ++step) {
+        for (size_t step = 0; step < decks.size() && filled < room && chosen.size() < plan.maxCards; ++step) {
             const size_t d         = (step + rotate) % decks.size();
             const deck::Deck* deck = decks[d];
+            if (deck && plan.course && deck->stage != stage) {
+                continue;
+            }
             while (deck && cursor[d] < deck->count) {
                 const deck::Item& item = deck->items[cursor[d]++];
                 if (item.level > plan.level) {
@@ -72,14 +98,16 @@ void Queue::start(const Plan& plan, const std::vector<const deck::Deck*>& decks)
                 if (_store.get(deck::key(item.id)).stage != srs::Stage::New) {
                     continue;
                 }
+                const bool kana = (item.kind == deck::Kind::Kana);
                 Candidate c;
                 c.pick.deck  = deck;
                 c.pick.item  = &item;
                 c.pick.isNew = true;
+                c.pick.probe = kana;
                 c.deckIndex  = d;
                 c.overdue    = 0;
                 chosen.push_back(c);
-                ++added;
+                filled += kana ? plan.maxNew : plan.maxNewKana;
                 anyLeft = true;
                 break;
             }
@@ -125,7 +153,7 @@ void Queue::answered(const Pick& pick, srs::Grade grade)
         return;
     }
     ++_asked;
-    if (grade == srs::Grade::Good) {
+    if (grade == srs::Grade::Good || grade == srs::Grade::Known) {
         ++_right;
     }
     const srs::Card card = _store.record(deck::key(pick.item->id), grade, _plan.today);
@@ -150,6 +178,7 @@ void Queue::answered(const Pick& pick, srs::Grade grade)
     }
     Pick again   = pick;
     again.isNew  = false;
+    again.probe  = false;
     again.repeat = true;
     const size_t at = std::min(_position + kComesBackAfter, _cards.size());
     _cards.insert(_cards.begin() + static_cast<std::ptrdiff_t>(at), again);

@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "app.h"
+#include "card.h"
 #include "console.h"
 #include "hwcheck.h"
 
@@ -63,6 +64,12 @@ public:
     {
         M5Cardputer.Speaker.tone(static_cast<float>(hertz), static_cast<uint32_t>(milliseconds));
     }
+
+    // Sound from the memory card: not written yet.
+    bool hasCard() override { return cardReady(); }
+    bool play(const char*, int) override { return false; }
+    bool playing() override { return false; }
+    void hush() override {}
 
 private:
     static std::string path(const char* name) { return std::string("/") + name; }
@@ -184,12 +191,15 @@ void setup()
     }
 
     platform.begin();
+    cardBegin();
     canvas.setColorDepth(16);
     canvas.createSprite(ui::kWidth, ui::kHeight);
     app.begin();
-    Serial.printf("{\"app\":\"japan_cardputer\",\"board\":\"%s\",\"heapFree\":%u,\"heapLargestBlock\":%u}\n",
+    Serial.printf("{\"app\":\"japan_cardputer\",\"board\":\"%s\",\"heapFree\":%u,\"heapLargestBlock\":%u,"
+                  "\"memoryCard\":%s,\"cardMegabytes\":%u}\n",
                   platform.boardName(), static_cast<unsigned>(ESP.getFreeHeap()),
-                  static_cast<unsigned>(ESP.getMaxAllocHeap()));
+                  static_cast<unsigned>(ESP.getMaxAllocHeap()), cardReady() ? "true" : "false",
+                  static_cast<unsigned>(cardBytesTotal() / (1024ULL * 1024ULL)));
 }
 
 void loop()

@@ -7,9 +7,14 @@ M5Stack headers, so that API mistakes are caught before a build is possible.
 
 It is not a build: nothing is linked, and code size is not checked.
 
+Every source file under src/ and lib/ is checked, also one that was added after the list of
+compile commands was written: it borrows the flags of a file beside it.
+
 Usage:
     pio run -e cardputer -t compiledb      # writes compile_commands.json, runs no compiler
     python3 tools/syntax_check.py
+    python3 tools/syntax_check.py --db ../main/compile_commands.json
+        # in a second checkout: the commands of the first one, with its paths turned into ours
 """
 import json
 import os
@@ -45,17 +50,54 @@ def flags_from(command):
     return kept
 
 
+def project_sources():
+    found = []
+    for top in ("src", "lib"):
+        for folder, _, names in os.walk(os.path.join(ROOT, top)):
+            for name in sorted(names):
+                if name.endswith((".cpp", ".cc", ".cxx", ".c")):
+                    found.append(os.path.join(folder, name))
+    return sorted(found)
+
+
 def main():
     db_path = os.path.join(ROOT, "compile_commands.json")
+    if "--db" in sys.argv:
+        db_path = os.path.abspath(sys.argv[sys.argv.index("--db") + 1])
     if not os.path.exists(db_path):
         sys.exit("compile_commands.json is missing. Run: pio run -e cardputer -t compiledb")
-    database = json.load(open(db_path))
+    text = open(db_path).read()
+    written_in = os.path.dirname(db_path)
+    if written_in != ROOT:
+        # The libraries that were downloaded stay where they are; our own sources are ours.
+        for top in ("src", "lib", "include"):
+            text = text.replace(os.path.join(written_in, top), os.path.join(ROOT, top))
+    database = json.loads(text)
+    for entry in database:
+        if os.path.abspath(entry["directory"]) == written_in:
+            entry["directory"] = ROOT
 
-    ours = [e for e in database
-            if os.path.abspath(os.path.join(e["directory"], e["file"])).startswith(
-                (os.path.join(ROOT, "src") + os.sep, os.path.join(ROOT, "lib") + os.sep))]
-    if not ours:
+    listed = {}
+    for entry in database:
+        path = os.path.abspath(os.path.join(entry["directory"], entry["file"]))
+        if path.startswith((os.path.join(ROOT, "src") + os.sep, os.path.join(ROOT, "lib") + os.sep)):
+            listed[path] = entry
+    if not listed:
         sys.exit("No project sources found in compile_commands.json")
+
+    def neighbour(path):
+        """The entry of the listed file that shares the longest path with this one."""
+        def shared(other):
+            return len(os.path.commonpath([os.path.dirname(path), os.path.dirname(other)]))
+        return listed[max(sorted(listed), key=shared)]
+
+    ours = []
+    for path in project_sources():
+        if path.endswith("deck_data.cpp") and "--all" not in sys.argv:
+            continue  # written by a program, large, and checked whenever it is written
+        entry = dict(listed.get(path) or neighbour(path))
+        entry["file"] = path
+        ours.append(entry)
 
     versions = sorted(os.listdir(GCC_VERSION_DIR)) if os.path.isdir(GCC_VERSION_DIR) else []
     if not versions:

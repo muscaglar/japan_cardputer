@@ -37,11 +37,18 @@ import romaji_reference  # noqa: E402
 COLUMNS = ["id", "prompt", "reading", "accent", "accepted", "gloss", "note", "level", "source"]
 BUDDY_COLUMNS = ["id", "mood", "ja", "en"]
 KINDS = {"kana": "Kana", "word": "Word", "counter": "Counter", "number": "Number"}
-DECK_ORDER = ["kana", "katakana-words", "signs", "counters", "numbers"]
+DECK_ORDER = ["hiragana", "katakana", "numbers", "counters", "katakana-words", "signs"]
+KANJI_COLUMNS = ["kanji", "meaning", "basis", "words"]
+GUIDE_COLUMNS = ["id", "title", "body", "clips"]
+GUIDE_TITLE_COLUMNS = 20
+GUIDE_LINE_COLUMNS = 27
+GUIDE_LINES = 5
+KANJI_MEANING_LENGTH = 12
+PARTS_COLUMNS = 54     # two lines of 27 letters
 MOODS = ["greeting", "start", "right", "streak", "wrong", "almost", "finish", "back", "low-battery", "idle"]
 
 GLOSS_COLUMNS = 32
-NOTE_COLUMNS = 38      # 38 Latin letters or 19 Japanese characters
+NOTE_COLUMNS = 52      # two lines of 26 letters; a Japanese character counts as two
 BUDDY_JA_LENGTH = 15
 BUDDY_EN_LENGTH = 34
 MAX_ITEMS = 65535      # Deck::count is 16 bits wide
@@ -54,7 +61,7 @@ MEASURE_FONT = "efontJA_12"
 MEASURE_UNIT = 6                                   # pixels per Latin letter in that font
 
 ID_PATTERN = re.compile(r"[a-z0-9]+(-[a-z0-9]+)*\Z")
-META_PATTERN = re.compile(r"#\s*(name-ja|name-en|kind)\s*:(.*)\Z")
+META_PATTERN = re.compile(r"#\s*(name-ja|name-en|kind|stage)\s*:(.*)\Z")
 BUDDY_PUNCTUATION = "、。！？「」〜・"
 
 LICENCE = [
@@ -436,6 +443,7 @@ class Item:
         self.level_text = level
         self.accent = -1
         self.level = 0
+        self.parts = ""
 
 
 class Deck:
@@ -445,6 +453,7 @@ class Deck:
         self.name_ja = ""
         self.name_en = ""
         self.kind = ""
+        self.stage = 1
         self.items = []
         self.rows = 0
 
@@ -514,6 +523,11 @@ def read_deck(path, findings, seen_ids):
         check_text(findings, path, names["name-en"][1], "name-en", deck.name_en)
     if deck.kind and deck.kind not in KINDS:
         findings.error(path, names["kind"][1], "kind %s is not one of %s" % (deck.kind, ", ".join(KINDS)))
+    if "stage" in names:
+        if names["stage"][0] in ("1", "2", "3", "4", "5", "6", "7", "8", "9"):
+            deck.stage = int(names["stage"][0])
+        else:
+            findings.error(path, names["stage"][1], "stage \"%s\" is not a number from 1 to 9" % names["stage"][0])
 
     if rows is None:
         return deck
@@ -662,6 +676,116 @@ def check_against_dictionary(deck, reference, findings):
 
 
 # ---------------------------------------------------------------------------------------------
+# What each kanji means
+# ---------------------------------------------------------------------------------------------
+
+def read_kanji(path, findings, cache_dir, offline):
+    """Returns {kanji: meaning} from content/kanji.tsv."""
+    _, rows = read_table(path, KANJI_COLUMNS, findings)
+    known = None
+    index_path = os.path.join(cache_dir, "kanjidic_index.json")
+    if not offline and os.path.exists(index_path):
+        try:
+            with open(index_path, encoding="utf-8") as handle:
+                known = json.load(handle)
+        except (OSError, ValueError) as problem:
+            stop("%s cannot be read: %s" % (display(index_path), problem))
+    meanings = {}
+    for number, fields in rows or []:
+        if fields is None:
+            continue
+        kanji, meaning, basis, _words = fields
+        if len(kanji) != 1 or not is_kanji(kanji):
+            findings.error(path, number, "kanji \"%s\" is not one kanji" % kanji)
+            continue
+        if kanji in meanings:
+            findings.error(path, number, "%s is given twice" % kanji)
+            continue
+        if not meaning:
+            findings.error(path, number, "meaning is empty")
+            continue
+        if len(meaning) > KANJI_MEANING_LENGTH:
+            findings.error(path, number, "meaning \"%s\" is %d letters long, at most %d fit"
+                           % (meaning, len(meaning), KANJI_MEANING_LENGTH))
+        if not re.fullmatch(r"[a-z][a-z -]*[a-z]|[a-z]", meaning):
+            findings.error(path, number, "meaning \"%s\" must be lower case letters, spaces and hyphens" % meaning)
+        check_text(findings, path, number, "kanji", kanji)
+        if known is not None and not basis.startswith("JMdict: "):
+            listed = known.get(kanji, {}).get("meanings", [])
+            if basis not in listed:
+                findings.error(path, number, "basis \"%s\" is not a KANJIDIC meaning of %s (%s)"
+                               % (basis, kanji, ", ".join(listed[:8]) or "none listed"))
+        meanings[kanji] = meaning
+    return meanings
+
+
+def add_parts(decks, meanings, kanji_path, findings):
+    """Gives every item whose prompt has kanji the line that says what each of them means."""
+    unknown = {}
+    for deck in decks:
+        for item in deck.items:
+            kanji = list(dict.fromkeys(ch for ch in item.prompt if is_kanji(ch)))
+            if not kanji:
+                continue
+            for ch in kanji:
+                if ch not in meanings:
+                    unknown.setdefault(ch, (deck.path, item.line, item.prompt))
+            item.parts = "  ".join("%s %s" % (ch, meanings[ch]) for ch in kanji if ch in meanings)
+            if columns(item.parts) > PARTS_COLUMNS:
+                findings.warning(deck.path, item.line, "the meanings of the kanji of %s are %d letters wide, "
+                                 "%d fit: the end will be cut off" % (item.prompt, columns(item.parts), PARTS_COLUMNS))
+    for ch, (path, line, prompt) in unknown.items():
+        findings.warning(path, line, "%s in %s has no meaning in %s" % (ch, prompt, display(kanji_path)))
+
+
+# ---------------------------------------------------------------------------------------------
+# The guide to how Japanese sounds
+# ---------------------------------------------------------------------------------------------
+
+class GuidePage:
+    def __init__(self, line, fields):
+        self.line = line
+        self.id, self.title, body, self.clips = fields
+        self.lines = body.split("|")
+
+
+def read_guide(path, findings, used_ids):
+    """content/guide.tsv: one page per row. In body, | starts a new line."""
+    _, rows = read_table(path, GUIDE_COLUMNS, findings)
+    pages = []
+    seen = {}
+    for number, fields in rows or []:
+        if fields is None:
+            continue
+        page = GuidePage(number, fields)
+        pages.append(page)
+        if not ID_PATTERN.match(page.id):
+            findings.error(path, number, "id \"%s\" must be lower case letters, digits and hyphens" % page.id)
+        elif page.id in seen or page.id in used_ids:
+            findings.error(path, number, "id %s is already used" % page.id)
+        else:
+            seen[page.id] = number
+        if not page.title:
+            findings.error(path, number, "title is empty")
+        else:
+            check_text(findings, path, number, "title", page.title)
+            if columns(page.title) > GUIDE_TITLE_COLUMNS:
+                findings.error(path, number, "title is %d letters wide, at most %d fit"
+                               % (columns(page.title), GUIDE_TITLE_COLUMNS))
+        if len(page.lines) > GUIDE_LINES:
+            findings.error(path, number, "body has %d lines, at most %d fit" % (len(page.lines), GUIDE_LINES))
+        for text in page.lines:
+            check_text(findings, path, number, "body", text)
+            if columns(text) > GUIDE_LINE_COLUMNS:
+                findings.error(path, number, "the line \"%s\" is %d letters wide, at most %d fit "
+                               "(a Japanese character counts as 2)" % (text, columns(text), GUIDE_LINE_COLUMNS))
+        for clip in [c for c in page.clips.split("|") if c]:
+            if any(not is_kana(ch) and ch != "ー" for ch in clip):
+                findings.error(path, number, "clips: %s is not kana only" % clip)
+    return pages
+
+
+# ---------------------------------------------------------------------------------------------
 # The buddy
 # ---------------------------------------------------------------------------------------------
 
@@ -757,8 +881,8 @@ def ids_text(ids):
 # ---------------------------------------------------------------------------------------------
 
 def literal(text):
-    """A C++ string literal. UTF-8 is written as it is."""
-    out = text.replace("\\", "\\\\").replace('"', '\\"')
+    """A C++ string literal. UTF-8 is written as it is, a line break as \\n."""
+    out = text.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
     while "??" in out:
         out = out.replace("??", "?\\?")  # no trigraphs
     return '"' + out + '"'
@@ -772,7 +896,7 @@ def ordered(decks):
     return sorted(decks, key=rank)
 
 
-def source_text(decks, buddy):
+def source_text(decks, buddy, guide=()):
     out = ["// Written by tools/build_decks.py from content/decks/*.tsv and content/buddy.tsv.",
            "// Do not edit by hand: change the tables and run the tool again.",
            "//"]
@@ -781,14 +905,15 @@ def source_text(decks, buddy):
     for deck in decks:
         out.append("const deck::Item %s[] = {" % array_name(deck))
         for item in deck.items:
-            out.append("    {%s, %s, %s, %s, %s, %s, %d, %d, deck::Kind::%s}," % (
+            out.append("    {%s, %s, %s, %s, %s, %s, %s, %d, %d, deck::Kind::%s}," % (
                 literal(item.id), literal(item.prompt), literal(item.reading), literal(item.accepted),
-                literal(item.gloss), literal(item.note), item.accent, item.level, KINDS[deck.kind]))
+                literal(item.gloss), literal(item.note), literal(item.parts), item.accent, item.level,
+                KINDS[deck.kind]))
         out += ["};", ""]
     out += ["}  // namespace", "", "extern const deck::Deck kDeckTable[] = {"]
     for deck in decks:
-        out.append("    {%s, %s, %s, %s, %d}," % (literal(deck.id), literal(deck.name_ja), literal(deck.name_en),
-                                                  array_name(deck), len(deck.items)))
+        out.append("    {%s, %s, %s, %s, %d, %d}," % (literal(deck.id), literal(deck.name_ja), literal(deck.name_en),
+                                                      array_name(deck), len(deck.items), deck.stage))
     out += ["};", "extern const size_t kDeckTableSize = sizeof(kDeckTable) / sizeof(kDeckTable[0]);", ""]
 
     out.append("extern const deck::BuddyLine kBuddyLines[] = {")
@@ -798,6 +923,14 @@ def source_text(decks, buddy):
     if not buddy:
         out.append('    {"", "", "", ""},  // an array cannot be empty; the count below is 0')
     out += ["};", "extern const size_t kBuddyLineCount = %d;" % len(buddy), ""]
+
+    out.append("extern const deck::GuidePage kGuidePages[] = {")
+    for page in guide:
+        out.append("    {%s, %s, %s, %s}," % (literal(page.id), literal(page.title),
+                                              literal("\n".join(page.lines)), literal(page.clips)))
+    if not guide:
+        out.append('    {"", "", "", ""},  // an array cannot be empty; the count below is 0')
+    out += ["};", "extern const size_t kGuidePageCount = %d;" % len(guide), ""]
     return "\n".join(out)
 
 
@@ -825,6 +958,8 @@ def main():
     parser.add_argument("--out", metavar="FILE", help="the C++ file to write (lib/core/deck_data.cpp)")
     parser.add_argument("--ids", metavar="FILE", help="the list of published ids (ids.txt next to the deck folder)")
     parser.add_argument("--buddy", metavar="FILE", help="the buddy's lines (buddy.tsv next to the deck folder)")
+    parser.add_argument("--kanji", metavar="FILE", help="what each kanji means (kanji.tsv next to the deck folder)")
+    parser.add_argument("--guide", metavar="FILE", help="the guide to the sounds (guide.tsv next to the deck folder)")
     parser.add_argument("--cache", metavar="DIR", help="folder with jmdict_index.json and accents.txt (local/cache)")
     args = parser.parse_args()
 
@@ -836,6 +971,8 @@ def main():
     out_path = os.path.abspath(args.out or os.path.join(ROOT, "lib", "core", "deck_data.cpp"))
     ids_path = os.path.abspath(args.ids or os.path.join(content_dir, "ids.txt"))
     buddy_path = os.path.abspath(args.buddy or os.path.join(content_dir, "buddy.tsv"))
+    kanji_path = os.path.abspath(args.kanji or os.path.join(content_dir, "kanji.tsv"))
+    guide_path = os.path.abspath(args.guide or os.path.join(content_dir, "guide.tsv"))
     cache_dir = os.path.abspath(args.cache or os.path.join(ROOT, "local", "cache"))
 
     if not os.path.isdir(decks_dir):
@@ -884,6 +1021,18 @@ def main():
     if has_buddy:
         buddy, buddy_rows = read_buddy(buddy_path, findings, seen_ids)
 
+    # The guide
+    guide = []
+    has_guide = os.path.exists(guide_path)
+    if has_guide:
+        guide = read_guide(guide_path, findings, set(seen_ids) | {entry.id for entry in buddy})
+
+    # What each kanji means
+    has_kanji = os.path.exists(kanji_path)
+    if has_kanji:
+        meanings = read_kanji(kanji_path, findings, cache_dir, args.offline)
+        add_parts(decks, meanings, kanji_path, findings)
+
     for line in findings.lines():
         print(line)
     for deck in ordered(decks):
@@ -892,6 +1041,12 @@ def main():
     if has_buddy:
         print("buddy: %s, %s, %s" % (plural(buddy_rows, "line"), plural(findings.errors(buddy_path), "error"),
                                      plural(findings.warnings(buddy_path), "warning")))
+    if has_kanji:
+        print("kanji: %s, %s" % (plural(findings.errors(kanji_path), "error"),
+                                 plural(findings.warnings(kanji_path), "warning")))
+    if has_guide:
+        print("guide: %s, %s, %s" % (plural(len(guide), "page"), plural(findings.errors(guide_path), "error"),
+                                     plural(findings.warnings(guide_path), "warning")))
     for note in findings.notes:
         print("note: " + note)
     print("total: %s, %s, %s, %s" % (plural(len(decks), "deck"), plural(sum(deck.rows for deck in decks), "row"),
@@ -903,7 +1058,7 @@ def main():
     if args.check:
         print("checked only, nothing written")
         return 0
-    write(out_path, source_text(ordered(decks), buddy))
+    write(out_path, source_text(ordered(decks), buddy, guide))
     write(ids_path, ids_text(set(published) | set(seen_ids)))
     print("wrote %s: %s, %s, %s" % (display(out_path), plural(len(decks), "deck"),
                                     plural(sum(len(deck.items) for deck in decks), "item"),
