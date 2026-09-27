@@ -56,6 +56,7 @@ says so in its first line. The Japanese in the fixtures is real, apart from the 
 | `dict-no-headword` | a word JMdict does not have: error with the source `JMdict` or none, warning with another |
 | `dict-accepted` | an accepted answer that JMdict does not have for the word: warning |
 | `dict-accent-not-listed` | an accent that the accent list does not give for the word |
+| `dict-accent-second` | an accent that the accent list gives, but not as the first one: warning; none where the accent depends on the part of speech |
 | `dict-accent-no-entry` | an accent for a word, a kana spelling and a counter that the accent list does not have |
 | `dict-accent-part-of-speech` | a word whose accent depends on the part of speech: none is filled in |
 | `dict-other-kinds` | kana cards whose prompt is also a word in the accent list: none is filled in |

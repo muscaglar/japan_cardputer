@@ -53,6 +53,21 @@ function png(rgba, scale) {
   ]);
 }
 
+// The pixels of a picture written by png() above: rows of RGB without the filter byte.
+// Pictures are compared by their pixels, because two versions of the compressor may pack the
+// same pixels into different bytes.
+function pixelsOf(file) {
+  let at = 8;
+  const packed = [];
+  while (at < file.length) {
+    const length = file.readUInt32BE(at);
+    const type = file.toString("ascii", at + 4, at + 8);
+    if (type === "IDAT") packed.push(file.subarray(at + 8, at + 8 + length));
+    at += 12 + length;
+  }
+  return zlib.inflateSync(Buffer.concat(packed));
+}
+
 function send(sim, token) {
   const special = /^<(.+)>$/.exec(token);
   if (!special) {
@@ -96,7 +111,7 @@ async function main() {
       if (!fs.existsSync(reference)) {
         console.log("NEW      " + scenario.name + " (no reference yet)");
         failed++;
-      } else if (!fs.readFileSync(reference).equals(fs.readFileSync(file))) {
+      } else if (!pixelsOf(fs.readFileSync(reference)).equals(pixelsOf(fs.readFileSync(file)))) {
         console.log("CHANGED  " + scenario.name + "  see " + file);
         failed++;
       } else {

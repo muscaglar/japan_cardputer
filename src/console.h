@@ -13,7 +13,7 @@
 //   keep, back      keeps settings and progress aside, brings them back: "#done 1" or "#done 0"
 //   fresh           forgets all progress and starts at day 1. Refused unless "keep" was done.
 //   restart         restarts the device
-// Every other command is answered with "#ok" or "#error <why>".
+// Every other command is answered with "#ok" or "#error <why>". An empty line is answered with "#".
 #pragma once
 
 #include <M5GFX.h>

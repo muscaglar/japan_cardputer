@@ -14,6 +14,14 @@ constexpr size_t kLongestLine = 200;
 std::string pending;
 bool overflowed = false;
 
+// Every answer ends here. The flush matters: without it the last bytes of an answer sometimes
+// stayed on the device until the next answer pushed them out.
+void reply(const char* line)
+{
+    Serial.println(line);
+    Serial.flush();
+}
+
 // Base64 written straight to the serial port in small pieces, so that no large buffer is needed.
 class Base64Writer {
 public:
@@ -73,7 +81,7 @@ void sendFrame(ui::App& app, M5Canvas& canvas)
     const int count       = ui::kWidth * ui::kHeight;
     Serial.printf("#frame %d %d %d ", static_cast<int>(app.current()), ui::kWidth, ui::kHeight);
     if (!pixels) {
-        Serial.println();
+        reply("");
         return;
     }
     Base64Writer out;
@@ -91,7 +99,7 @@ void sendFrame(ui::App& app, M5Canvas& canvas)
         i += run;
     }
     out.finish();
-    Serial.println();
+    reply("");
 }
 
 void sendInfo(ui::App& app, ui::Platform& platform)
@@ -102,10 +110,11 @@ void sendInfo(ui::App& app, ui::Platform& platform)
         text.pop_back();
     }
     Serial.printf("#info %s,\"board\":\"%s\",\"battery\":%d,\"heapFree\":%u,\"heapLargestBlock\":%u,"
-                  "\"heapLowest\":%u,\"uptimeMs\":%lu}\n",
+                  "\"heapLowest\":%u,\"uptimeMs\":%lu}",
                   text.c_str(), platform.boardName(), platform.batteryPercent(),
                   static_cast<unsigned>(ESP.getFreeHeap()), static_cast<unsigned>(ESP.getMaxAllocHeap()),
                   static_cast<unsigned>(ESP.getMinFreeHeap()), static_cast<unsigned long>(millis()));
+    reply("");
 }
 
 bool namedKey(const std::string& name, ui::Key& key)
@@ -144,23 +153,22 @@ bool carryOut(const std::string& line, ui::App& app, M5Canvas& canvas, ui::Platf
     }
     if (command == "keep" || command == "back") {
         const bool ok = (command == "keep") ? app.keepAside() : app.bringBack();
-        Serial.println(ok ? "#done 1" : "#done 0");
+        reply(ok ? "#done 1" : "#done 0");
         return true;
     }
     if (command == "fresh") {
         // Refused unless progress was kept aside first, so that a slip cannot cost what was learnt.
         std::string kept;
         if (!platform.load("progress.bak", kept)) {
-            Serial.println("#error keep first");
+            reply("#error keep first");
             return false;
         }
         app.startFresh();
-        Serial.println("#done 1");
+        reply("#done 1");
         return true;
     }
     if (command == "restart") {
-        Serial.println("#ok");
-        Serial.flush();
+        reply("#ok");
         delay(100);
         ESP.restart();
         return false;
@@ -168,22 +176,22 @@ bool carryOut(const std::string& line, ui::App& app, M5Canvas& canvas, ui::Platf
     if (command == "key") {
         ui::Key key;
         if (!namedKey(rest, key)) {
-            Serial.println("#error unknown key");
+            reply("#error unknown key");
             return false;
         }
         app.key(key);
-        Serial.println("#ok");
+        reply("#ok");
         return true;
     }
     if (command == "fn") {
         if (rest.size() != 1) {
-            Serial.println("#error fn takes one character");
+            reply("#error fn takes one character");
             return false;
         }
         ui::Key key = ui::Key::character(rest[0]);
         key.fn      = true;
         app.key(key);
-        Serial.println("#ok");
+        reply("#ok");
         return true;
     }
     if (command == "type") {
@@ -192,10 +200,10 @@ bool carryOut(const std::string& line, ui::App& app, M5Canvas& canvas, ui::Platf
                 app.key(ui::Key::character(c));
             }
         }
-        Serial.println("#ok");
+        reply("#ok");
         return !rest.empty();
     }
-    Serial.println("#error unknown command");
+    reply("#error unknown command");
     return false;
 }
 
@@ -221,8 +229,10 @@ bool consolePoll(ui::App& app, M5Canvas& canvas, ui::Platform& platform)
             continue;
         }
         if (overflowed) {
-            Serial.println("#error line too long");
-        } else if (!pending.empty()) {
+            reply("#error line too long");
+        } else if (pending.empty()) {
+            reply("#");  // an empty line is a knock: it is answered, and pushes out what was waiting
+        } else {
             pressed = carryOut(pending, app, canvas, platform) || pressed;
         }
         pending.clear();

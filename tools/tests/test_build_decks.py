@@ -204,6 +204,10 @@ CASES = {
         (SIGNS, 6, E, "accent 0 is not listed for 出口 read でぐち (the accent list has 1)"),
         (SIGNS, 7, E, "accent 2 is not listed for 結構 read けっこう (the accent list has 0, 3, 1)"),
     ], []),
+    "dict-accent-second": (True, 0, [
+        ("decks/replies.tsv", 6, W, "accent 2 is listed for 心 read こころ, but the usual one, the first in the accent "
+                                    "list, is 3"),
+    ], []),
     "dict-accent-no-entry": (True, 1, [
         ("decks/counters.tsv", 6, E, "accent 1, but the accent list has no entry for ビール × 3 read さんぼん"),
         (SIGNS, 6, E, "accent 0, but the accent list has no entry for 精算機 read せいさんき"),

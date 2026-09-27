@@ -1,0 +1,7 @@
+# Test fixture: an accent that the accent list gives for the word, but not as the first one. Warning only.
+# name-ja: へんじ
+# name-en: replies
+# kind: word
+id	prompt	reading	accent	accepted	gloss	note	level	source
+reply-kokoro	心	こころ	2		mind; heart		2	JMdict
+reply-kekkou	結構	けっこう	1		fine; no, thank you		3	JMdict

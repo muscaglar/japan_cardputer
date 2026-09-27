@@ -39,25 +39,50 @@ class Device:
         self.link = serial.Serial()
         self.link.port = port or find_port()
         self.link.baudrate = 115200
-        self.link.timeout = 0.5
-        # Both lines low before opening: a pulse on them would restart the chip.
-        self.link.dtr = False
-        self.link.rts = False
+        self.link.timeout = 0.05
+        # Both control lines stay high, as the computer sets them when the port is opened.
+        # Lowering them restarts the chip, and lowering only DTR leaves it waiting for new
+        # firmware until it is reset again.
+        self.link.dtr = True
+        self.link.rts = True
         try:
             self.link.open()
         except serial.SerialException as error:
             raise RuntimeError("cannot open %s: %s" % (self.link.port, error.strerror or error))
-        time.sleep(0.2)
-        self.link.reset_input_buffer()
+        self._wait_for_app(8.0)
+
+    def _wait_for_app(self, seconds):
+        """Asks until the app answers: it may be starting."""
+        end = time.time() + seconds
+        while time.time() < end:
+            try:
+                self._ask("info", "#info", timeout=0.6)
+                return
+            except RuntimeError:
+                continue
+        raise RuntimeError("no answer from the device within %.0f seconds. It answers only while the app is "
+                           "running: not during the hardware check, and not with firmware older than the "
+                           "console." % seconds)
 
     def _ask(self, line, prefix, timeout=5.0):
+        # What is left from before is read away. Discarding it through the driver
+        # (reset_input_buffer) made the next answer but one hang on macOS.
+        while self.link.read(65536):
+            pass
         self.link.write((line + "\n").encode("utf-8"))
         self.link.flush()
-        end = time.time() + timeout
+        start = time.time()
+        knocked = start
         pending = b""
-        while time.time() < end:
-            chunk = self.link.read(8192)
+        while time.time() - start < timeout:
+            chunk = self.link.read(65536)
             if not chunk:
+                # The end of an answer sometimes stays on the device until it sends again.
+                # An empty line makes it send: newer firmware answers it with "#".
+                if time.time() - knocked > 0.25:
+                    self.link.write(b"\n")
+                    self.link.flush()
+                    knocked = time.time()
                 continue
             pending += chunk
             while b"\n" in pending:
@@ -65,11 +90,9 @@ class Device:
                 text = raw.decode("utf-8", "replace").strip()
                 if text.startswith("#error"):
                     raise RuntimeError("the device answered %r to %r" % (text, line))
-                if text.startswith(prefix):
+                if text.startswith(prefix) and (len(prefix) > 1 or text == prefix):
                     return text[len(prefix):].strip()
-        raise RuntimeError("no answer from the device to %r within %.0f seconds. It answers only while the app "
-                           "is running: not during the hardware check, and not with firmware older than the "
-                           "console." % (line, timeout))
+        raise RuntimeError("no answer from the device to %r within %.1f seconds" % (line, timeout))
 
     def key(self, name):
         self._ask("key " + name, "#ok")
@@ -111,21 +134,8 @@ class Device:
     def restart(self):
         """Restarts the device and waits until the app answers again."""
         self._ask("restart", "#ok")
-        end = time.time() + 20
-        while time.time() < end:
-            time.sleep(0.5)
-            try:
-                try:
-                    self.link.close()
-                except Exception:
-                    pass
-                self.link.open()
-                self.link.reset_input_buffer()
-                self._ask("info", "#info", timeout=1.5)
-                return
-            except Exception:
-                continue
-        raise RuntimeError("the device did not come back after the restart")
+        time.sleep(0.3)
+        self._wait_for_app(20.0)
 
     def frame(self):
         """Returns (screen name, rows of (r, g, b))."""
