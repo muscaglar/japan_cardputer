@@ -1,9 +1,13 @@
 #include "console.h"
 
+#include "sound.h"
+
 #include <Arduino.h>
 
 #include <cstring>
 #include <string>
+
+#include "files.h"
 
 #if DEVICE_CONSOLE
 
@@ -110,10 +114,17 @@ void sendInfo(ui::App& app, ui::Platform& platform)
         text.pop_back();
     }
     Serial.printf("#info %s,\"board\":\"%s\",\"battery\":%d,\"heapFree\":%u,\"heapLargestBlock\":%u,"
-                  "\"heapLowest\":%u,\"uptimeMs\":%lu}",
+                  "\"heapLowest\":%u,\"uptimeMs\":%lu",
                   text.c_str(), platform.boardName(), platform.batteryPercent(),
                   static_cast<unsigned>(ESP.getFreeHeap()), static_cast<unsigned>(ESP.getMaxAllocHeap()),
                   static_cast<unsigned>(ESP.getMinFreeHeap()), static_cast<unsigned long>(millis()));
+    // Sound, for checks where nobody listens: what was started, refused, and how long it held the device up.
+    const SoundCount& sound = soundCount();
+    Serial.printf(",\"soundPlaying\":%s,\"soundWhyNot\":\"%s\",\"soundStarted\":%u,\"soundRefused\":%u,"
+                  "\"soundGaps\":%u,\"soundLongestPlay\":%u,\"soundLongestTick\":%u}",
+                  soundPlaying() ? "true" : "false", soundWhyNot(), static_cast<unsigned>(sound.started),
+                  static_cast<unsigned>(sound.refused), static_cast<unsigned>(sound.gaps),
+                  static_cast<unsigned>(sound.longestPlay), static_cast<unsigned>(sound.longestTick));
     reply("");
 }
 
@@ -177,6 +188,24 @@ bool carryOut(const std::string& line, ui::App& app, M5Canvas& canvas, ui::Platf
         reply("#done 1");
         return true;
     }
+    if (command == "play") {
+        // play <path> [volume]: a clip from the memory card, without the app deciding anything
+        const size_t gap   = rest.find(' ');
+        const std::string path = rest.substr(0, gap);
+        const int volume   = (gap == std::string::npos) ? 3 : atoi(rest.c_str() + gap + 1);
+        if (soundPlay(path.c_str(), volume >= 1 && volume <= 5 ? volume : 3)) {
+            reply("#ok");
+        } else {
+            Serial.printf("#error %s", soundWhyNot());
+            reply("");
+        }
+        return false;
+    }
+    if (command == "hush") {
+        soundHush();
+        reply("#ok");
+        return false;
+    }
     if (command == "restart") {
         reply("#ok");
         delay(100);
@@ -212,6 +241,9 @@ bool carryOut(const std::string& line, ui::App& app, M5Canvas& canvas, ui::Platf
         }
         reply("#ok");
         return !rest.empty();
+    }
+    if (filesCarryOut(command, rest, reply)) {
+        return false;
     }
     reply("#error unknown command");
     return false;

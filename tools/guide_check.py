@@ -8,15 +8,16 @@
 
 What is checked, in every look:
   pages  every page of content/guide.tsv is shown with its title and "2/9" in the header and its
-         lines in the 16 px font, evenly spaced, inside the content area, with nothing else
-         between them
+         lines in the 16 px font, each at its place in the middle of the content area, at least
+         17 pixels apart, clear of the ruled lines of the notebook, with nothing else between them
   keys   Right, Enter, Space and Fn with / turn forward; Left, Backspace and , turn back; the first
          and the last page are where turning ends; other keys do nothing; Esc and the button on
-         the edge lead to the menu; the page is still open after coming back
+         the edge lead to the menu; the last page is open again after the home screen was seen
   hints  the footer says how to turn, and the two hints keep 8 pixels between them
   sound  with sound off the footer says so and / plays nothing; with sound on / plays the clips
          of the page one after the other and starts again after the last; the footer names what
-         was heard; a page without clips plays nothing; without a memory card the footer says so
+         was heard; turning away or leaving forgets it; a page without clips plays nothing;
+         without a memory card the footer says so
   empty  an app built without pages says so, and any key leads back
 
 The app says which page it shows (`info`); the pictures are read to see that it is really drawn.
@@ -37,6 +38,8 @@ FACE = [("efontJA_16", 1)]   # nothing on this screen may be smaller
 HINT_WIDTH = 210             # the footer of the look that has the least room
 HINT_GAP = 8
 MOST_LINES = 5
+BODY_WIDTH = 216             # 27 letters
+TALLEST_LINE = 19            # the ruled lines of the notebook are this far apart
 
 # The colours drawFrame() in lib/ui/theme.cpp gives to the four texts of the frame.
 TITLE = {"techo": "headInk", "eki": "headInk", "rpg": "ink", "washi": "accent"}
@@ -83,7 +86,27 @@ def band(rows, top, bottom, left=0, right=None):
 
 def parts(rows, area):
     x, y, w, h = area
-    return {"header": band(rows, 0, y), "content": band(rows, y, y + h, x, x + w), "footer": band(rows, y + h, len(rows))}
+    return {"header": band(rows, 0, y), "content": band(rows, y, y + h, x, x + w),
+            "footer": band(rows, y + h, len(rows)), "all": rows}
+
+
+def layout(area):
+    """Where the lines of a page have to stand: (left, top of the first, from one to the next).
+
+    Five lines of 27 letters, in the middle of the content area, no further apart than the
+    ruled lines of the notebook.
+    """
+    x, y, w, h = area
+    step = min(h // MOST_LINES, TALLEST_LINE)
+    return x + (w - min(w, BODY_WIDTH)) // 2, y + (h - MOST_LINES * step) // 2, step
+
+
+def crossed(rows, top, rule):
+    """Whether a ruled line of the look runs through the 16 rows of a text that starts at `top`.
+
+    A ruled line runs from edge to edge, so the last column shows it, where no text stands.
+    """
+    return any(rows[y][-1] == rule for y in range(max(0, top), min(top + 16, len(rows))))
 
 
 def head_that_fits(text, room):
@@ -104,7 +127,7 @@ def hints(pages, index, state, number, heard):
     left = "Enter: next" if ahead else "Del: back" if behind else "Esc: menu"
     clips = pages[index]["clips"]
     if not clips:
-        return left, ("Del: back" if ahead and behind else "Esc: menu" if behind else "")
+        return left, ("Del: back" if ahead and behind else "Esc: menu" if ahead or behind else "")
     if not state["sound"]:
         return left, "Sound is off"
     if not state["memoryCard"]:
@@ -174,16 +197,21 @@ def set_sound(target, look, colours, areas, wanted):
 
 
 class Reading:
-    """Reads the pictures of one look and remembers where the lines of a page stand."""
+    """Reads the pictures of one look and knows where the lines of a page have to stand."""
 
     def __init__(self, look, colours, areas, expect):
         self.look = look
         self.colours = colours[look]
         self.area = areas[look]
         self.expect = expect
-        self.first = None   # the top of the first line
-        self.step = None    # from one line to the next
-        self.left = None    # where every line starts
+        # where every line starts, the top of the first line, from one line to the next
+        self.left, self.first, self.step = layout(self.area)
+        x, y, w, h = self.area
+        last = self.first + (MOST_LINES - 1) * self.step
+        expect(self.step >= 17 and self.first >= y and last + 16 <= y + h and self.left >= x and
+               self.left + BODY_WIDTH <= x + w,
+               "%s: %d lines of 16 px, %d apart, have room in the content area (%d to %d of %d to %d)" % (
+                   look, MOST_LINES, self.step, self.first, last + 16, y, y + h))
 
     def frame(self, target, what, title, count, left, right):
         """Header and footer. Returns the three parts of the picture."""
@@ -222,28 +250,26 @@ class Reading:
         for index, line in enumerate(page["lines"][:MOST_LINES]):
             if not line.strip():
                 continue
-            found = reader.find_anywhere(seen["content"], ink, line, FACE)
-            if not self.expect(found is not None, "%s %s: the line \"%s\" is drawn at 16 px" % (self.look, what, line)):
+            # Looked for at its own place: two lines of a page may say the same.
+            top = self.first + index * self.step
+            if reader.find_text(seen["content"], ink, line, FACE[0][0], self.left, top) is None:
+                found = reader.find_anywhere(seen["content"], ink, line, FACE)
+                self.expect(False, "%s %s: line %d, \"%s\", is drawn at 16 px at %d, %d (%s)" % (
+                    self.look, what, index + 1, line, self.left, top,
+                    "it is not drawn" if found is None else "it stands at %d, %d" % (found[0], found[1])))
                 continue
-            left_edge, top = found[0], found[1]
+            self.expect(True, "%s %s: line %d, \"%s\", is drawn at 16 px at %d, %d" % (
+                self.look, what, index + 1, line, self.left, top))
             points, _ = reader.mask(line, FACE[0][0])
             alone = len(reader.coloured(seen["content"], ink, x, top, x + w, top + 16)) == len(points)
             self.expect(alone, "%s %s: nothing else stands beside \"%s\"" % (self.look, what, line))
-            if self.left is None:
-                self.left = left_edge
-            if self.first is None and index == 0:
-                self.first = top
-            elif self.step is None and self.first is not None:
-                self.step = (top - self.first) // index
-            if self.first is not None and (index == 0 or self.step is not None):
-                wanted = self.first + index * (self.step or 0)
-                self.expect(top == wanted and left_edge == self.left and (self.step is None or self.step >= 17),
-                            "%s %s: line %d stands at %d, %d (expected %d, %d)" % (
-                                self.look, what, index + 1, left_edge, top, self.left, wanted))
+            self.expect(not crossed(seen["all"], top, self.colours["faint"]),
+                        "%s %s: no ruled line runs through line %d" % (self.look, what, index + 1))
             drawn += 1
         every = reader.coloured(seen["content"], ink, x, y, x + w, y + h)
         wanted = sum(len(reader.mask(line, FACE[0][0])[0]) for line in page["lines"][:MOST_LINES] if line.strip())
-        self.expect(len(every) == wanted, "%s %s: the page shows its %d lines and nothing more" % (self.look, what, drawn))
+        self.expect(len(every) == wanted,
+                    "%s %s: the page shows its %d lines and nothing more" % (self.look, what, drawn))
 
 
 def read_through(target, look, pages, reading, expect):
@@ -252,8 +278,8 @@ def read_through(target, look, pages, reading, expect):
     for index, page in enumerate(pages):
         state = target.info()
         count = "%d/%d" % (index + 1, total)
-        expect(state["screen"] == GUIDE and state["page"] == index + 1 and state["pageId"] == page["id"] and
-               state["clips"] == len(page["clips"]) and state["clipNumber"] == 0 and state["clip"] == "",
+        expect(state["screen"] == GUIDE and state.get("page") == index + 1 and state.get("pageId") == page["id"] and
+               state.get("clips") == len(page["clips"]) and state.get("clipNumber") == 0 and state.get("clip") == "",
                "%s: page %s is %s, clips %d, none played (the app says page %s, %s, clips %s)" % (
                    look, count, page["id"], len(page["clips"]), state.get("page"), state.get("pageId"),
                    state.get("clips")))
@@ -262,36 +288,70 @@ def read_through(target, look, pages, reading, expect):
         if index + 1 < total:
             name, press = FORWARD[index % len(FORWARD)]
             press(target)
-            expect(target.info()["page"] == index + 2, "%s: %s turns from page %d to page %d" % (
+            expect(target.info().get("page") == index + 2, "%s: %s turns from page %d to page %d" % (
                 look, name, index + 1, index + 2))
 
     for name, press in FORWARD:
         press(target)
         state = target.info()
-        expect(state["screen"] == GUIDE and state["page"] == total, "%s: %s on the last page stays there" % (look, name))
+        expect(state["screen"] == GUIDE and state.get("page") == total,
+               "%s: %s on the last page stays there" % (look, name))
     for name, press in IDLE:
         press(target)
         state = target.info()
-        expect(state["screen"] == GUIDE and state["page"] == total, "%s: %s does nothing" % (look, name))
+        expect(state["screen"] == GUIDE and state.get("page") == total, "%s: %s does nothing" % (look, name))
 
     for index in range(total - 1, 0, -1):
         name, press = BACK[index % len(BACK)]
         press(target)
-        expect(target.info()["page"] == index, "%s: %s turns back from page %d to page %d" % (
+        expect(target.info().get("page") == index, "%s: %s turns back from page %d to page %d" % (
             look, name, index + 1, index))
     for name, press in BACK:
         press(target)
         state = target.info()
-        expect(state["screen"] == GUIDE and state["page"] == 1, "%s: %s on the first page stays there" % (look, name))
+        expect(state["screen"] == GUIDE and state.get("page") == 1,
+               "%s: %s on the first page stays there" % (look, name))
 
 
 def turn_to(target, wanted):
     for _ in range(64):
-        page = target.info()["page"]
+        page = target.info().get("page")
         if page == wanted:
             return True
+        if page is None:  # another screen is open
+            return False
         target.key("Right" if page < wanted else "Left")
     return False
+
+
+def every_key(target, look, total, expect):
+    """Each key that turns, tried where it has a page to turn to, however few pages there are."""
+    if total < 2:
+        return
+    for name, press in FORWARD:
+        turn_to(target, 1)
+        press(target)
+        expect(target.info().get("page") == 2, "%s: %s turns from page 1 to page 2" % (look, name))
+    for name, press in BACK:
+        turn_to(target, 2)
+        press(target)
+        expect(target.info().get("page") == 1, "%s: %s turns back from page 2 to page 1" % (look, name))
+
+
+def remembers(target, look, pages, expect):
+    """A page that is not the first is open again after the menu and the home screen."""
+    total = len(pages)
+    if total < 2:
+        return
+    expect(turn_to(target, total), "%s: page %d/%d is reached" % (look, total, total))
+    target.key("Esc")
+    target.key("Esc")
+    expect(target.info()["screen"] == HOME, "%s: Esc twice leads from the guide to the home screen" % look)
+    target.open("guide")
+    state = target.info()
+    expect(state["screen"] == GUIDE and state.get("page") == total and state.get("pageId") == pages[-1]["id"],
+           "%s: coming back to the guide opens page %d/%d again (the app says page %s)" % (
+               look, total, total, state.get("page")))
 
 
 def listen(target, look, pages, index, reading, expect, note):
@@ -307,24 +367,25 @@ def listen(target, look, pages, index, reading, expect, note):
         number = press % total + 1
         target.type("/")
         state = target.info()
-        expect(state["screen"] == GUIDE and state["page"] == index + 1 and state["clipNumber"] == number,
+        expect(state["screen"] == GUIDE and state.get("page") == index + 1 and state.get("clipNumber") == number,
                "%s page %s: press %d of / asks for clip %d (the app says %s)" % (
                    look, count, press + 1, number, state.get("clipNumber")))
         if simulated:
             wanted = r"/audio/([fm])/guide/%s-%d\.wav" % (re.escape(page["id"]), number)
             path = re.fullmatch(wanted, state["played"])
-            expect(state["heard"] is True and path is not None and state["clip"] == state["played"] and
+            expect(state.get("heard") is True and path is not None and state.get("clip") == state["played"] and
                    state["plays"] == before["plays"] + press + 1 and state["playedAt"] == state["volume"],
                    "%s page %s: clip %d is played once, as %s at volume %d" % (
                        look, count, number, state["played"], state["volume"]))
             if path:
                 folders.append(path.group(1))
-        elif state["heard"]:
-            expect(re.fullmatch(r"/audio/[fm]/guide/%s-%d\.wav" % (re.escape(page["id"]), number), state["clip"])
-                   is not None, "%s page %s: clip %d is played as %s" % (look, count, number, state["clip"]))
+        elif state.get("heard"):
+            wanted = r"/audio/[fm]/guide/%s-%d\.wav" % (re.escape(page["id"]), number)
+            expect(re.fullmatch(wanted, state.get("clip") or "") is not None,
+                   "%s page %s: clip %d is played as %s" % (look, count, number, state.get("clip")))
         else:
             silent += 1
-        left, right = hints(pages, index, state, number, state["heard"])
+        left, right = hints(pages, index, state, number, state.get("heard"))
         reading.frame(target, "page %s after clip %d" % (count, number), page["title"], count, left, right)
 
     if simulated:
@@ -333,7 +394,8 @@ def listen(target, look, pages, index, reading, expect, note):
             expect(all(a != b for a, b in zip(folders, folders[1:])),
                    "%s page %s: the voices take turns (%s)" % (look, count, " ".join(folders)))
         else:
-            expect(set(folders) == {voice[0]}, "%s page %s: the voice is %s (%s)" % (look, count, voice, " ".join(folders)))
+            expect(set(folders) == {voice[0]},
+                   "%s page %s: the voice is %s (%s)" % (look, count, voice, " ".join(folders)))
     elif silent:
         note("note %s page %s: clips missing on the memory card: %d of %d; the footer said so" % (
             look, count, min(silent, total), total))
@@ -363,11 +425,11 @@ def sounds(target, look, pages, reading, colours, areas, expect, note):
     expect(turn_to(target, first + 1), "%s: page %s is reached" % (look, count))
     enter(False)
     state = target.info()
-    expect(state["screen"] == GUIDE and state["page"] == first + 1,
+    expect(state["screen"] == GUIDE and state.get("page") == first + 1,
            "%s: coming back to the guide opens page %s again" % (look, count))
     target.type("/")
     after = target.info()
-    expect(after["page"] == first + 1 and after["clipNumber"] == 0 and after["clip"] == "" and
+    expect(after.get("page") == first + 1 and after.get("clipNumber") == 0 and after.get("clip") == "" and
            after.get("plays") == state.get("plays"), "%s page %s: with sound off / plays nothing" % (look, count))
     left, right = hints(pages, first, after, 0, False)
     reading.frame(target, "page %s with sound off" % count, pages[first]["title"], count, left, right)
@@ -378,8 +440,8 @@ def sounds(target, look, pages, reading, colours, areas, expect, note):
     if not state["memoryCard"]:
         target.type("/")
         after = target.info()
-        expect(after["clipNumber"] == 0 and after["clip"] == "", "%s page %s: without a memory card / plays nothing" % (
-            look, count))
+        expect(after.get("clipNumber") == 0 and after.get("clip") == "",
+               "%s page %s: without a memory card / plays nothing" % (look, count))
         left, right = hints(pages, first, after, 0, False)
         reading.frame(target, "page %s without a memory card" % count, pages[first]["title"], count, left, right)
         note("note %s: no memory card in the device: hearing was not checked" % look)
@@ -397,11 +459,26 @@ def sounds(target, look, pages, reading, colours, areas, expect, note):
         turn_to(target, away + 1)
         turn_to(target, last + 1)
         state = target.info()
-        expect(state["clipNumber"] == 0 and state["clip"] == "" and state["heard"] is False,
+        expect(state.get("clipNumber") == 0 and state.get("clip") == "" and state.get("heard") is False,
                "%s page %d/%d: after turning away and back no clip counts as played" % (look, last + 1, len(pages)))
         target.type("/")
-        expect(target.info()["clipNumber"] == 1, "%s page %d/%d: the first press plays the first clip again" % (
+        expect(target.info().get("clipNumber") == 1, "%s page %d/%d: the first press plays the first clip again" % (
             look, last + 1, len(pages)))
+
+    # leaving forgets it as well
+    turn_to(target, last + 1)
+    target.type("/")
+    asked = target.info().get("clipNumber")
+    target.key("Esc")
+    target.key("Esc")
+    target.open("guide")
+    state = target.info()
+    count = "%d/%d" % (last + 1, len(pages))
+    expect(asked and state["screen"] == GUIDE and state.get("page") == last + 1 and state.get("clipNumber") == 0 and
+           state.get("clip") == "" and state.get("heard") is False,
+           "%s page %s: after leaving and coming back no clip counts as played" % (look, count))
+    left, right = hints(pages, last, state, 0, False)
+    reading.frame(target, "page %s after coming back" % count, pages[last]["title"], count, left, right)
 
     # a page without clips
     if without:
@@ -411,7 +488,7 @@ def sounds(target, look, pages, reading, colours, areas, expect, note):
         state = target.info()
         target.type("/")
         after = target.info()
-        expect(after["screen"] == GUIDE and after["page"] == index + 1 and after["clipNumber"] == 0 and
+        expect(after["screen"] == GUIDE and after.get("page") == index + 1 and after.get("clipNumber") == 0 and
                after.get("plays") == state.get("plays"), "%s page %s: without clips / plays nothing" % (look, count))
         left, right = hints(pages, index, after, 0, False)
         reading.frame(target, "page %s, which has no clips," % count, pages[index]["title"], count, left, right)
@@ -426,7 +503,7 @@ def sounds(target, look, pages, reading, colours, areas, expect, note):
         state = target.info()
         target.type("/")
         after = target.info()
-        expect(after["clipNumber"] == state["clipNumber"] and after["clip"] == state["clip"] and
+        expect(after.get("clipNumber") == state.get("clipNumber") and after.get("clip") == state.get("clip") and
                after["plays"] == state["plays"], "%s page %s: without a memory card / plays nothing" % (look, count))
         left, right = hints(pages, first, after, 0, False)
         reading.frame(target, "page %s without a memory card" % count, pages[first]["title"], count, left, right)
@@ -435,11 +512,14 @@ def sounds(target, look, pages, reading, colours, areas, expect, note):
 
 def empty(target, look, reading, expect):
     state = target.info()
-    expect(state["pages"] == 0 and state["page"] == 0 and state["pageId"] == "" and state["clip"] == "",
+    expect(state.get("pages") == 0 and state.get("page") == 0 and state.get("pageId") == "" and state.get("clip") == "",
            "%s: the app has no pages" % look)
     seen = reading.frame(target, "without pages", "Sounds", "", "Any key: back", "")
-    expect(reader.find_anywhere(seen["content"], reading.colours["ink"], "The guide has no pages.", FACE) is not None,
-           "%s: the screen says that the guide has no pages" % look)
+    found = reader.find_anywhere(seen["content"], reading.colours["ink"], "The guide has no pages.", FACE)
+    expect(found is not None, "%s: the screen says that the guide has no pages" % look)
+    if found is not None:
+        expect(not crossed(seen["all"], found[1], reading.colours["faint"]),
+               "%s: no ruled line runs through what the screen says" % look)
     target.type("/")
     expect(target.info()["screen"] == MENU, "%s: any key leads back to the menu" % look)
     target.key("Esc")
@@ -463,6 +543,8 @@ def play(target, look, pages, colours, areas, expect, note):
     # The app remembers the page that was open.
     expect(turn_to(target, 1), "%s: the first page is reached" % look)
     read_through(target, look, pages, reading, expect)
+    every_key(target, look, len(pages), expect)
+    remembers(target, look, pages, expect)
     sounds(target, look, pages, reading, colours, areas, expect, note)
 
     expect(target.info()["screen"] == GUIDE, "%s: the guide is still open" % look)

@@ -13,8 +13,14 @@
 //   keep, back      keeps settings and progress aside, brings them back: "#done 1" or "#done 0"
 //   fresh           forgets all progress and starts at day 1. Refused unless "keep" was done.
 //   sitting <deck>  starts a sitting from that deck; without a name, the course: "#done 1" or "#done 0"
+//   play <path> [volume]  plays a clip from the memory card, volume 1 to 5: "#ok" or "#error <why>"
+//   hush            ends what is playing
 //   restart         restarts the device
 // Every other command is answered with "#ok" or "#error <why>". An empty line is answered with "#".
+//
+// For the memory card, so that a computer can fill it over the cable (files.h says how):
+//   df, ls <folder>, crc <path>, rm <path>, mkdir <path>, put <path> <size> <crc>
+// While a file arrives with "put" the device does nothing else. No word sends what a file holds.
 #pragma once
 
 #include <M5GFX.h>

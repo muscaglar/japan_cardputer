@@ -14,6 +14,7 @@
 #include "card.h"
 #include "console.h"
 #include "hwcheck.h"
+#include "sound.h"
 
 namespace {
 
@@ -65,11 +66,10 @@ public:
         M5Cardputer.Speaker.tone(static_cast<float>(hertz), static_cast<uint32_t>(milliseconds));
     }
 
-    // Sound from the memory card: not written yet.
     bool hasCard() override { return cardReady(); }
-    bool play(const char*, int) override { return false; }
-    bool playing() override { return false; }
-    void hush() override {}
+    bool play(const char* path, int volume) override { return soundPlay(path, volume); }
+    bool playing() override { return soundPlaying(); }
+    void hush() override { soundHush(); }
 
 private:
     static std::string path(const char* name) { return std::string("/") + name; }
@@ -178,6 +178,8 @@ void setup()
 {
     auto cfg = M5.config();
     M5Cardputer.begin(cfg, true);
+    // Room for a whole piece of a file that arrives over USB (src/files.cpp).
+    Serial.setRxBufferSize(2112);
     Serial.begin(115200);
     M5Cardputer.Display.setRotation(1);
     M5Cardputer.Display.setBrightness(160);
@@ -192,6 +194,7 @@ void setup()
 
     platform.begin();
     cardBegin();
+    soundBegin();
     canvas.setColorDepth(16);
     canvas.createSprite(ui::kWidth, ui::kHeight);
     app.begin();
@@ -210,6 +213,9 @@ void loop()
     }
 
     M5Cardputer.update();
+    // Before the keys: a clip that a key starts is opened in this round and gets its first piece
+    // in the next, so that no round has to wait for the card twice.
+    soundTick();
     if (M5Cardputer.BtnA.wasClicked()) {
         app.key(ui::Key::of(ui::Key::Button));
     }

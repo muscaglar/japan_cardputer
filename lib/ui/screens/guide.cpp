@@ -48,6 +48,24 @@ std::string clipAt(const char* clips, int index)
     return end ? std::string(start, static_cast<size_t>(end - start)) : std::string(start);
 }
 
+// Where the lines of a page stand: five of them, in the middle of the content area.
+struct Lines {
+    int x;
+    int y;      // the top of the first line
+    int step;   // from one line to the next
+    int width;
+};
+
+Lines linesIn(const Area& a)
+{
+    Lines lines;
+    lines.step  = (a.h / kMostLines < kTallestLine) ? a.h / kMostLines : kTallestLine;
+    lines.width = (a.w < kBodyWidth) ? a.w : kBodyWidth;
+    lines.x     = a.x + (a.w - lines.width) / 2;
+    lines.y     = a.y + (a.h - kMostLines * lines.step) / 2;
+    return lines;
+}
+
 // The start of the text that fits into `width` at 16 px, ending in … when something was cut off.
 std::string fitted(Canvas& c, const std::string& utf8, int width)
 {
@@ -104,8 +122,11 @@ public:
         const int count = pages();
         if (count == 0) {
             drawFrame(c, t, "Sounds", "", "Any key: back", "");
-            const Area a = contentArea(t);
-            textCentre(c, a.x + a.w / 2, a.y + (a.h - 16) / 2, "The guide has no pages.", font16(), t.ink);
+            // on the middle line of a page, which the ruled lines of the notebook leave free
+            const Area a      = contentArea(t);
+            const Lines lines = linesIn(a);
+            textCentre(c, a.x + a.w / 2, lines.y + (kMostLines / 2) * lines.step, "The guide has no pages.", font16(),
+                       t.ink);
             return;
         }
 
@@ -115,23 +136,20 @@ public:
         const char* left            = ahead ? "Enter: next" : behind ? "Del: back" : "Esc: menu";
         std::string right           = hearing(app, c, page, kHintWidth - kHintGap - textWidth(c, left, font16()));
         if (right.empty()) {
-            right = (ahead && behind) ? "Del: back" : (!ahead && behind) ? "Esc: menu" : "";
+            right = (ahead && behind) ? "Del: back" : (ahead || behind) ? "Esc: menu" : "";
         }
         char number[16];
         std::snprintf(number, sizeof(number), "%d/%d", _page + 1, count);
         drawFrame(c, t, page.title, number, left, right.c_str());
 
-        const Area a    = contentArea(t);
-        const int line  = (a.h / kMostLines < kTallestLine) ? a.h / kMostLines : kTallestLine;
-        const int width = (a.w < kBodyWidth) ? a.w : kBodyWidth;
-        const int x     = a.x + (a.w - width) / 2;
-        int y           = a.y + (a.h - kMostLines * line) / 2;
-        const char* p   = page.body;
+        const Lines lines = linesIn(contentArea(t));
+        int y             = lines.y;
+        const char* p     = page.body;
         for (int i = 0; i < kMostLines; ++i) {
             const char* end       = std::strchr(p, '\n');
             const std::string row = end ? std::string(p, static_cast<size_t>(end - p)) : std::string(p);
-            text(c, x, y, fitted(c, row, width).c_str(), font16(), t.ink);
-            y += line;
+            text(c, lines.x, y, fitted(c, row, lines.width).c_str(), font16(), t.ink);
+            y += lines.step;
             if (!end) {
                 break;
             }
