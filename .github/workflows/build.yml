@@ -143,6 +143,7 @@ jobs:
           python tools/chart_check.py
           python tools/guide_check.py
           python tools/settings_check.py
+          python tools/card_folder_check.py
 
       - name: The decks are sound and the compiled deck data is up to date
         run: |

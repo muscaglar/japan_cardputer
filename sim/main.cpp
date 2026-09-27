@@ -223,8 +223,16 @@ EMSCRIPTEN_KEEPALIVE const char* sim_info()
     text = app ? app->describe() : std::string("{}");
     if (app && !text.empty() && text.back() == '}') {
         text.pop_back();
-        text += ",\"played\":\"" + platform.played() + "\",\"plays\":" + std::to_string(platform.plays()) +
-                ",\"playedAt\":" + std::to_string(platform.volume()) + "}";
+        // "played" counts from the app's folder on the card, as the screens name their files;
+        // "playedOnCard" is the whole path.
+        std::string played      = platform.played();
+        const std::string whole = played;
+        const std::string root  = ui::kCardFolder;
+        if (played.compare(0, root.size(), root) == 0) {
+            played.erase(0, root.size());
+        }
+        text += ",\"played\":\"" + played + "\",\"playedOnCard\":\"" + whole + "\",\"plays\":" +
+                std::to_string(platform.plays()) + ",\"playedAt\":" + std::to_string(platform.volume()) + "}";
     }
     return text.c_str();
 }

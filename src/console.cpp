@@ -170,7 +170,7 @@ bool carryOut(const std::string& line, ui::App& app, M5Canvas& canvas, ui::Platf
     if (command == "fresh") {
         // Refused unless progress was kept aside first, so that a slip cannot cost what was learnt.
         std::string kept;
-        if (!platform.load("progress.bak", kept)) {
+        if (!platform.load("settings.bak", kept) || kept.empty()) {
             reply("#error keep first");
             return false;
         }

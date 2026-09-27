@@ -214,7 +214,7 @@ bool App::speakFile(const char* path)
     if (!_settings.sound || !path || !_platform.hasCard()) {
         return false;
     }
-    return _platform.play(path, _settings.volume);
+    return _platform.play((std::string(kCardFolder) + path).c_str(), _settings.volume);
 }
 
 const char* App::voiceFolder()
@@ -235,7 +235,8 @@ bool App::speak(const deck::Deck* deck, const deck::Item* item)
     bool male = (voiceFolder()[0] == 'm');
     // The other voice is better than silence when the wanted one has no clip of this card.
     for (int attempt = 0; attempt < 2; ++attempt) {
-        const std::string path = std::string("/audio/") + (male ? "m" : "f") + "/" + deck->id + "/" + item->id + ".wav";
+        const std::string path = std::string(kCardFolder) + "/audio/" + (male ? "m" : "f") + "/" + deck->id + "/" +
+                                 item->id + ".wav";
         if (_platform.play(path.c_str(), _settings.volume)) {
             return true;
         }
@@ -339,13 +340,20 @@ bool App::keepAside()
 
 bool App::bringBack()
 {
+    // The settings are never empty: an empty copy means that nothing was kept aside.
+    std::string kept;
+    if (!_platform.load(kKept[0][1], kept) || kept.empty()) {
+        return false;
+    }
     bool ok = true;
     for (const auto& pair : kKept) {
         std::string text;
-        if (!_platform.load(pair[1], text)) {
-            return false;  // nothing was kept aside
-        }
+        _platform.load(pair[1], text);
         ok = _platform.save(pair[0], text) && ok;
+    }
+    // What was kept aside is used up: forgetting all progress needs a new copy first.
+    for (const auto& pair : kKept) {
+        _platform.save(pair[1], std::string());
     }
     _settings = Settings();
     loadSettings();

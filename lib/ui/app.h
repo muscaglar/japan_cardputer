@@ -29,6 +29,11 @@ struct Settings {
 
 enum class ScreenId : uint8_t { Home, Menu, Kana, Settings, Cards, Summary, Keys, Decks, Chart, Guide, Count };
 
+// Everything the app keeps on the memory card lives in this one folder, so that a card can be
+// shared with other things. A screen names a file from there on: "/audio/f/signs/sign-eki.wav"
+// is "/nihongo/audio/f/signs/sign-eki.wav" on the card.
+constexpr const char* kCardFolder = "/nihongo";
+
 // How far a deck is learnt, counting the cards within the level that is set.
 struct DeckProgress {
     int total  = 0;
@@ -89,7 +94,8 @@ public:
 
     // Sound. speak() plays the clip of a card if sound is on, the memory card is in and has it:
     // "/audio/<f or m>/<deck id>/<item id>.wav", the voice as set. speakFile() plays any file
-    // under the same conditions. Both return whether something is playing now.
+    // under the same conditions. Paths count from the app's folder on the card (kCardFolder).
+    // Both return whether something is playing now.
     bool speak(const deck::Deck* deck, const deck::Item* item);
     bool speakFile(const char* path);
     // "f" or "m": the folder of the voice whose turn it is, for a screen that builds a path
