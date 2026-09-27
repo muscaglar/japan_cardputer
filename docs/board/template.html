@@ -245,10 +245,10 @@ button.ghost { background: transparent; color: var(--ink); border-color: var(--r
 
   <header class="top">
     <div class="top-text">
-      <p class="label">M5Stack Cardputer · 240 × 135 pixels · concept board, round two</p>
+      <p class="label">M5Stack Cardputer · 240 × 135 pixels · concept board, choices recorded</p>
       <h1><span lang="ja">旅のことば帳</span><small>Cardputer Nihongo — working title</small></h1>
-      <p class="thesis">Your phone translates. The Cardputer takes the other job: it catches the Japanese you meet on the trip and makes you type it back until it stays.</p>
-      <p class="top-note">You chose all eighteen ideas and four looks. This round adds pronunciation, draws your four looks on three screens each, and keeps the questions that are still open. Your earlier picks are filled in.</p>
+      <p class="thesis">Your phone translates. The Cardputer takes the other job: it catches the Japanese you meet and makes you type it back until it stays.</p>
+      <p class="top-note">All your choices are in and filled in below: eighteen ideas, the notebook look with three more as themes, pitch as a line with a hook, and a generic build that is not tuned to any one trip. Change anything here and copy the text at the bottom if you change your mind.</p>
     </div>
     <figure class="hero">
       <div class="lcd"><img src="{{HERO}}" width="240" height="135" alt="Pronunciation card for 大丈夫: kana with a line over the high beats and a hook where the pitch falls, romaji split into five beats, and dots under a whispered vowel."></div>
@@ -259,13 +259,13 @@ button.ghost { background: transparent; color: var(--ink); border-color: var(--r
   <section class="day" aria-labelledby="day-h">
     <h2 id="day-h">One day, three stops</h2>
     <ol class="stops">{{STOPS}}</ol>
-    <p class="loop-note">The evening feeds the next morning, so the device always drills words from your own trip. It works without a connection all day and goes online once, in the evening, through your phone.</p>
+    <p class="loop-note">The evening feeds the next morning, so the device always drills words you met yourself. It works without a connection all day and goes online once, in the evening, through your phone.</p>
   </section>
 
   <section aria-labelledby="pron-h" class="lines">
     <div class="section-head">
       <h2 id="pron-h">Pronunciation, in three layers</h2>
-      <p>Written and heard, both. The written line works in silence on a train. Sound comes from clips prepared before the trip. The microphone lets you hear yourself next to the model. The device cannot judge your pronunciation by itself, and says so.</p>
+      <p>Written and heard, both. The written line works in silence on a train. Sound comes from clips prepared in advance. The microphone lets you hear yourself next to the model. The device cannot judge your pronunciation by itself, and says so.</p>
     </div>
     <ol class="layers">{{LAYERS}}</ol>
     <div class="shots shots-3">{{PRON_SHOTS}}</div>
@@ -280,7 +280,7 @@ button.ghost { background: transparent; color: var(--ink); border-color: var(--r
   <section aria-labelledby="look-h" class="lines">
     <div class="section-head">
       <h2 id="look-h">Your four looks, on three screens each</h2>
-      <p>Home screen, word catcher and sign drill. All four can ship as themes, with a key to switch. Choose the one the device starts in.</p>
+      <p>Home screen, word catcher and sign drill. All four ship as themes, with a key to switch. The notebook is the one the device starts in.</p>
     </div>
     <div class="looks2">{{ROUND2}}</div>
     <div class="questions">{{LOOK_QUESTIONS}}</div>
@@ -288,8 +288,8 @@ button.ghost { background: transparent; color: var(--ink); border-color: var(--r
 
   <section aria-labelledby="q-h" class="lines">
     <div class="section-head">
-      <h2 id="q-h">What I still need to know</h2>
-      <p>Most important first. Skip anything you would rather answer in the chat.</p>
+      <h2 id="q-h">Your answers</h2>
+      <p>Recorded on 27 September 2026. Nothing further is needed.</p>
     </div>
     <form id="form" class="questions" autocomplete="off">{{QUESTIONS}}</form>
   </section>
@@ -340,8 +340,8 @@ button.ghost { background: transparent; color: var(--ink); border-color: var(--r
   var IDEAS = {{IDEA_IDS}};
   var QUESTIONS = {{QUESTION_IDS}};
   var DEFAULTS = {{DEFAULTS}};
-  var KEY = "cardputer-nihongo-board-v2";
-  var state = { ideas: DEFAULTS.ideas || {}, one: {}, many: DEFAULTS.many || {}, text: {} };
+  var KEY = "cardputer-nihongo-board-v3";
+  var state = { ideas: DEFAULTS.ideas || {}, one: DEFAULTS.one || {}, many: DEFAULTS.many || {}, text: DEFAULTS.text || {} };
 
   try {
     var raw = window.localStorage.getItem(KEY);
@@ -459,7 +459,7 @@ button.ghost { background: transparent; color: var(--ink); border-color: var(--r
     byId("form").reset();
     Array.prototype.forEach.call(document.querySelectorAll('.picks input, .opts input'), function (el) { el.checked = false; });
     Array.prototype.forEach.call(document.querySelectorAll('.free textarea'), function (el) { el.value = ""; });
-    state = { ideas: DEFAULTS.ideas || {}, one: {}, many: DEFAULTS.many || {}, text: {} };
+    state = { ideas: DEFAULTS.ideas || {}, one: DEFAULTS.one || {}, many: DEFAULTS.many || {}, text: DEFAULTS.text || {} };
     restore();
     changed();
   });

@@ -14,7 +14,7 @@
   },
   {
    "jp": "夜",
-   "en": "Hotel",
+   "en": "Evening",
    "meta": "10 minutes · online through your phone",
    "what": "Three sentences about your day, corrected by Claude. Today's words become tomorrow's cards, with their sound."
   }
@@ -98,7 +98,7 @@
    "screen": "tomorrow",
    "tier": "strong",
    "tierLabel": "Stage 3 · your own words",
-   "pitch": "Before the trip, your itinerary becomes one small pack per day: station names on the route, local dishes, the words on the ticket machine. You guess first, then learn, the evening before.",
+   "pitch": "An itinerary, any itinerary, becomes one small pack per day: station names on the route, local dishes, the words on the ticket machine. You guess first, then learn, the evening before.",
    "tags": [
     [
      "offline",
@@ -106,7 +106,7 @@
     ],
     [
      "plain",
-     "Needs your itinerary"
+     "Packs are optional"
     ]
    ],
    "alt": "Tomorrow pack for Kyoto to Nara: the station name 烏丸, a wrong guess からすまる and the answer からすま.",
@@ -120,7 +120,7 @@
    "screen": "diary",
    "tier": "strong",
    "tierLabel": "Stage 4 · evening, online",
-   "pitch": "In the hotel you type three sentences about your day. Claude returns the smallest correction that makes each one natural, with kanji and a one-line reason. Then you retype it from memory.",
+   "pitch": "In the evening you type three sentences about your day. Claude returns the smallest correction that makes each one natural, with kanji and a one-line reason. Then you retype it from memory.",
    "tags": [
     [
      "online",
@@ -274,7 +274,7 @@
    "screen": "rehearsal",
    "tier": "strong",
    "tierLabel": "Stage 4 · evening, online",
-   "pitch": "In the evening Claude plays the person you will meet tomorrow, a ryokan host or a ticket clerk, in polite Japanese at your level. You type your side. Afterwards it names two things to fix and adds three cards.",
+   "pitch": "Claude plays the person you expect to meet, a ryokan host or a ticket clerk, in polite Japanese at your level. You type your side. Afterwards it names two things to fix and adds three cards.",
    "tags": [
     [
      "online",
@@ -362,7 +362,7 @@
    "screen": "buddy",
    "tier": "strong",
    "tierLabel": "Stage 3 · your own words",
-   "pitch": "A daruma with one eye painted lives on the home screen and talks to you in short Japanese at your level. You paint the second eye when you reach the goal you set for the trip.",
+   "pitch": "A daruma with one eye painted lives on the home screen and talks to you in short Japanese at your level. You paint the second eye when you reach the goal you set.",
    "tags": [
     [
      "offline",
@@ -565,7 +565,7 @@
   {
    "topic": "Updates on the road",
    "fact": "A launcher firmware can install a new version from the microSD card or from a phone's browser.",
-   "means": "A fix during the trip needs no laptop."
+   "means": "A fix on the road needs no laptop."
   },
   {
    "topic": "Existing projects",
@@ -736,25 +736,6 @@
    "place": "form"
   },
   {
-   "id": "trip",
-   "kind": "text",
-   "ask": "When do you leave, and for how long?",
-   "why": "The weeks before departure set how much gets built.",
-   "text": "Dates",
-   "placeholder": "e.g. leaving 2 November, 14 days",
-   "place": "form"
-  },
-  {
-   "id": "route",
-   "kind": "text",
-   "ask": "Where are you going?",
-   "why": "This becomes the daily packs: station names on your routes, local dishes, the right counters.",
-   "text": "Cities, train legs, anything booked",
-   "rows": 3,
-   "placeholder": "e.g. Tokyo 4 nights, Kanazawa 2, Kyoto 5, day trip to Nara",
-   "place": "form"
-  },
-  {
    "id": "goal",
    "kind": "many",
    "ask": "What should improve most? Pick one or two.",
@@ -828,7 +809,7 @@
    "id": "claude",
    "kind": "one",
    "ask": "Claude in the evening",
-   "why": "A key on a gadget can be lost with the gadget. Either way it would be a personal key in its own workspace, with a monthly cap and an expiry date just after the trip.",
+   "why": "A key on a gadget can be lost with the gadget. Either way it would be a personal key in its own workspace, with a monthly cap and an expiry date.",
    "options": [
     [
      "relay",
@@ -966,7 +947,7 @@
   {
    "id": "after",
    "kind": "one",
-   "ask": "After the trip",
+   "ask": "Long-term use",
    "options": [
     [
      "keep",
@@ -974,7 +955,7 @@
     ],
     [
      "trip-only",
-     "It is for the trip"
+     "Only while travelling"
     ]
    ],
    "place": "form"
@@ -1001,7 +982,7 @@
     "jp": "聞く",
     "en": "Heard",
     "when": "Speaker, or wired earphones on an ADV",
-    "what": "Natural-speed and slow clips for every item, made on the Mac before the trip. A word you catch on the road shows its written line at once and gets its clip at the evening sync."
+    "what": "Natural-speed and slow clips for every item, made on a computer in advance. A word you catch on the road shows its written line at once and gets its clip at the evening sync."
    },
    {
     "jp": "言う",
@@ -1107,13 +1088,37 @@
    "snapshot": "yes",
    "remote": "yes"
   },
+  "one": {
+   "pitch": "line",
+   "romaji": "peek",
+   "voice": "alternate",
+   "theme": "techo",
+   "model": "adv",
+   "level": "kana-shaky",
+   "sound": "earphones",
+   "online": "iphone",
+   "claude": "key",
+   "build": "cloud",
+   "typing": "none",
+   "sdcard": "have-large",
+   "cards": "no",
+   "company": "non-speaker",
+   "after": "keep"
+  },
   "many": {
    "themes": [
     "eki",
     "techo",
     "rpg",
     "washi"
+   ],
+   "goal": [
+    "listen",
+    "speak"
    ]
+  },
+  "text": {
+   "notes": "Keep it generic: not tuned to one trip."
   }
  }
 }

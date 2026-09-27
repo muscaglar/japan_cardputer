@@ -6,8 +6,8 @@ are printed with it. Where a correction exists, the correction is what to rely o
 
 | Topic | Statements | Confirmed | Corrected | Other | Fact-check |
 |---|---|---|---|---|---|
-| [Hardware variants and limits](hw.md) | 25 | 0 | 0 | 25 | pending |
-| [Software ecosystem and existing apps](eco.md) | 28 | 0 | 0 | 28 | pending |
+| [Hardware variants and limits](hw.md) | 25 | 16 | 9 | 0 | done |
+| [Software ecosystem and existing apps](eco.md) | 28 | 22 | 6 | 0 | done |
 | [Cloud AI access from the device](llm.md) | 24 | 17 | 7 | 0 | done |
 | [Japanese text display and input](jp.md) | 24 | 18 | 6 | 0 | done |
 | [Audio and speech](audio.md) | 27 | 15 | 12 | 0 | done |

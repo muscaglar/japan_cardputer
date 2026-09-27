@@ -2,8 +2,9 @@
 
 A Japanese-learning travel companion for the M5Stack Cardputer (original, v1.1 and ADV).
 
-The phone translates. This device takes the other job: it catches the Japanese met on a trip and
-makes its owner type it back until it stays.
+The phone translates. This device takes the other job: it catches the Japanese its owner meets and
+makes them type it back until it stays. It is generic: nothing in it is tuned to one trip, route or
+season.
 
 Status, 27 September 2026: design stage. The firmware in `src/` is a hardware check, not the app.
 It has been type-checked against the real headers but has not yet been built or run on a device.
@@ -15,12 +16,12 @@ It has been type-checked against the real headers but has not yet been built or 
 | 0 | Hardware check: board, memory, font sizes, typing, speaker and microphone | the device |
 | 1 | Typed cards: the 90-second queue, signs, katakana sprint, counters | microSD card |
 | 2 | Sound: numbers by ear, what staff ask, the pronunciation line, echo | audio clips made on a computer |
-| 3 | Your own words: word catcher with offline dictionary, daily packs, station names, missions, show cards, the buddy | itinerary |
+| 3 | Your own words: word catcher with offline dictionary, day packs, station names, missions, show cards, the buddy | an itinerary, optional |
 | 4 | Evening, online: three-line diary, rehearsal and pronunciation check through Claude, sound snapshot | phone hotspot |
 | 5 | Extras: menu decoder, room remote | |
 
 Pronunciation comes in three layers: a written line on every card (beats, pitch, whispered vowels,
-optional romaji), audio clips prepared before the trip, and record-and-compare with the microphone.
+optional romaji), audio clips prepared on a computer, and record-and-compare with the microphone.
 
 ## What is in the repository
 
@@ -33,6 +34,8 @@ optional romaji), audio clips prepared before the trip, and record-and-compare w
 | `tools/concept_screens.py` | The concept screens for every idea, the pronunciation notation and the four looks |
 | `tools/romaji_reference.py` | Python mirror of the converter, for content tools and for checking the test vectors |
 | `tools/syntax_check.py` | Type check of the firmware without the ESP32 toolchain |
+| `tools/wasm_tests.py` | Runs the C++ unit tests as WebAssembly, for machines that cannot start native builds |
+| `tools/flash.py` | Downloads the latest cloud build and writes it to the device |
 | `docs/concepts/` | Rendered concept screens (PNG, three times device size) |
 | `docs/board/` | The concept board page and its generator |
 | `docs/research/` | Research notes with sources, each statement fact-checked |
@@ -65,6 +68,7 @@ python3 tools/concept_screens.py                 # renders every concept screen 
 python3 tools/romaji_reference.py konnichiha shimbashi "ko-hi- wo kudasai"
 pio run -e cardputer -t compiledb                # writes compile_commands.json, runs no compiler
 python3 tools/syntax_check.py                    # type-checks src/ and lib/ with the system clang
+python3 tools/wasm_tests.py                      # runs the C++ unit tests as WebAssembly under Node
 python3 docs/board/build_board.py                # rebuilds the concept board page
 ```
 
@@ -72,7 +76,10 @@ The screen preview decodes the same u8g2 font data the firmware links, with the 
 what it draws is what the panel shows. It needs the M5GFX sources that PlatformIO downloads
 (`pio pkg install -e cardputer`).
 
-The C++ unit tests run with `pio test -e native` on a machine that can run locally built programs.
+The C++ unit tests run with `pio test -e native`, or as WebAssembly with `tools/wasm_tests.py`.
+
+The preview was checked against M5GFX itself, compiled to WebAssembly: a test screen came out
+identical in all 32,400 pixels.
 
 ## Fonts
 

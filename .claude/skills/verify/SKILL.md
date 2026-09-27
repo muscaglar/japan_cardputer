@@ -43,7 +43,17 @@ python3 docs/board/build_board.py                                 # writes docs/
 ```
 
 Open a rendered PNG and look at it. The renderer decodes the real device fonts, so a wrong glyph or
-an overflow seen there will be on the device too.
+an overflow seen there will be on the device too. It was compared with M5GFX itself, compiled to
+WebAssembly, on 2026-09-27: all 32,400 pixels of a test screen were identical.
+
+C++ that cannot be started as a native program can still be executed as WebAssembly under Node:
+
+```
+python3 tools/wasm_tests.py            # the unit tests under test/, compiled with Emscripten
+```
+
+Emscripten from Homebrew needs `EMSDK_PYTHON` pointing at a Python of 3.10 or later (the script sets
+it) and a `.emscripten` file in its `libexec` folder naming its own `llvm/bin` and `binaryen`.
 
 `syntax_check.py` must report `FAIL` with file and line when `src/main.cpp` contains a mistake.
 To prove it still does, append a bad line, run it, and restore the file.
