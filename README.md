@@ -17,7 +17,7 @@ round. It runs in the simulator and builds in the cloud. It has not yet been run
 | 1 | Typed cards: the 90-second queue, signs, katakana sprint, counters | microSD card |
 | 2 | Sound: numbers by ear, what staff ask, the pronunciation line, echo | audio clips made on a computer |
 | 3 | Your own words: word catcher with offline dictionary, day packs, station names, missions, show cards, the buddy | an itinerary, optional |
-| 4 | Evening, online: three-line diary, rehearsal and pronunciation check through Claude, sound snapshot | phone hotspot |
+| 4 | Evening, online: three-line diary and rehearsal with Claude, a pronunciation check through a speech-scoring service, sound snapshot | phone hotspot |
 | 5 | Extras: menu decoder, room remote | |
 
 Pronunciation comes in three layers: a written line on every card (beats, pitch, whispered vowels,
