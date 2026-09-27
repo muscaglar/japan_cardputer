@@ -92,6 +92,9 @@ public:
     // under the same conditions. Both return whether something is playing now.
     bool speak(const deck::Deck* deck, const deck::Item* item);
     bool speakFile(const char* path);
+    // "f" or "m": the folder of the voice whose turn it is, for a screen that builds a path
+    // itself, as in "/audio/" + voiceFolder() + "/guide/guide-vowels-1.wav".
+    const char* voiceFolder();
     void endSitting();  // keeps what was learnt; called when the sitting is over or left
     session::Queue& queue() { return _queue; }
     progress::Store& store() { return _store; }

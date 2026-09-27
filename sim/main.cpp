@@ -229,6 +229,24 @@ EMSCRIPTEN_KEEPALIVE const char* sim_info()
     return text.c_str();
 }
 
+// Starts a sitting from one deck, or the course when the name is empty. Returns 1 if the deck exists.
+EMSCRIPTEN_KEEPALIVE int sim_sitting(const char* deckId)
+{
+    if (!app) {
+        return 0;
+    }
+    if (!deckId || deckId[0] == 0) {
+        app->startCourse();
+        return 1;
+    }
+    const deck::Deck* deck = deck::find(deckId);
+    if (!deck) {
+        return 0;
+    }
+    app->startSitting(deck);
+    return 1;
+}
+
 // 1: a memory card is in (the default). 0: it is taken out.
 EMSCRIPTEN_KEEPALIVE void sim_card(int in)
 {

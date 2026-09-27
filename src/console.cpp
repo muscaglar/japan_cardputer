@@ -167,6 +167,16 @@ bool carryOut(const std::string& line, ui::App& app, M5Canvas& canvas, ui::Platf
         reply("#done 1");
         return true;
     }
+    if (command == "sitting") {
+        const deck::Deck* deck = rest.empty() ? nullptr : deck::find(rest.c_str());
+        if (!rest.empty() && !deck) {
+            reply("#done 0");
+            return false;
+        }
+        app.startSitting(deck);
+        reply("#done 1");
+        return true;
+    }
     if (command == "restart") {
         reply("#ok");
         delay(100);

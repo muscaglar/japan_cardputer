@@ -12,6 +12,7 @@
 //   info            answers "#info {...}" with the state of the app and the memory left
 //   keep, back      keeps settings and progress aside, brings them back: "#done 1" or "#done 0"
 //   fresh           forgets all progress and starts at day 1. Refused unless "keep" was done.
+//   sitting <deck>  starts a sitting from that deck; without a name, the course: "#done 1" or "#done 0"
 //   restart         restarts the device
 // Every other command is answered with "#ok" or "#error <why>". An empty line is answered with "#".
 #pragma once

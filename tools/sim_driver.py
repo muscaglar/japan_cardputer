@@ -80,6 +80,10 @@ class Simulator:
     def back(self):
         return self._answer("back", "done") == "1"
 
+    def sitting(self, deck=""):
+        """Starts a sitting from the deck of that id, or the course without one."""
+        return self._answer(("sitting " + deck).strip(), "done") == "1"
+
     def card(self, present):
         """Puts the pretended memory card in, or takes it out."""
         self.send("card " + ("in" if present else "out"))

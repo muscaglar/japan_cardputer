@@ -127,6 +127,10 @@ class Device:
     def back(self):
         return self._ask("back", "#done") == "1"
 
+    def sitting(self, deck=""):
+        """Starts a sitting from the deck of that id, or the course without one."""
+        return self._ask(("sitting " + deck).strip(), "#done") == "1"
+
     def fresh(self):
         """Forgets all progress and starts at day 1. The device refuses unless keep() was done."""
         return self._ask("fresh", "#done") == "1"

@@ -10,6 +10,7 @@
 //   keep / back            keeps settings and progress aside / brings them back; answers "done 1" or "done 0"
 //   fresh                  forgets all progress and starts at day 1; answers "done 1"
 //   card in / card out     puts the pretended memory card in or takes it out
+//   sitting <deck id>      starts a sitting from that deck; without a name, the course; answers "done 1" or "done 0"
 //   quit
 const path = require("path");
 const readline = require("readline");
@@ -46,6 +47,10 @@ require(path.join(path.dirname(__dirname), "build", "sim", "sim.js"))().then(sim
       sim._sim_restart();
     } else if (command === "keep" || command === "back" || command === "fresh") {
       console.log("done " + sim._sim_keep(command === "keep" ? 0 : command === "back" ? 1 : 2));
+    } else if (command === "sitting") {
+      const at = sim.stringToNewUTF8(rest);
+      console.log("done " + sim._sim_sitting(at));
+      sim._free(at);
     } else if (command === "card") {
       sim._sim_card(rest === "out" ? 0 : 1);
     } else if (command === "quit") {

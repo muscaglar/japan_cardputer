@@ -217,16 +217,22 @@ bool App::speakFile(const char* path)
     return _platform.play(path, _settings.volume);
 }
 
-bool App::speak(const deck::Deck* deck, const deck::Item* item)
+const char* App::voiceFolder()
 {
-    if (!deck || !item || !_settings.sound || !_platform.hasCard()) {
-        return false;
-    }
     bool male = (_settings.voice == Voice::Male);
     if (_settings.voice == Voice::Both) {
         male      = _maleNext;
         _maleNext = !_maleNext;
     }
+    return male ? "m" : "f";
+}
+
+bool App::speak(const deck::Deck* deck, const deck::Item* item)
+{
+    if (!deck || !item || !_settings.sound || !_platform.hasCard()) {
+        return false;
+    }
+    bool male = (voiceFolder()[0] == 'm');
     // The other voice is better than silence when the wanted one has no clip of this card.
     for (int attempt = 0; attempt < 2; ++attempt) {
         const std::string path = std::string("/audio/") + (male ? "m" : "f") + "/" + deck->id + "/" + item->id + ".wav";
