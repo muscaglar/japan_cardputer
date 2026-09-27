@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <string>
 
+#include "storage.h"
+
 namespace ui {
 
 struct Key {
@@ -31,19 +33,13 @@ struct Key {
     }
 };
 
-class Platform {
+// Storage (settings and progress) comes from core::Storage.
+class Platform : public core::Storage {
 public:
-    virtual ~Platform() = default;
-
-    virtual uint32_t millis()      = 0;
-    virtual uint32_t random()      = 0;
-    virtual int batteryPercent()   = 0;  // -1 when unknown
+    virtual uint32_t millis()       = 0;
+    virtual uint32_t random()       = 0;
+    virtual int batteryPercent()    = 0;  // -1 when unknown
     virtual const char* boardName() = 0;
-
-    // Small text files that survive a restart: settings and progress.
-    virtual bool load(const char* name, std::string& text)         = 0;
-    virtual bool save(const char* name, const std::string& text)   = 0;
-    virtual bool append(const char* name, const std::string& line) = 0;
 
     virtual void tone(int hertz, int milliseconds) = 0;
 };

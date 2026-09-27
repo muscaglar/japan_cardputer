@@ -1,0 +1,217 @@
+#include "console.h"
+
+#include <Arduino.h>
+
+#include <cstring>
+#include <string>
+
+#if DEVICE_CONSOLE
+
+namespace {
+
+constexpr size_t kLongestLine = 200;
+
+std::string pending;
+bool overflowed = false;
+
+// Base64 written straight to the serial port in small pieces, so that no large buffer is needed.
+class Base64Writer {
+public:
+    void put(uint8_t byte)
+    {
+        _group[_held++] = byte;
+        if (_held == 3) {
+            emit(3);
+        }
+    }
+
+    void finish()
+    {
+        if (_held > 0) {
+            emit(_held);
+        }
+        flush();
+    }
+
+private:
+    void emit(int count)
+    {
+        static const char kAlphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+        const uint32_t v = (static_cast<uint32_t>(_group[0]) << 16) |
+                           (static_cast<uint32_t>(count > 1 ? _group[1] : 0) << 8) |
+                           static_cast<uint32_t>(count > 2 ? _group[2] : 0);
+        _out[_used++] = kAlphabet[(v >> 18) & 63];
+        _out[_used++] = kAlphabet[(v >> 12) & 63];
+        _out[_used++] = (count > 1) ? kAlphabet[(v >> 6) & 63] : '=';
+        _out[_used++] = (count > 2) ? kAlphabet[v & 63] : '=';
+        _held = 0;
+        if (_used >= sizeof(_out)) {
+            flush();
+        }
+    }
+
+    void flush()
+    {
+        if (_used > 0) {
+            Serial.write(reinterpret_cast<const uint8_t*>(_out), _used);
+            _used = 0;
+        }
+    }
+
+    uint8_t _group[3] = {0, 0, 0};
+    int _held         = 0;
+    char _out[64];
+    size_t _used = 0;
+};
+
+void sendFrame(ui::App& app, M5Canvas& canvas)
+{
+    if (app.draw(canvas)) {
+        canvas.pushSprite(0, 0);
+    }
+    const uint8_t* pixels = static_cast<const uint8_t*>(canvas.getBuffer());
+    const int count       = ui::kWidth * ui::kHeight;
+    Serial.printf("#frame %d %d %d ", static_cast<int>(app.current()), ui::kWidth, ui::kHeight);
+    if (!pixels) {
+        Serial.println();
+        return;
+    }
+    Base64Writer out;
+    int i = 0;
+    while (i < count) {
+        const uint8_t high = pixels[i * 2];
+        const uint8_t low  = pixels[i * 2 + 1];
+        int run            = 1;
+        while (i + run < count && run < 255 && pixels[(i + run) * 2] == high && pixels[(i + run) * 2 + 1] == low) {
+            ++run;
+        }
+        out.put(static_cast<uint8_t>(run));
+        out.put(high);
+        out.put(low);
+        i += run;
+    }
+    out.finish();
+    Serial.println();
+}
+
+void sendInfo(ui::App& app, ui::Platform& platform)
+{
+    const ui::Settings& s = app.settings();
+    Serial.printf("#info {\"screen\":%d,\"look\":\"%s\",\"romaji\":%d,\"sound\":%s,\"textbookN\":%s,\"day\":%d,"
+                  "\"board\":\"%s\",\"battery\":%d,\"heapFree\":%u,\"heapLargestBlock\":%u,\"heapLowest\":%u,"
+                  "\"uptimeMs\":%lu}\n",
+                  static_cast<int>(app.current()), app.theme().key, static_cast<int>(s.romaji),
+                  s.sound ? "true" : "false", s.textbookN ? "true" : "false", s.dayNumber, platform.boardName(),
+                  platform.batteryPercent(), static_cast<unsigned>(ESP.getFreeHeap()),
+                  static_cast<unsigned>(ESP.getMaxAllocHeap()), static_cast<unsigned>(ESP.getMinFreeHeap()),
+                  static_cast<unsigned long>(millis()));
+}
+
+bool namedKey(const std::string& name, ui::Key& key)
+{
+    static const struct {
+        const char* name;
+        ui::Key::Code code;
+    } kNames[] = {
+        {"Enter", ui::Key::Enter}, {"Backspace", ui::Key::Backspace}, {"Tab", ui::Key::Tab},
+        {"Up", ui::Key::Up},       {"Down", ui::Key::Down},           {"Left", ui::Key::Left},
+        {"Right", ui::Key::Right}, {"Esc", ui::Key::Escape},          {"Button", ui::Key::Button},
+    };
+    for (const auto& entry : kNames) {
+        if (name == entry.name) {
+            key = ui::Key::of(entry.code);
+            return true;
+        }
+    }
+    return false;
+}
+
+// Returns true if the app was given a key.
+bool carryOut(const std::string& line, ui::App& app, M5Canvas& canvas, ui::Platform& platform)
+{
+    const size_t space        = line.find(' ');
+    const std::string command = line.substr(0, space);
+    const std::string rest    = (space == std::string::npos) ? std::string() : line.substr(space + 1);
+
+    if (command == "frame") {
+        sendFrame(app, canvas);
+        return false;
+    }
+    if (command == "info") {
+        sendInfo(app, platform);
+        return false;
+    }
+    if (command == "key") {
+        ui::Key key;
+        if (!namedKey(rest, key)) {
+            Serial.println("#error unknown key");
+            return false;
+        }
+        app.key(key);
+        Serial.println("#ok");
+        return true;
+    }
+    if (command == "fn") {
+        if (rest.size() != 1) {
+            Serial.println("#error fn takes one character");
+            return false;
+        }
+        ui::Key key = ui::Key::character(rest[0]);
+        key.fn      = true;
+        app.key(key);
+        Serial.println("#ok");
+        return true;
+    }
+    if (command == "type") {
+        for (char c : rest) {
+            if (c >= ' ' && c < 127) {
+                app.key(ui::Key::character(c));
+            }
+        }
+        Serial.println("#ok");
+        return !rest.empty();
+    }
+    Serial.println("#error unknown command");
+    return false;
+}
+
+}  // namespace
+
+bool consolePoll(ui::App& app, M5Canvas& canvas, ui::Platform& platform)
+{
+    bool pressed = false;
+    while (Serial.available() > 0) {
+        const int c = Serial.read();
+        if (c < 0) {
+            break;
+        }
+        if (c == '\r') {
+            continue;
+        }
+        if (c != '\n') {
+            if (pending.size() < kLongestLine) {
+                pending.push_back(static_cast<char>(c));
+            } else {
+                overflowed = true;  // the rest of an overlong line is dropped, and so is the line
+            }
+            continue;
+        }
+        if (overflowed) {
+            Serial.println("#error line too long");
+        } else if (!pending.empty()) {
+            pressed = carryOut(pending, app, canvas, platform) || pressed;
+        }
+        pending.clear();
+        overflowed = false;
+    }
+    return pressed;
+}
+
+#else
+
+bool consolePoll(ui::App&, M5Canvas&, ui::Platform&)
+{
+    return false;
+}
+
+#endif

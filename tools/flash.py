@@ -61,7 +61,7 @@ def main():
     if result.returncode != 0:
         sys.exit("Flashing failed. Put the device in download mode (off, hold G0, plug in, release) and retry.")
     print("\nDone. Press the reset button or switch the device off and on.")
-    print("To read its report: pio device monitor -b 115200")
+    print("To read its report: python tools/serial_report.py (with PlatformIO's Python, see the file)")
 
 
 if __name__ == "__main__":

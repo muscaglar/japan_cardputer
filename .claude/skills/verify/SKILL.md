@@ -9,17 +9,40 @@ Four surfaces. Drive the one the change reaches.
 
 ## 1. Firmware (src/, lib/) - the device
 
-Needs a Cardputer on USB and a machine that can run the ESP32 toolchain.
+Two routes to get a build onto a Cardputer on USB.
+
+Where the ESP32 compiler runs:
 
 ```
 pio run -e cardputer -t upload      # download mode if needed: switch off, hold G0, plug in USB
-pio device monitor                  # 115200 baud
 ```
 
-Observe:
+Where it does not (the cloud builds every push to main and publishes it as release `latest`):
 
-- Serial prints one JSON line at boot: `{"probe":"cardputer-nihongo","board":...,"psramBytes":...}`.
-  `board` must be `Cardputer` or `Cardputer ADV`, never `unknown board`.
+```
+python3 tools/flash.py              # downloads the latest cloud build and writes it
+```
+
+Then, with PlatformIO's own Python, which has pyserial (`pio system info`, "Python Executable"):
+
+```
+PY=<that python>
+$PY tools/serial_report.py                  # restarts the device, prints its report
+$PY tools/device_driver.py shot.png         # state of the app, and what is on its screen
+$PY tools/kana_round_check.py --device      # plays whole rounds on the device, reads its screen
+```
+
+The app answers on USB (`src/console.h`): `key`, `type`, `fn`, `frame`, `info`. The picture that
+comes back is the buffer sent to the panel, so it shows what the app drew, not what the glass
+shows. Keys arrive at the app, not at the keyboard chip. Keyboard, panel, speaker and microphone
+still need a person: that is what the hardware check is for.
+
+Observe at start: one JSON line on serial. App: `{"app":"japan_cardputer","board":...}`.
+Hardware check (hold G0 while switching on): `{"probe":"cardputer-nihongo","board":...}`.
+`board` must be `Cardputer` or `Cardputer ADV`, never `unknown board`.
+
+Hardware check, by a person:
+
 - `Fn` + `/` walks the pages INFO, FONTS, TYPING, AUDIO; `Fn` + `,` goes back; G0 also advances.
 - TYPING: `konnichiha` shows こんにちは, `kitte` shows きって, `ra-men` shows らーめん, Tab switches to katakana.
   Roll two keys quickly: no letter may appear twice.
@@ -27,8 +50,18 @@ Observe:
 - AUDIO: `B` beeps; `R` records 3 s and plays it back, and the loudest-sample figure is above 0.
   A figure of 0 means a silent microphone, a known problem on the ADV with some toolchains.
 
-Status on 2026-09-27: this recipe has NOT been exercised yet. No device was connected and the
-toolchain could not run on the machine used.
+Before the first flash of a device, keep its factory firmware:
+`pio pkg exec -p tool-esptoolpy -- esptool.py --chip esp32s3 --port PORT read_flash 0x0 0x800000 local/backup/factory.bin`
+(about two minutes; `local/` is not tracked).
+
+Exercised on 2026-09-27 on a Cardputer ADV: flash, report (`Cardputer ADV`, no PSRAM, 267 KB
+free, 122 GB card mounted). The pages of the hardware check were not yet confirmed by a person.
+
+Gotchas:
+
+- In zsh a pattern without a match aborts the whole command: `ls /dev/cu.usbmodem* /dev/cu.usbserial*`
+  prints nothing useful when one of them is absent. Use `ls /dev | grep usbmodem`.
+- `pio pkg exec` has no `python` on its path; call PlatformIO's Python by its full path.
 
 ## 2. Tools (tools/, docs/board/) - the terminal
 

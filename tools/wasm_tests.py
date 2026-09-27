@@ -8,6 +8,10 @@ Usage:
     python3 tools/wasm_tests.py                # every folder under test/
     python3 tools/wasm_tests.py test_romaji    # one of them
 
+A test folder may hold a file `sources.txt` naming the library sources it needs, one path per
+line relative to the repository. Without it, every source of the portable libraries is compiled
+in. Listing them keeps a test independent of code that is still being written elsewhere.
+
 Needs Emscripten (`brew install emscripten`), Node, and the Unity sources that PlatformIO downloads
 (`pio test -e native --without-testing` fetches them).
 """
@@ -78,7 +82,19 @@ def main():
         name = os.path.basename(folder)
         output = os.path.join(BUILD, name + ".js")
         sources = sorted(glob.glob(os.path.join(folder, "*.cpp")))
-        command = ["em++", "-O1", "-std=gnu++17"] + includes + sources + library_sources + [unity_object, "-o", output]
+        wanted_sources = library_sources
+        listing = os.path.join(folder, "sources.txt")
+        if os.path.exists(listing):
+            wanted_sources = [os.path.join(ROOT, line.strip()) for line in open(listing, encoding="utf-8")
+                              if line.strip() and not line.startswith("#")]
+            missing = [path for path in wanted_sources if not os.path.exists(path)]
+            if missing:
+                print("== " + name)
+                print("sources.txt names files that do not exist: " + ", ".join(missing))
+                failed.append(name + " (sources missing)")
+                continue
+        command = (["em++", "-O1", "-std=gnu++17", "-Wall", "-Wextra"] + includes + sources + wanted_sources +
+                   [unity_object, "-o", output])
         print("== " + name)
         if run(command, env):
             failed.append(name + " (did not compile)")

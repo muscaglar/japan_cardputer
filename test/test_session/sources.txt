@@ -1,0 +1,5 @@
+lib/core/srs.cpp
+lib/core/progress.cpp
+lib/core/session.cpp
+lib/core/deck.cpp
+lib/core/deck_data.cpp

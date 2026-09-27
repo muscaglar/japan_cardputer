@@ -6,8 +6,10 @@ on:
   pull_request:
   workflow_dispatch:
 
+# Every job gets a token that can only read. The publish job alone may write, and it runs
+# nothing but the release command on files built earlier.
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: build-${{ github.ref }}
@@ -17,14 +19,16 @@ jobs:
   firmware:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.12"
 
       - name: Cache PlatformIO
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: |
             ~/.platformio
@@ -48,25 +52,39 @@ jobs:
             0x8000 .pio/build/cardputer/partitions.bin \
             0xe000 ~/.platformio/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin \
             0x10000 .pio/build/cardputer/firmware.bin
-          ls -l japan_cardputer.bin .pio/build/cardputer/firmware.bin
+          mkdir -p out
+          cp japan_cardputer.bin .pio/build/cardputer/firmware.bin out/
+          ls -l out
 
       - name: Concept screens render without overflow
         run: python tools/concept_screens.py build/concepts
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: firmware
-          path: |
-            japan_cardputer.bin
-            .pio/build/cardputer/firmware.bin
+          path: out/
+          if-no-files-found: error
+
+  publish:
+    needs: firmware
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: firmware
+          path: out
 
       - name: Publish as the latest build
-        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
         run: |
+          ls -l out
           gh release delete latest --yes --cleanup-tag || true
-          gh release create latest japan_cardputer.bin .pio/build/cardputer/firmware.bin \
+          gh release create latest out/japan_cardputer.bin out/firmware.bin \
             --prerelease --title "Latest build" \
             --notes "Built from ${GITHUB_SHA}. japan_cardputer.bin is the whole image, to be written at offset 0x0. firmware.bin is the app alone, for installing through a launcher." \
             --target "${GITHUB_SHA}"
@@ -74,28 +92,39 @@ jobs:
   simulator:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.12"
 
       - name: Cache PlatformIO
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: |
             ~/.platformio
             .pio/libdeps
           key: pio-sim-${{ runner.os }}-${{ hashFiles('platformio.ini') }}
 
-      - name: Fetch the graphics library
+      - name: Fetch the graphics library and the test framework
         run: |
           pip install platformio==6.1.19
           pio pkg install -e cardputer
+          pio pkg install -e native
 
-      - uses: mymindstorm/setup-emsdk@v14
-        with:
-          version: 6.0.10
+      # Emscripten from its own repository at a fixed commit, not through a third-party action.
+      - name: Install Emscripten
+        run: |
+          git clone https://github.com/emscripten-core/emsdk.git "$HOME/emsdk"
+          git -C "$HOME/emsdk" checkout a2b92777574c2feda07994cd4f1079a3dfc151f8 # 6.0.10
+          "$HOME/emsdk/emsdk" install 6.0.10
+          "$HOME/emsdk/emsdk" activate 6.0.10
+          echo "$HOME/emsdk" >> "$GITHUB_PATH"
+          echo "$HOME/emsdk/upstream/emscripten" >> "$GITHUB_PATH"
+          echo "EMSDK=$HOME/emsdk" >> "$GITHUB_ENV"
+          echo "EM_CONFIG=$HOME/emsdk/.emscripten" >> "$GITHUB_ENV"
 
       - name: Build the simulator
         run: python sim/build.py --page
@@ -103,7 +132,10 @@ jobs:
       - name: Screens match the reference pictures
         run: node sim/shots.js --check
 
-      - uses: actions/upload-artifact@v4
+      - name: Whole kana rounds play correctly
+        run: python tools/kana_round_check.py
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
         with:
           name: simulator

@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "app.h"
+#include "console.h"
 #include "hwcheck.h"
 
 namespace {
@@ -203,6 +204,7 @@ void loop()
         app.key(ui::Key::of(ui::Key::Button));
     }
     readKeys();
+    consolePoll(app, canvas, platform);
     app.tick();
     if (app.draw(canvas)) {
         canvas.pushSprite(0, 0);

@@ -1,0 +1,2 @@
+lib/core/kana.cpp
+lib/core/pitch.cpp
