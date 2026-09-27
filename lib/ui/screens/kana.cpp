@@ -33,6 +33,16 @@ constexpr int kRound         = 20;
 
 enum class State : uint8_t { Typing, Right, Wrong, Done };
 
+const deck::Item* itemWithPrompt(const deck::Deck* deck, const std::string& prompt)
+{
+    for (uint16_t i = 0; deck && i < deck->count; ++i) {
+        if (prompt == deck->items[i].prompt) {
+            return &deck->items[i];
+        }
+    }
+    return nullptr;
+}
+
 class KanaScreen : public Screen {
 public:
     void enter(App& app) override
@@ -59,6 +69,10 @@ public:
             return;
         }
         if (_state != State::Typing) {
+            // / lets the kana be heard once more; without a clip it is a key like any other
+            if (_heard && navigation(key) == Key::Right && hear(app)) {
+                return;
+            }
             next(app);
             return;
         }
@@ -113,8 +127,10 @@ public:
         char title[32];
         std::snprintf(title, sizeof(title), "Kana %d/%d", _asked + 1, kRound);
         const bool typing = (_state == State::Typing);
-        drawFrame(c, t, title, _katakana ? "Space: あ" : "Space: ア", typing ? "Enter: answer" : "Any key: next",
-                  typing ? "Tab: help" : "");
+        // After the answer Space is a key like any other, so its hint is shown while typing only.
+        const char* script = !typing ? "" : _katakana ? "Space: あ" : "Space: ア";
+        drawFrame(c, t, title, script, typing ? "Enter: answer" : "Any key: next",
+                  typing ? "Tab: help" : _heard ? "/: again" : "");
 
         const std::string shown = _katakana ? kana::toKatakana(_prompt) : _prompt;
         const Face large        = fitFace(c, shown.c_str(), a.w - 4, 64);
@@ -164,6 +180,7 @@ public:
         json += std::to_string(_asked);
         json += ",\"correct\":";
         json += std::to_string(_correct);
+        json += _heard ? ",\"heard\":true" : ",\"heard\":false";
     }
 
 private:
@@ -193,6 +210,20 @@ private:
         }
         _prompt = chosen;
         _peek   = false;
+        _heard  = false;
+    }
+
+    // Plays the clip of the kana, in the script that is shown. The kana sounds the same in
+    // both scripts, so the other deck serves when the first has no such card.
+    bool hear(App& app)
+    {
+        const deck::Deck* deck = deck::find(_katakana ? "katakana" : "hiragana");
+        const deck::Item* item = itemWithPrompt(deck, _katakana ? kana::toKatakana(_prompt) : _prompt);
+        if (!item) {
+            deck = deck::find(_katakana ? "hiragana" : "katakana");
+            item = itemWithPrompt(deck, _katakana ? _prompt : kana::toKatakana(_prompt));
+        }
+        return app.speak(deck, item);
     }
 
     void check(App& app)
@@ -209,12 +240,14 @@ private:
         if (app.settings().sound) {
             app.platform().tone(right ? 1320 : 440, right ? 80 : 200);
         }
+        _heard = hear(app);
     }
 
     void next(App& app)
     {
         ++_asked;
         _typed.clear();
+        _heard = false;
         if (_asked >= kRound) {
             _state = State::Done;
             return;
@@ -230,6 +263,7 @@ private:
     int _correct   = 0;
     bool _katakana = false;
     bool _peek     = false;
+    bool _heard    = false;  // the kana was played after the answer
 };
 
 }  // namespace

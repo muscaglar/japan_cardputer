@@ -53,14 +53,72 @@ def themes():
     return colours, areas
 
 
+def is_kanji(character):
+    """As tools/build_decks.py decides it."""
+    code = ord(character)
+    return (0x4E00 <= code <= 0x9FFF or 0x3400 <= code <= 0x4DBF or 0xF900 <= code <= 0xFAFF or
+            0x20000 <= code <= 0x323AF or character in "々〆〇")
+
+
+def kanji_meanings():
+    """kanji -> what it means, from content/kanji.tsv. Empty if the table is not there."""
+    meanings = {}
+    path = os.path.join(ROOT, "content", "kanji.tsv")
+    if not os.path.exists(path):
+        return meanings
+    header = None
+    for line in open(path, encoding="utf-8"):
+        line = line.rstrip("\n").rstrip("\r")
+        if not line.strip() or line.startswith("#"):
+            continue
+        cells = line.split("\t")
+        if header is None:
+            header = cells
+            continue
+        row = dict(zip(header, cells))
+        if row.get("kanji") and row.get("meaning"):
+            meanings.setdefault(row["kanji"], row["meaning"])
+    return meanings
+
+
+def compiled_parts():
+    """item id -> the line about its kanji as it was compiled into lib/core/deck_data.cpp, where the
+    table of single kanji and the table of words with a line of their own have both had their say."""
+    path = os.path.join(ROOT, "lib", "core", "deck_data.cpp")
+    found = {}
+    if not os.path.exists(path):
+        return found
+    text = r'"((?:[^"\\]|\\.)*)"'
+    row = re.compile(r"^\s*\{" + ", ".join([text] * 7) + r", -?\d+, \d+, deck::Kind::\w+\},\s*$")
+    for line in open(path, encoding="utf-8"):
+        match = row.match(line)
+        if match:
+            cells = [c.replace('\\"', '"').replace("\\\\", "\\") for c in match.groups()]
+            found[cells[0]] = cells[6]
+    return found
+
+
+def parts_of(prompt, meanings):
+    """The line that says what each kanji of the prompt means, as tools/build_decks.py writes it."""
+    kanji = list(dict.fromkeys(c for c in prompt if is_kanji(c)))
+    return "  ".join("%s %s" % (c, meanings[c]) for c in kanji if c in meanings)
+
+
 def decks():
-    """item id -> {"deck", "prompt", "reading", "accepted": [...], "gloss"} from the deck tables."""
+    """item id -> what the deck tables say about it: "deck", "deckName", "kind" (kana, word, counter,
+    number), "prompt", "reading", "accepted": [...], "gloss", "note", "parts", "level"."""
     items = {}
+    meanings = kanji_meanings()
+    compiled = compiled_parts()
     for path in sorted(glob.glob(os.path.join(ROOT, "content", "decks", "*.tsv"))):
         deck = os.path.splitext(os.path.basename(path))[0]
         header = None
+        about = {}
         for line in open(path, encoding="utf-8"):
             line = line.rstrip("\n").rstrip("\r")
+            named = re.match(r"#\s*(name-ja|name-en|kind|stage)\s*:(.*)\Z", line)
+            if named and header is None:
+                about[named.group(1)] = named.group(2).strip()
             if not line.strip() or line.startswith("#"):
                 continue
             cells = line.split("\t")
@@ -72,6 +130,9 @@ def decks():
                 "deck": deck, "prompt": row["prompt"], "reading": row["reading"], "gloss": row.get("gloss", ""),
                 "note": row.get("note", ""),
                 "accepted": [a for a in row.get("accepted", "").split("|") if a],
+                "deckName": about.get("name-en", deck), "kind": about.get("kind", "word"),
+                "parts": compiled[row["id"]] if row["id"] in compiled else parts_of(row["prompt"], meanings),
+                "level": int(row["level"]) if row.get("level", "").isdigit() else 0,
             }
     return items
 
@@ -127,34 +188,100 @@ def scaled(points, scale):
     return {(x * scale + dx, y * scale + dy) for (x, y) in points for dx in range(scale) for dy in range(scale)}
 
 
-def find_anywhere(rows, colour, text, faces):
+_COUNTED = []   # (rows, colour, pixels of that colour, how many of them lie above and left of each point)
+
+
+def _counted(rows, colour):
+    """The pixels of that colour, and a table that tells in one step how many lie in a box.
+    Kept for the last pictures, because a check asks one picture for many texts."""
+    for kept_rows, kept_colour, seen, sums in _COUNTED:
+        if kept_rows is rows and kept_colour == colour:
+            return seen, sums
+    seen = set()
+    sums = [[0] * (len(rows[0]) + 1)]
+    for y, row in enumerate(rows):
+        above = sums[-1]
+        line = [0] * (len(row) + 1)
+        along = 0
+        for x, pixel in enumerate(row):
+            if pixel == colour:
+                along += 1
+                seen.add((x, y))
+            line[x + 1] = above[x + 1] + along
+        sums.append(line)
+    _COUNTED.append((rows, colour, seen, sums))
+    del _COUNTED[:-12]
+    return seen, sums
+
+
+def find_anywhere(rows, colour, text, faces, skip_top=0):
     """Looks for the text in that colour anywhere on the screen.
 
     faces: (font name, scale) pairs to try. Returns (left, top, font name, scale) of the first
-    place where exactly the pixels of the text are in that colour, and no other pixel of that
-    colour lies within the box of the text. None if it is nowhere.
+    place, from the top, where exactly the pixels of the text are in that colour, and no other
+    pixel of that colour lies within the box of the text. None if it is nowhere.
+
+    skip_top leaves that many rows at the top of the box out of the comparison, for text that
+    something may be drawn over there, as the hooks of the pitch line are over a reading.
     """
-    seen = coloured(rows, colour, 0, 0, len(rows[0]), len(rows))
+    seen, sums = _counted(rows, colour)
+    high, wide = len(rows), len(rows[0])
+    places = sorted(seen, key=lambda p: (p[1], p[0]))
     for font_name, scale in faces:
         points, w = mask(text, font_name)
         if not points:
             continue
-        points = scaled(points, scale)
+        points = {(x, y) for (x, y) in scaled(points, scale) if y >= skip_top}
+        if not points:
+            continue
         height = font(font_name).height * scale
         width_px = w * scale
         anchor = min(points, key=lambda p: (p[1], p[0]))
-        for (sx, sy) in seen:
+        for (sx, sy) in places:
             left, top = sx - anchor[0], sy - anchor[1]
+            x0, x1 = max(0, left), min(wide, left + width_px)
+            y0, y1 = max(0, top + skip_top), min(high, top + height)
+            if x0 >= x1 or y0 >= y1:
+                continue
+            if sums[y1][x1] - sums[y0][x1] - sums[y1][x0] + sums[y0][x0] != len(points):
+                continue
             if all((x + left, y + top) in seen for (x, y) in points):
-                inside = {(x, y) for (x, y) in seen if left <= x < left + width_px and top <= y < top + height}
-                if len(inside) == len(points):
-                    return left, top, font_name, scale
+                return left, top, font_name, scale
     return None
 
 
 PROMPT_FACES = [("lgfxJapanGothic_32", 2), ("efontJA_24", 2), ("lgfxJapanGothic_32", 1), ("efontJA_16", 2),
                 ("efontJA_24", 1), ("efontJA_16", 1)]
 TEXT_FACES = [("efontJA_24", 1), ("efontJA_16", 1)]
+
+
+def fit_face(text, room, tallest):
+    """The face fitFace() in lib/ui/theme.cpp chooses: (font name, scale). The largest of at most
+    `tallest` pixels that has every character and keeps the text within `room` pixels."""
+    for font_name, scale in PROMPT_FACES[:-1]:
+        if font(font_name).height * scale > tallest:
+            continue
+        points, w = mask(text, font_name)
+        if points is not None and w * scale <= room:
+            return font_name, scale
+    return PROMPT_FACES[-1]
+
+
+def lines_of(pieces, separator, room, font_name="efontJA_16"):
+    """The pieces in lines of at most `room` pixels, broken only between pieces, as the card
+    screen breaks a note between words and the meanings of kanji between kanji."""
+    lines = []
+    line = ""
+    for piece in pieces:
+        longer = line + separator + piece if line else piece
+        if line and width(longer, font_name) > room:
+            lines.append(line)
+            line = piece
+        else:
+            line = longer
+    if line:
+        lines.append(line)
+    return lines
 
 
 def hiragana(text):
