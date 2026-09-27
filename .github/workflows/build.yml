@@ -159,7 +159,7 @@ jobs:
       - name: The tools that make and install the clips pass their tests
         run: |
           python tools/tests/test_sd_sync.py
-          if [ -f tools/tests/test_make_audio.py ]; then python tools/tests/test_make_audio.py; fi
+          python tools/tests/test_make_audio.py
 
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()

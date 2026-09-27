@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """Makes the memory card in a Cardputer hold what a folder on the computer holds, over USB.
 
-The card stays in the device. The folder is laid out like the card: sd/audio/f/signs/sign-eki.wav
-becomes /audio/f/signs/sign-eki.wav.
+The card stays in the device. The folder is laid out like the card:
+card/nihongo/audio/f/signs/sign-eki.wav becomes /nihongo/audio/f/signs/sign-eki.wav.
 
-    python3 tools/sd_sync.py sd/              # sends what the card lacks or has differently
-    python3 tools/sd_sync.py sd/ --dry-run    # only says what it would do
-    python3 tools/sd_sync.py sd/ --delete     # also removes from the card's /audio what sd/audio no longer has
-    python3 tools/sd_sync.py sd/ --quick      # believes a file of the same size to be the same
-    python3 tools/sd_sync.py sd/ --port /dev/cu.usbmodem1101
+    python3 tools/sd_sync.py card              # sends what the card lacks or has differently
+    python3 tools/sd_sync.py card --dry-run    # only says what it would do
+    python3 tools/sd_sync.py card --delete     # also removes from the audio folders what the folder no longer has
+    python3 tools/sd_sync.py card --quick      # believes a file of the same size to be the same
+    python3 tools/sd_sync.py card --port /dev/cu.usbmodem1101
 
 A file is the same when its size and its CRC-32 are. Every file is asked back for its CRC-32 after
 it was sent, and sent again if the card holds something else. Stopping is harmless: a file is on the
@@ -421,14 +421,22 @@ class Sync:
         """What the card has in a folder, by name in small letters. None: the card has no such
         folder. False: a file of that name is in the way."""
         if folder not in self.listings:
-            try:
-                entries = self.card.ls(folder)
-            except Refused as refused:
-                if refused.why not in ("not there", "not a folder"):
-                    raise
-                self.listings[folder] = None if refused.why == "not there" else False
-            else:
-                self.listings[folder] = dict((name.lower(), (name, size)) for name, size in entries)
+            for last in (False, False, True):
+                try:
+                    entries = self.card.ls(folder)
+                except Refused as refused:
+                    if refused.why not in ("not there", "not a folder"):
+                        raise
+                    self.listings[folder] = None if refused.why == "not there" else False
+                except Silent:
+                    # A line of a long listing can get lost on the way. The count at its end
+                    # shows that, and the listing is asked for again.
+                    if last:
+                        raise
+                    continue
+                else:
+                    self.listings[folder] = dict((name.lower(), (name, size)) for name, size in entries)
+                break
         return self.listings[folder]
 
     def fail(self, what, why):
@@ -437,7 +445,8 @@ class Sync:
 
     def run(self):
         local = Folder(self.top)
-        if self.delete and "/audio" not in local.folders:
+        tidied = self.audio_folders(local)
+        if self.delete and not tidied:
             self.report.line("%s has no folder audio: with --delete the card's /audio would be emptied. "
                              "Nothing was done." % self.top)
             return 2
@@ -469,7 +478,8 @@ class Sync:
         for index, (path, whole, size) in enumerate(local.files):
             self.file("%*d/%d" % (len(str(len(local.files))), index + 1, len(local.files)), path, whole, size)
         if self.delete:
-            self.tidy("/audio", local)
+            for path in tidied:
+                self.tidy(path, local)
 
         would = "would be " if self.dry_run else ""
         parts = ["%d %ssent" % (self.sent, would)]
@@ -487,6 +497,14 @@ class Sync:
         self.report.line("total   %d files: %s; %s" % (len(local.files), ", ".join(parts),
                                                       duration(time.time() - started)))
         return 1 if self.failed else 0
+
+    @staticmethod
+    def audio_folders(local):
+        """The folders --delete may tidy: those named audio that the folder here holds, such as
+        /nihongo/audio. Nothing else on the card is ever removed."""
+        found = [path for path in local.folders if path.lower().rsplit("/", 1)[-1] == "audio"]
+        return [path for path in found
+                if not any(path != other and path.lower().startswith(other.lower() + "/") for other in found)]
 
     def begin(self):
         """Asks for the room on the card. A run that was stopped may have left the device waiting
@@ -692,10 +710,11 @@ def connect(port):
 def main(arguments=None, connect=connect, out=None):
     out = out or sys.stdout
     parser = argparse.ArgumentParser(description="Makes the memory card in the device hold what a folder holds.")
-    parser.add_argument("folder", help="laid out like the card: folder/audio/... becomes /audio/...")
+    parser.add_argument("folder", help="laid out like the card: folder/nihongo/audio/... becomes /nihongo/audio/...")
     parser.add_argument("--dry-run", action="store_true", help="only say what would be done")
     parser.add_argument("--delete", action="store_true",
-                        help="also remove from the card's /audio what the folder no longer has")
+                        help="also remove from the card's audio folders (such as /nihongo/audio) what the "
+                             "folder no longer has; nothing else on the card is ever removed")
     parser.add_argument("--quick", action="store_true",
                         help="believe a file of the same size to be the same, without asking for its CRC-32")
     parser.add_argument("--verbose", action="store_true", help="also name the files that are the same")
