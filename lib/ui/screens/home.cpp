@@ -1,4 +1,8 @@
+// Home: where the owner is in the course and what a key will bring. Below it, the page of keys.
+#include <algorithm>
 #include <cstdio>
+#include <string>
+#include <vector>
 
 #include "../screens.h"
 #include "../widgets.h"
@@ -8,7 +12,67 @@ namespace ui {
 
 namespace {
 
-constexpr int kLine = 17;  // line height of the 16 px font
+constexpr int kLine       = 17;  // line height of the 16 px font
+constexpr int kBarHeight  = 6;
+constexpr int kTries      = 16;  // lines of the buddy looked at to find one that fits
+constexpr int kBubbleLeft = 32;  // from the edge of the content to the bubble, past the buddy
+
+struct Step {
+    const deck::Deck* deck;
+    DeckProgress progress;
+};
+
+// The decks in the order in which the course takes them.
+std::vector<Step> course(const App& app)
+{
+    std::vector<Step> steps;
+    for (size_t i = 0; i < deck::count(); ++i) {
+        steps.push_back({&deck::at(i), app.progressOf(deck::at(i))});
+    }
+    std::stable_sort(steps.begin(), steps.end(),
+                     [](const Step& a, const Step& b) { return a.deck->stage < b.deck->stage; });
+    return steps;
+}
+
+// The width of a text in the 16 px font, which gives every letter 8 pixels and every kana 16.
+int width16(const char* utf8)
+{
+    int width = 0;
+    for (const unsigned char* p = reinterpret_cast<const unsigned char*>(utf8); *p; ++p) {
+        if (*p < 0x80) {
+            width += 8;
+        } else if ((*p & 0xC0) == 0xC0) {
+            width += 16;
+        }
+    }
+    return width;
+}
+
+// The course as a row of boxes, one for each deck, each filled as far as its cards were seen.
+// The box of the deck that is being learnt has a line around it.
+void drawCourse(Canvas& c, const Theme& t, const std::vector<Step>& steps, const deck::Deck* now, int x, int y,
+                int width)
+{
+    const int count = static_cast<int>(steps.size());
+    if (count == 0) {
+        return;
+    }
+    const int gap = 4;
+    const int box = (width - gap * (count - 1)) / count;
+    for (int i = 0; i < count; ++i) {
+        const DeckProgress& p = steps[i].progress;
+        const int left        = x + i * (box + gap);
+        int filled            = (p.total > 0) ? box * p.seen / p.total : 0;
+        if (p.seen > 0 && filled < 2) {
+            filled = 2;
+        }
+        c.fillRect(left, y, box, kBarHeight, t.faint);
+        c.fillRect(left, y, filled, kBarHeight, t.good);
+        if (steps[i].deck == now) {
+            c.drawRect(left - 1, y - 1, box + 2, kBarHeight + 2, t.ink);
+        }
+    }
+}
 
 class HomeScreen : public Screen {
 public:
@@ -20,9 +84,9 @@ public:
             _firstEntry = false;
             _askDay     = (app.settings().answeredToday > 0);
         }
-        const deck::BuddyLine* line = buddy::say("greeting", app.platform().random());
-        _ja                         = line ? line->ja : "こんにちは！";
-        _en                         = line ? line->en : "Hello!";
+        const Area a = contentArea(app.theme());
+        choose(app.platform().random(), a.w - kBubbleLeft - 8, a.w - 4);
+        refresh(app);
     }
 
     void key(App& app, const Key& key) override
@@ -31,6 +95,7 @@ public:
             if (key.code == Key::Enter || (key.code == Key::Char && (key.ch == 'y' || key.ch == 'Y'))) {
                 app.startNewDay();
                 _askDay = false;
+                refresh(app);
             } else if (key.code == Key::Escape || key.code == Key::Backspace ||
                        (key.code == Key::Char && (key.ch == 'n' || key.ch == 'N' || key.ch == ' '))) {
                 _askDay = false;
@@ -41,8 +106,8 @@ public:
             app.show(ScreenId::Menu);
         } else if (key.code == Key::Escape || key.code == Key::Backspace) {
             // nothing to go back to
-        } else {
-            app.startSitting(nullptr);
+        } else if (_due > 0 || _fresh > 0) {
+            app.startCourse();
         }
     }
 
@@ -56,53 +121,132 @@ public:
         if (battery >= 0) {
             std::snprintf(right, sizeof(right), "%d%%", battery);
         }
+        const bool waits = (_due > 0 || _fresh > 0);
         if (_askDay) {
             drawFrame(c, t, title, right, "Enter: yes", "Space: no");
         } else {
-            drawFrame(c, t, title, right, "Any key: start", "Tab: menu");
+            drawFrame(c, t, title, right, waits ? "Any key: start" : "", "Tab: menu");
         }
 
-        const Area a     = contentArea(t);
-        const int left   = a.x + 44;
-        const int width  = a.w - 46;
-        const int inner  = width - 12;
-        const int most   = (a.h - kLine - 10) / kLine;  // lines that fit above the day's numbers
+        const Area a        = contentArea(t);
         const uint32_t edge = (t.id == ThemeId::Rpg) ? t.ink : t.bubble;
+        int bottom          = a.y + a.h;
 
-        daruma(c, a.x + 19, a.y + 23);
         if (_askDay) {
-            bubble(c, left, a.y + 1, width, 24 + kLine + 10, t.bubble, edge);
+            const int left = a.x + 44;
+            daruma(c, a.x + 19, a.y + 23);
+            bubble(c, left, a.y + 1, a.w - 46, 24 + kLine + 10, t.bubble, edge);
             text(c, left + 7, a.y + 5, "New day?", font24(), t.bubbleInk);
             text(c, left + 7, a.y + 31, "あたらしい ひ？", font16(), t.bubbleDim);
         } else {
-            int japanese = linesNeeded(c, inner, _ja, font16());
-            int english  = linesNeeded(c, inner, _en, font16());
-            if (japanese > 2) {
-                japanese = 2;
-            }
-            if (japanese + english > most) {
-                english = most - japanese;
-            }
-            bubble(c, left, a.y + 1, width, (japanese + english) * kLine + 8, t.bubble, edge);
-            int y = textWrapped(c, left + 7, a.y + 5, inner, _ja, font16(), t.bubbleInk, kLine, japanese);
-            if (english > 0) {
-                textWrapped(c, left + 7, y, inner, _en, font16(), t.bubbleDim, kLine, english);
-            }
+            // what the buddy says, and under it what that means
+            const int left  = a.x + kBubbleLeft;
+            const int width = a.w - kBubbleLeft;
+            daruma(c, a.x + 14, a.y + 13, true);
+            bubble(c, left, a.y + 1, width, 24, t.bubble, edge);
+            text(c, left + 4, a.y + 5, headThatFits(c, _ja, font16(), width - 8).c_str(), font16(), t.bubbleInk);
+            text(c, a.x + 2, a.y + 28, headThatFits(c, _en, font16(), a.w - 4).c_str(), font16(), t.dim);
+
+            // what a key will bring
+            bottom -= 16;
+            text(c, a.x + 2, bottom, next(c, a.w - 4).c_str(), font16(), waits ? t.ink : t.dim);
         }
 
-        char numbers[48];
-        std::snprintf(numbers, sizeof(numbers), "To review %d   New %d", app.dueToday(), app.newAvailable());
-        text(c, a.x + 2, a.y + a.h - kLine, numbers, font16(), t.ink);
+        // where the owner is in the course; the lowest window has no pixel to spare
+        const int air = (a.h < 92) ? 0 : 2;
+        bottom -= kBarHeight + 2 + air;
+        drawCourse(c, t, _steps, _now, a.x + 2, bottom, a.w - 4);
+        bottom -= 16 + 2 + air;
+        char count[24];
+        std::snprintf(count, sizeof(count), "%d of %d", _seen, _total);
+        const int countLeft = textRight(c, a.x + a.w - 2, bottom, count, font16(), t.dim);
+        const std::string name = headThatFits(c, _name, font16(), countLeft - 8 - (a.x + 2));
+        text(c, a.x + 2, bottom, name.c_str(), font16(), t.ink);
     }
 
     void describe(std::string& json) const override
     {
         json += _askDay ? ",\"asksForDay\":true" : ",\"asksForDay\":false";
+        json += ",\"says\":\"";
+        json += (_line && !_askDay) ? _line->id : "";
+        json += "\",\"deckSeen\":" + std::to_string(_seen) + ",\"deckTotal\":" + std::to_string(_total);
+        json += ",\"steps\":[";
+        for (size_t i = 0; i < _steps.size(); ++i) {
+            json += (i ? ",[" : "[") + std::to_string(_steps[i].progress.seen) + "," +
+                    std::to_string(_steps[i].progress.total) + "]";
+        }
+        json += "]";
     }
 
 private:
-    const char* _ja  = "";
-    const char* _en  = "";
+    // The numbers on the screen. They change with the day and with every sitting.
+    void refresh(App& app)
+    {
+        _steps = course(app);
+        _now   = app.courseDeck();
+        _due   = app.dueToday();
+        _fresh = app.newAvailable();
+        _seen  = 0;
+        _total = 0;
+        for (const Step& step : _steps) {
+            if (_now == nullptr || step.deck == _now) {
+                _seen += step.progress.seen;
+                _total += step.progress.total;
+            }
+        }
+        _name = _now ? capitalised(_now->nameEn) : std::string("Every card seen");
+    }
+
+    // A line of the buddy that fits: the Japanese into the bubble, the English under it. When
+    // none does, the first one is taken and cut.
+    void choose(uint32_t pick, int japanese, int english)
+    {
+        _line = nullptr;
+        for (int i = 0; i < kTries; ++i) {
+            const deck::BuddyLine* line = buddy::say("greeting", pick + static_cast<uint32_t>(i));
+            if (!line) {
+                break;
+            }
+            if (!_line) {
+                _line = line;
+            }
+            if (width16(line->ja) <= japanese && width16(line->en) <= english) {
+                _line = line;
+                break;
+            }
+        }
+        _ja = _line ? _line->ja : "こんにちは！";
+        _en = _line ? _line->en : "Hello!";
+    }
+
+    std::string next(Canvas& c, int width) const
+    {
+        char words[64];
+        if (_due > 0 && _fresh > 0) {
+            std::snprintf(words, sizeof(words), "Next: %d to review, %d new", _due, _fresh);
+            if (textWidth(c, words, font16()) > width) {
+                std::snprintf(words, sizeof(words), "%d to review, %d new", _due, _fresh);
+            }
+        } else if (_due > 0) {
+            std::snprintf(words, sizeof(words), "Next: %d to review", _due);
+        } else if (_fresh > 0) {
+            std::snprintf(words, sizeof(words), "Next: %d new", _fresh);
+        } else {
+            std::snprintf(words, sizeof(words), "Nothing waits today");
+        }
+        return headThatFits(c, words, font16(), width);
+    }
+
+    std::vector<Step> _steps;
+    std::string _name;  // of the deck the course stands at
+    const deck::Deck* _now       = nullptr;
+    const deck::BuddyLine* _line = nullptr;
+    const char* _ja              = "";
+    const char* _en              = "";
+    int _due         = 0;
+    int _fresh       = 0;
+    int _seen        = 0;
+    int _total       = 0;
     bool _askDay     = false;
     bool _firstEntry = true;
 };
@@ -114,20 +258,23 @@ public:
     void draw(App& app, Canvas& c) override
     {
         const Theme& t = app.theme();
-        drawFrame(c, t, "Keys", "", "Any key: back", "");
-        const Area a = contentArea(t);
+        drawFrame(c, t, nullptr, "", "Any key: back", "");
+        const Area a = contentArea(t, false);
         static const char* const kRows[][2] = {
             {"Enter", "answer, next"},
-            {"Tab", "help, show answer"},
+            {"Tab", "help"},
+            {"/", "hear again"},
             {"esc", "back (Fn and `)"},
-            {"G0", "back (side button)"},
+            {"Button", "back (on the edge)"},
             {"; . , /", "up down left right"},
         };
-        int y = a.y + 1;
+        const int count = static_cast<int>(sizeof(kRows) / sizeof(kRows[0]));
+        const int pitch = std::min(kLine + 1, a.h / count);
+        int y           = a.y + (a.h - pitch * count) / 2;
         for (const auto& row : kRows) {
             text(c, a.x + 2, y, row[0], font16(), t.accent);
             text(c, a.x + 66, y, row[1], font16(), t.ink);
-            y += kLine;
+            y += pitch;
         }
     }
 };

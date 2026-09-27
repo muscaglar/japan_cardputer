@@ -9,31 +9,71 @@ namespace ui {
 
 namespace {
 
-constexpr int kRowHeight = 27;
+constexpr int kRows  = 4;  // on the screen at a time
+constexpr int kTrack = 3;  // the width of the mark at the right edge that shows where the list stands
 
 struct Entry {
     std::string id;          // for checks run from a computer
     std::string en;
-    std::string ja;
-    ScreenId target;         // where it leads, unless it starts a sitting
-    const deck::Deck* deck;  // the deck of a sitting
-    bool sitting;
+    ScreenId target;         // where it leads, unless it starts the course
+    bool course;
+    std::string says;        // at the right end of the row: what is worth knowing before it is opened
+    std::string saysShort;   // the same in fewer letters, for when the long form does not fit
 };
 
 class MenuScreen : public Screen {
 public:
-    void enter(App&) override
+    void enter(App& app) override
     {
         _entries.clear();
-        _entries.push_back({"course", "Course", "", ScreenId::Cards, nullptr, true});
-        _entries.push_back({"decks", "Decks", "", ScreenId::Decks, nullptr, false});
-        _entries.push_back({"kana", "Kana quiz", "", ScreenId::Kana, nullptr, false});
-        _entries.push_back({"chart", "Kana chart", "", ScreenId::Chart, nullptr, false});
-        _entries.push_back({"guide", "Sounds", "", ScreenId::Guide, nullptr, false});
-        _entries.push_back({"keys", "Keys", "", ScreenId::Keys, nullptr, false});
-        _entries.push_back({"settings", "Settings", "", ScreenId::Settings, nullptr, false});
+        _entries.push_back({"course", "Course", ScreenId::Cards, true, "", ""});
+        _entries.push_back({"decks", "Decks", ScreenId::Decks, false, "", ""});
+        _entries.push_back({"kana", "Kana quiz", ScreenId::Kana, false, "", ""});
+        _entries.push_back({"chart", "Kana chart", ScreenId::Chart, false, "", ""});
+        _entries.push_back({"guide", "Sounds", ScreenId::Guide, false, "", ""});
+        _entries.push_back({"keys", "Keys", ScreenId::Keys, false, "", ""});
+        _entries.push_back({"settings", "Settings", ScreenId::Settings, false, "", ""});
         if (_selected >= static_cast<int>(_entries.size())) {
             _selected = 0;
+        }
+
+        // Course: what waits today
+        _due   = app.dueToday();
+        _fresh = app.newAvailable();
+        char words[40];
+        if (_due > 0 && _fresh > 0) {
+            std::snprintf(words, sizeof(words), "%d due, %d new", _due, _fresh);
+            _entries[0].says = words;
+            std::snprintf(words, sizeof(words), "%d due", _due);
+            _entries[0].saysShort = words;
+        } else if (_due > 0) {
+            std::snprintf(words, sizeof(words), "%d due", _due);
+            _entries[0].says = words;
+        } else if (_fresh > 0) {
+            std::snprintf(words, sizeof(words), "%d new", _fresh);
+            _entries[0].says = words;
+        } else {
+            _entries[0].says = "done";
+        }
+
+        // Decks: how many cards were seen, of all there are
+        int seen  = 0;
+        int total = 0;
+        for (size_t i = 0; i < deck::count(); ++i) {
+            const DeckProgress progress = app.progressOf(deck::at(i));
+            seen += progress.seen;
+            total += progress.total;
+        }
+        std::snprintf(words, sizeof(words), "%d of %d", seen, total);
+        _entries[1].says = words;
+        std::snprintf(words, sizeof(words), "%d", seen);
+        _entries[1].saysShort = words;
+
+        // Sounds: why nothing would be heard
+        if (!app.platform().hasCard()) {
+            _entries[4].says = "no card";
+        } else if (!app.settings().sound) {
+            _entries[4].says = "sound off";
         }
     }
 
@@ -59,39 +99,47 @@ public:
     void draw(App& app, Canvas& c) override
     {
         const Theme& t = app.theme();
-        drawFrame(c, t, nullptr, "", "↑↓ choose", "Enter: open");
-        const Area a      = contentArea(t, false);
-        const int visible = a.h / kRowHeight;
-        const int count   = static_cast<int>(_entries.size());
+        char numbers[24];
+        std::snprintf(numbers, sizeof(numbers), "↑↓ or 1-%d", static_cast<int>(_entries.size()));
+        drawFrame(c, t, nullptr, "", numbers, "Enter: open");
+        const Area a        = contentArea(t, false);
+        const int rowHeight = a.h / kRows;
+        const int count     = static_cast<int>(_entries.size());
 
         // keep the chosen row in view
         if (_selected < _first) {
             _first = _selected;
-        } else if (_selected >= _first + visible) {
-            _first = _selected - visible + 1;
+        } else if (_selected >= _first + kRows) {
+            _first = _selected - kRows + 1;
         }
 
-        int y = a.y + (a.h - visible * kRowHeight) / 2;
-        for (int i = _first; i < count && i < _first + visible; ++i) {
+        const int right = a.x + a.w - kTrack - 5;
+        int y           = a.y + (a.h - kRows * rowHeight) / 2;
+        for (int i = _first; i < count && i < _first + kRows; ++i) {
             const Entry& entry = _entries[i];
             const bool chosen  = (i == _selected);
+            const int textY    = y + (rowHeight - 24) / 2;
             if (chosen) {
-                c.fillRoundRect(a.x - 2, y, a.w, kRowHeight - 1, 3, t.row);
+                c.fillRoundRect(a.x - 2, y, a.w - kTrack, rowHeight - 1, 3, t.row);
             }
             char number[4] = {static_cast<char>(i < 9 ? '1' + i : ' '), 0, 0, 0};
-            text(c, a.x + 2, y + 6, number, font16(), chosen ? t.accent : t.dim);
-            const int x = text(c, a.x + 18, y + 1, entry.en.c_str(), font24(), chosen ? t.rowInk : t.ink);
-            const int japanese = textWidth(c, entry.ja.c_str(), font16());
-            if (japanese > 0 && x + 8 + japanese <= a.x + a.w - 16) {
-                textRight(c, a.x + a.w - 16, y + 6, entry.ja.c_str(), font16(), t.dim);
+            text(c, a.x + 2, textY + 5, number, font16(), chosen ? t.accent : t.dim);
+            const int x = text(c, a.x + 18, textY, entry.en.c_str(), font24(), chosen ? t.rowInk : t.ink);
+            for (const std::string* says : {&entry.says, &entry.saysShort}) {
+                if (!says->empty() && x + 8 + textWidth(c, says->c_str(), font16()) <= right) {
+                    textRight(c, right, textY + 5, says->c_str(), font16(), chosen ? t.accent : t.dim);
+                    break;
+                }
             }
-            y += kRowHeight;
+            y += rowHeight;
         }
-        if (_first > 0) {
-            textRight(c, a.x + a.w - 3, a.y + 2, "▲", font16(), t.dim);
-        }
-        if (_first + visible < count) {
-            textRight(c, a.x + a.w - 3, a.y + a.h - 18, "▼", font16(), t.dim);
+
+        // where the list stands, when it has more rows than the screen
+        if (count > kRows) {
+            const int left   = a.x + a.w - kTrack;
+            const int length = a.h * kRows / count;
+            c.fillRect(left, a.y, kTrack, a.h, t.faint);
+            c.fillRect(left, a.y + (a.h - length) * _first / (count - kRows), kTrack, length, t.dim);
         }
     }
 
@@ -105,14 +153,25 @@ public:
         }
         json += "],\"chosen\":";
         json += std::to_string(_selected);
+        json += ",\"first\":";
+        json += std::to_string(_first);
+        json += ",\"says\":[";
+        for (size_t i = 0; i < _entries.size(); ++i) {
+            json += (i ? ",\"" : "\"");
+            json += _entries[i].says;
+            json += "\"";
+        }
+        json += "]";
     }
 
 private:
     void open(App& app, int index)
     {
         const Entry& entry = _entries[index];
-        if (entry.sitting) {
-            app.startSitting(entry.deck);
+        if (entry.course) {
+            if (_due > 0 || _fresh > 0) {
+                app.startCourse();
+            }
         } else {
             app.show(entry.target);
         }
@@ -121,6 +180,8 @@ private:
     std::vector<Entry> _entries;
     int _selected = 0;
     int _first    = 0;
+    int _due      = 0;
+    int _fresh    = 0;
 };
 
 }  // namespace
