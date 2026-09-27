@@ -13,3 +13,7 @@ build/
 japan_cardputer.bin
 # The built simulator page is large and is rebuilt by sim/build.py --page
 docs/sim/
+# Checkouts that agents work in
+.claude/worktrees/
+# Sound clips and what else goes onto the memory card: made on the computer, not kept here
+sd/

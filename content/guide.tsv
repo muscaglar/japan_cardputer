@@ -1,0 +1,23 @@
+# The guide to how Japanese sounds: a few pages to read once, in this order, before the cards.
+# One page per row. title: at most 20 letters. body: at most 5 lines, separated by |, each at
+# most 27 letters wide; a Japanese character is as wide as two letters.
+# clips: what can be heard on the page, in kana, separated by |, in the order in which the page
+# names them; empty if nothing.
+# Words and meanings: JMdict. Where the voice drops: Kanjium accent list.
+# きて is 来て, the form of 来る (to come) that asks someone to come.
+# The two clips of guide-pair are spelt alike and differ in height only: the first is 箸
+# (chopsticks), high then low; the second is 橋 (bridge), low then high.
+# Nothing here names a place, a date, a season or a journey.
+id	title	body	clips
+guide-vowels	Five vowels	あ a as in father|い i as in machine|う u as in flute|え e as in bed|お o as in more	あ|い|う|え|お
+guide-same	Always the same	A vowel sounds the same in|every kana and every word:|か ka  さ sa  た ta  な na|Most consonants sound as in|English. g is always hard.	か|さ|た|な
+guide-unlike	r, f and tsu	ら ra: a light tap of the|tongue, between r, l and d.|ふ fu: a soft f, blown with|the lips only, no teeth.|つ tsu: as in cats.	ら|ふ|つ
+guide-beats	Beats	Every kana is one beat.|All beats are equally long.|くるま car: ku-ru-ma|A small ゃ ゅ ょ adds none:|きょう today: kyo-u	くるま|きょう
+guide-long	Long vowels	A long vowel lasts two|beats. Length changes the|word: おばさん aunt,|おばあさん grandmother.|Katakana writes it with ー.	おばさん|おばあさん
+guide-held	Small っ	A small っ is a beat of|waiting: hold the sound|that follows, then let go.|きて come: ki-te|きって stamp: ki-t-te	きて|きって
+guide-n	The sound ん	ん is a beat of its own, a|hum through the nose.|ほん book: ho-n|Before b, p and m it|sounds like m: さんぽ walk	ほん|さんぽ
+guide-whisper	Whispered vowels	い and う are often only|whispered between k, s, t,|h and p, or after them at|the end: です (is) is said|des, ます (polite) mas.	です|ます
+guide-line	The line on top	Cards draw a line over a|reading. Under it the voice|is high, elsewhere low. At|the hook the voice drops.|No hook: it stays high.	
+guide-pair	High and low	はし with the drop after は|is chopsticks: high, low.|はし with the drop after し|is bridge: low, high.|No beat is louder.	はし|はし
+guide-typing	Typed and said	Romaji is how you type, not|always how it sounds.|おう, typed ou, is mostly|said as a long o:|ありがとう thanks	ありがとう
+guide-markers	は and を	After a word, as a marker,|は is typed ha but said wa:|こんにちは hello|を is typed wo but said o:|みずを のむ drink water	こんにちは|みずをのむ

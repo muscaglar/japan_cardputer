@@ -1,0 +1,39 @@
+# Lines for the cards whose kanji do not explain them.
+# A card whose prompt has kanji shows what each kanji means, put together from kanji.tsv: 出口 shows
+# "出 go out  口 opening". Where that line would mislead, or explain nothing, a row here replaces it.
+# The meanings rest on KANJIDIC and JMdict (both: Electronic Dictionary Research and Development Group, CC BY-SA 4.0).
+# prompt: the prompt of the card in decks/signs.tsv, exactly.
+# parts: the line to show instead, in the same form, at most 54 letters wide (a Japanese character counts as 2).
+#        Kanji that form a word inside the word may stand together. Every kanji must occur in the prompt.
+#        EMPTY: the card shows no line.
+# reason: why the line from kanji.tsv was not kept.
+# Rows stand in the order of the deck. A line that is only rough stays as it is: a row is for a line that
+# sends the learner the wrong way or tells nothing.
+prompt	parts	reason
+駅	EMPTY	One kanji is the whole word: the line would repeat the meaning.
+普通	普通 ordinary: a word of its own	通 pass through misleads: this train stops at every station.
+自由席	自由 freedom  席 seat	自 self and 由 reason do not add up to 自由, freedom.
+指定席	指定 assigned  席 seat	指 point and 定 fix are far from a seat with a number; 指定 is assignment.
+優先席	優先 priority  席 seat	優 superior and 先 ahead read like a better seat; 優先 is priority.
+運転見合わせ	運転 running  見合わせ suspended	The four kanji in a row say nothing; the two words do.
+本日休業	本日 today  休 rest  業 business	本 present can be read as a gift; 本日 is today.
+貸切	貸 lend  切 completely	切 after a verb is to do completely (JMdict 切る, 貸し切る), not to cut.
+割引	割 one tenth  引 take away	割 is a tenth and 引 to deduct (JMdict 割, 引く); proportion and pull tell nothing.
+品切れ	品 goods  切 run out	切 is to run out (JMdict 切れる); cut reads like a cut price.
+撮影禁止	撮影 photography  禁止 prohibited	影 shadow misleads; 撮影 is photography.
+立入禁止	立入 entering  禁止 prohibited	立 stand misleads: the sign is about going in, not about standing.
+売切	売 sell  切 run out	切 is to run out (JMdict 切れる); sell and cut read like a sale.
+替玉	替 exchange  玉 ball of noodles	玉 is a portion of noodles here (JMdict 玉); ball alone tells nothing.
+食べ放題	食 eat  放題 as you like	放 set free and 題 topic mislead; 放題 is a word: as one pleases.
+飲み放題	飲 drink  放題 as you like	放 set free and 題 topic mislead; 放題 is a word: as one pleases.
+お通し	EMPTY	通 pass through says nothing about a dish, and JMdict has the word only whole.
+運転	運転 running: a word of its own	運 transport and 転 turn do not explain a machine that is on.
+大	EMPTY	One kanji is the whole word: the line would repeat the meaning.
+小	EMPTY	One kanji is the whole word: the line would repeat the meaning.
+化粧室	化粧 make-up  室 room	化 change reads like a changing room; 化粧 is make-up.
+男	EMPTY	One kanji is the whole word: the line would repeat the meaning.
+女	EMPTY	One kanji is the whole word: the line would repeat the meaning.
+露天風呂	露天 open air  風呂 bath	風呂 is spelt for sound: 風 wind and 呂 spine mislead.
+足元	足 foot  元 base	元 origin tells nothing here; もと is also the base of a thing (JMdict 元).
+交番	交番 police box: a word of its own	交 alternate and 番 number say nothing about the police.
+案内所	案内 information  所 place	案 plan and 内 inside mislead; 案内 is guidance, information.

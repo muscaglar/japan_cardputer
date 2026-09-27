@@ -904,6 +904,17 @@ extern const deck::BuddyLine kBuddyLines[] = {
 extern const size_t kBuddyLineCount = 93;
 
 extern const deck::GuidePage kGuidePages[] = {
-    {"", "", "", ""},  // an array cannot be empty; the count below is 0
+    {"guide-vowels", "Five vowels", "あ a as in father\nい i as in machine\nう u as in flute\nえ e as in bed\nお o as in more", "あ|い|う|え|お"},
+    {"guide-same", "Always the same", "A vowel sounds the same in\nevery kana and every word:\nか ka  さ sa  た ta  な na\nMost consonants sound as in\nEnglish. g is always hard.", "か|さ|た|な"},
+    {"guide-unlike", "r, f and tsu", "ら ra: a light tap of the\ntongue, between r, l and d.\nふ fu: a soft f, blown with\nthe lips only, no teeth.\nつ tsu: as in cats.", "ら|ふ|つ"},
+    {"guide-beats", "Beats", "Every kana is one beat.\nAll beats are equally long.\nくるま car: ku-ru-ma\nA small ゃ ゅ ょ adds none:\nきょう today: kyo-u", "くるま|きょう"},
+    {"guide-long", "Long vowels", "A long vowel lasts two\nbeats. Length changes the\nword: おばさん aunt,\nおばあさん grandmother.\nKatakana writes it with ー.", "おばさん|おばあさん"},
+    {"guide-held", "Small っ", "A small っ is a beat of\nwaiting: hold the sound\nthat follows, then let go.\nきて come: ki-te\nきって stamp: ki-t-te", "きて|きって"},
+    {"guide-n", "The sound ん", "ん is a beat of its own, a\nhum through the nose.\nほん book: ho-n\nBefore b, p and m it\nsounds like m: さんぽ walk", "ほん|さんぽ"},
+    {"guide-whisper", "Whispered vowels", "い and う are often only\nwhispered between k, s, t,\nh and p, or after them at\nthe end: です (is) is said\ndes, ます (polite) mas.", "です|ます"},
+    {"guide-line", "The line on top", "Cards draw a line over a\nreading. Under it the voice\nis high, elsewhere low. At\nthe hook the voice drops.\nNo hook: it stays high.", ""},
+    {"guide-pair", "High and low", "はし with the drop after は\nis chopsticks: high, low.\nはし with the drop after し\nis bridge: low, high.\nNo beat is louder.", "はし|はし"},
+    {"guide-typing", "Typed and said", "Romaji is how you type, not\nalways how it sounds.\nおう, typed ou, is mostly\nsaid as a long o:\nありがとう thanks", "ありがとう"},
+    {"guide-markers", "は and を", "After a word, as a marker,\nは is typed ha but said wa:\nこんにちは hello\nを is typed wo but said o:\nみずを のむ drink water", "こんにちは|みずをのむ"},
 };
-extern const size_t kGuidePageCount = 0;
+extern const size_t kGuidePageCount = 12;
