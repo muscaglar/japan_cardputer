@@ -1,0 +1,7 @@
+# Test fixture with deliberate mistakes. This is not content.
+# name-ja: カタカナご
+# name-en: katakana words
+# kind: word
+# stage: 1.5
+id	prompt	reading	accent	accepted	gloss	note	level	source
+kata-hoteru	ホテル	ホテル	1		hotel		1	JMdict

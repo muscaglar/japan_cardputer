@@ -1,0 +1,5 @@
+# Test fixture without mistakes.
+id	title	body	clips
+guide-vowels	Five vowels	a i u e o, always the same.|あ い う え お	あ|い|う|え|お
+guide-long	Long vowels	A long vowel takes two|beats: おばさん aunt,|おばあさん grandmother.	おばさん|おばあさん
+guide-pitch	Pitch	Japanese has high and low|beats, not loud and soft.	

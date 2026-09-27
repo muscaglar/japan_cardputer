@@ -1,0 +1,5 @@
+# Test fixture with deliberate mistakes. This is not content.
+id	title	body	clips
+guide-tick	Right ✔	a i u e o	
+guide-scold	To scold	𠮟る is also written 叱る	しかる
+guide-small-ke	A small ke	three of them	ゖ

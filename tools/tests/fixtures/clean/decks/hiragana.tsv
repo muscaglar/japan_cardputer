@@ -1,11 +1,10 @@
 # Test fixture without mistakes.
-# name-ja: かな
-# name-en: kana
+# name-ja: ひらがな
+# name-en: hiragana
 # kind: kana
+# stage: 1
 id	prompt	reading	accent	accepted	gloss	note	level	source
 kana-a	あ	あ			a		1	
 kana-ki	き	き			ki		1	
 kana-kya	きゃ	きゃ			kya		1	
 kana-n	ん	ん			n		1	
-kana-kata-a	ア	ア			a	katakana	1	
-kana-kata-shi	シ	シ			shi	not ツ (tsu)	1	

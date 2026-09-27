@@ -1,0 +1,7 @@
+# Test fixture with deliberate mistakes. This is not content.
+# name-ja: たべもの
+# name-en: food
+# kind: word
+# stage: 10
+id	prompt	reading	accent	accepted	gloss	note	level	source
+food-mizu	水	みず	0		water		2	JMdict

@@ -1,0 +1,4 @@
+# Test fixture with deliberate mistakes. This is not content.
+id	title	body	clips
+guide-vowels	Five vowels	a i u e o, always the same.|a i u e o do not ever change	あ
+guide-long	Long vowels	おばあさん is a grandmother|おばあさん is a grandmother.	

@@ -1,0 +1,7 @@
+# Test fixture without mistakes.
+# name-ja: かんばん
+# name-en: signs
+# kind: word
+id	prompt	reading	accent	accepted	gloss	note	level	source
+sign-jidouhanbaiki	自動販売機	じどうはんばいき	6		vending machine		3	JMdict
+sign-ishitsubutsu	遺失物取扱所	いしつぶつとりあつかいじょ			lost property office		3	JMdict

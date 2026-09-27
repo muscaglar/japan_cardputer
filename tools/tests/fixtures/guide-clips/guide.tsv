@@ -1,0 +1,8 @@
+# Test fixture with deliberate mistakes. This is not content.
+id	title	body	clips
+guide-vowels	Five vowels	a i u e o	aiueo
+guide-rain	Rain and sweets	あめ: rain or sweets	雨|あめ
+guide-space	Two words	あめ です	あめ です
+guide-bar	A stray bar	あ い	あ||い
+guide-end	A bar at the end	あ い	あ|い|
+guide-twice	The same twice	あ い あ	あ|い|あ

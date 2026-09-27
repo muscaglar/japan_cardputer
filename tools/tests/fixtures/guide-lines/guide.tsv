@@ -1,0 +1,6 @@
+# Test fixture with deliberate mistakes. This is not content.
+id	title	body	clips
+guide-five	Five vowels	あ a|い i|う u|え e|お o	あ|い|う|え|お
+guide-six	Five vowels and n	あ a|い i|う u|え e|お o|ん n	あ|い|う|え|お|ん
+guide-none	Nothing to read		あ
+guide-bars	Bars alone	||	

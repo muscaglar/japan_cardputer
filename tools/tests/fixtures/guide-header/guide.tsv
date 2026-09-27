@@ -1,0 +1,3 @@
+# Test fixture with deliberate mistakes. This is not content.
+id	title	text	clips
+guide-vowels	Five vowels	a i u e o, always the same.	あ|い|う|え|お

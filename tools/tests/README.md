@@ -12,29 +12,32 @@ A finding that is missing fails the test, and so does a finding that was not exp
 
 It writes only into `build/test_build_decks/`.
 
-Two tests need Emscripten and Node: they compile the C++ the tool writes, run it, and compare every
-field it prints with the fixture. Two tests need the dictionary files in `local/cache/`. Where
-these are missing the tests are skipped, and the run counts as incomplete unless `--allow-skips` is
-given.
+Two tests need Emscripten and Node: they compile the C++ the tool writes against
+`lib/core/deck.h`, run it, and compare every field it prints with the fixture. Two tests need the
+dictionary files in `local/cache/`. Where these are missing the tests are skipped, and the run
+counts as incomplete unless `--allow-skips` is given. Where only KANJIDIC is missing there, the
+two tests leave out what needs it and say so.
 
 ## Fixtures
 
-Each folder is laid out like `content/`: deck files in `decks/`, and beside them `buddy.tsv` and
-`ids.txt` where the test needs them. The list of ids is copied before a test, so the fixture itself
-is never changed.
+Each folder is laid out like `content/`: deck files in `decks/`, and beside them `buddy.tsv`,
+`kanji.tsv`, `parts.tsv`, `guide.tsv` and `ids.txt` where the test needs them. The list of ids is
+copied before a test, so the fixture itself is never changed. The tables and their rules are
+described in `content/README.md`.
 
 The folder `clean` has no mistakes and builds. Every other folder shows one kind of mistake, and
 says so in its first line. The Japanese in the fixtures is real, apart from the mistakes themselves.
 
 | Folder | What it shows |
 |---|---|
-| `clean` | seven decks of all four kinds, a buddy file and an older list of ids; builds |
-| `first-build` | one deck, no buddy file, no list of ids; builds |
+| `clean` | eight decks of all four kinds with every table beside them and an older list of ids; one deck has no stage; one word has its line in `parts.tsv`, one has an empty line there; builds |
+| `first-build` | one deck and nothing beside it; builds |
 | `header-wrong`, `header-missing` | the header row has another column name, or is not there |
 | `empty-file` | a deck file with nothing in it |
 | `columns`, `row-of-tabs` | a row with 8 columns and one with 10; a row that holds tabs and no values |
 | `names-missing`, `names-wrong`, `names-twice` | the `# name-ja`, `# name-en` and `# kind` lines |
 | `names-below-header` | name lines that stand below the header row |
+| `stage-wrong` | a stage that is not a number from 1 to 9: 0, 10, 1.5, a word, nothing; a stage given twice |
 | `file-name` | a deck file whose name is not a deck id |
 | `no-decks`, `no-rows` | a folder without deck files, a deck without rows |
 | `other-files` | a file in the deck folder that is not a deck: warning, because it is left out |
@@ -50,7 +53,7 @@ says so in its first line. The Japanese in the fixtures is real, apart from the 
 | `accent-beats`, `accent-not-a-number` | an accent larger than the number of beats; an accent that is no number |
 | `glyph-missing` | characters that `efontJA_16` and `efontJA_12` lack: error |
 | `glyph-big-font` | a prompt character that `lgfxJapanGothic_32` lacks: warning |
-| `gloss-long`, `note-long` | one letter too many, next to values of exactly the allowed length |
+| `gloss-long`, `note-long` | one letter too many, next to values of exactly the allowed width, in English and in Japanese |
 | `level-wrong`, `level-1-kanji` | a level that is not 1, 2 or 3; kanji in a level 1 prompt |
 | `dict-reading` | a reading JMdict does not have for the word |
 | `dict-no-headword` | a word JMdict does not have: error with the source `JMdict` or none, warning with another |
@@ -63,29 +66,46 @@ says so in its first line. The Japanese in the fixtures is real, apart from the 
 | `romaji-help` | readings with づ, ティ and ー, which are typed du, thi and with a hyphen; builds |
 | `buddy-mood`, `buddy-ja-not-kana`, `buddy-ja-long`, `buddy-en-long` | one rule of the buddy file each |
 | `buddy-id`, `buddy-columns`, `buddy-empty`, `buddy-header` | the table of the buddy file |
+| `kanji-not-one` | a row of `kanji.tsv` for a word, a kana, a Latin letter and nothing |
+| `kanji-twice` | a kanji with two rows |
+| `kanji-meaning` | a meaning with a capital letter, two spaces, a hyphen at its end or a digit; one of 13 letters next to one of 12; none, which also leaves a card without it: warning |
+| `kanji-basis` | a basis that KANJIDIC does not give for the kanji, or spells otherwise; none; a word without the kanji; a word that JMdict lacks |
+| `kanji-no-row` | kanji of prompts without a row: warning, once for each kanji |
+| `kanji-line-wide` | a card whose line is 60 letters wide, next to one of 54: warning |
+| `kanji-words` | `words` that are no prompts or lack the kanji; rows of kanji that no prompt has: warning |
+| `parts-prompt` | a row of `parts.tsv` for what is no prompt, for a reading, for nothing; a prompt with two rows |
+| `parts-kanji` | a line that names a kanji the prompt does not have |
+| `parts-long` | a line of 55 letters next to one of 54, in English and with kana |
+| `parts-reason` | no reason, with a line and without one |
+| `parts-glyph` | a line with a character the fonts lack |
+| `guide-id` | ids of `guide.tsv` that are not well formed, used twice, or used by an item or a line of the buddy |
+| `guide-title` | a title of 21 letters next to one of 20, with and without kana; no title |
+| `guide-line-wide` | a line of 28 letters next to one of 27, with and without kana |
+| `guide-lines` | six lines next to five; no body; a body of bars alone |
+| `guide-clips` | clips in Latin letters, in kanji, with a space; a stray bar; a clip given twice: warning |
+| `guide-glyph` | a title, a body and a clip with a character the fonts lack |
+| `kanji-header`, `parts-header`, `guide-header` | another column name in the header row of each table |
 
 More files are made by the script itself, because they are awkward to keep in a repository: a
 deck that is not UTF-8, decks with characters that cannot be seen (a zero byte, a zero width
-space, a byte order mark in the middle), a folder where a file is expected, and a dictionary that
-cannot be read. A deck with Windows or old Mac line ends or with a byte order mark at its start
-is built, with a warning.
+space, a byte order mark in the middle), a folder where a file is expected, dictionaries that
+cannot be read, and tables that are named by an option. Decks and tables with Windows or old Mac
+line ends or with a byte order mark at their start are built, with a warning.
+
+A deck that cannot be read is one finding: the tables beside the decks are then not compared with
+the prompts, because every row of theirs would be another.
 
 ## The buddy file
 
-`buddy.tsv` has the columns `id`, `mood`, `ja` and `en`.
-
 Moods: greeting, start, right, streak, wrong, almost, finish, back, low-battery, idle
 
-| Column | Rules |
-|---|---|
-| `id` | lower case letters, digits and hyphens; unique in the file, and not the id of a deck item |
-| `mood` | one of the ten above |
-| `ja` | kana, spaces and the marks 、。！？「」〜・ only; at most 15 characters, spaces included |
-| `en` | at most 34 characters |
+A test compares this line, and the same line in `content/README.md`, with the moods the tool
+takes. Another looks for every column of every table in `content/README.md`.
 
 ## The dictionary excerpt
 
-`fixtures/cache/` holds the entries of the words used in the fixtures, in the format of the files
-in `local/cache/`. `jmdict_index.json` is an excerpt of JMdict (Electronic Dictionary Research and
-Development Group), `accents.txt` an excerpt of the accent list of the Kanjium project. Both are
-shared under CC BY-SA 4.0. A test compares the excerpt with the full files, entry by entry.
+`fixtures/cache/` holds the entries of the words and kanji used in the fixtures, in the format of
+the files in `local/cache/`. `jmdict_index.json` is an excerpt of JMdict, `kanjidic_index.json` an
+excerpt of KANJIDIC (both: Electronic Dictionary Research and Development Group), `accents.txt` an
+excerpt of the accent list of the Kanjium project. All three are shared under CC BY-SA 4.0. A test
+compares the excerpt with the full files, entry by entry.

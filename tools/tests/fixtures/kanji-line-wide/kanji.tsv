@@ -1,0 +1,13 @@
+# Test fixture: the line of 自動販売機 is 54 letters wide, that of 遺失物取扱所 60. Warning only.
+kanji	meaning	basis	words
+自	oneself	oneself	自動販売機
+動	move	move	自動販売機
+販	marketing	marketing	自動販売機
+売	sell	sell	自動販売機
+機	machine	machine	自動販売機
+遺	bequeath	bequeath	遺失物取扱所
+失	lose	lose	遺失物取扱所
+物	thing	thing	遺失物取扱所
+取	take	take	遺失物取扱所
+扱	handle	handle	遺失物取扱所
+所	place	place	遺失物取扱所

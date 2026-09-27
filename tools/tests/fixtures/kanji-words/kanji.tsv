@@ -1,0 +1,7 @@
+# Test fixture: words that are no prompts or lack the kanji, and a kanji of no prompt. Warnings only.
+kanji	meaning	basis	words
+出	go out	go out	出口 出発
+口	opening	mouth	出口 入口 入場
+入	enter	enter	入口
+煙	smoke	smoke	禁煙
+禁	forbid	forbid	

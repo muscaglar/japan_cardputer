@@ -1,0 +1,426 @@
+{
+ "乗": {
+  "grade": 3,
+  "kun": [
+   "の.る",
+   "-の.り",
+   "の.せる"
+  ],
+  "meanings": [
+   "ride",
+   "power",
+   "multiplication",
+   "record",
+   "counter for vehicles",
+   "board",
+   "mount",
+   "join"
+  ],
+  "on": [
+   "ジョウ",
+   "ショウ"
+  ],
+  "strokes": 9
+ },
+ "交": {
+  "grade": 2,
+  "kun": [
+   "まじ.わる",
+   "まじ.える",
+   "ま.じる",
+   "まじ.る",
+   "ま.ざる",
+   "ま.ぜる",
+   "-か.う",
+   "か.わす",
+   "かわ.す",
+   "こもごも"
+  ],
+  "meanings": [
+   "mingle",
+   "mixing",
+   "association",
+   "coming & going"
+  ],
+  "on": [
+   "コウ"
+  ],
+  "strokes": 6
+ },
+ "入": {
+  "grade": 1,
+  "kun": [
+   "い.る",
+   "-い.る",
+   "-い.り",
+   "い.れる",
+   "-い.れ",
+   "はい.る"
+  ],
+  "meanings": [
+   "enter",
+   "insert"
+  ],
+  "on": [
+   "ニュウ",
+   "ジュ"
+  ],
+  "strokes": 2
+ },
+ "円": {
+  "grade": 1,
+  "kun": [
+   "まる.い",
+   "まる",
+   "まど",
+   "まど.か",
+   "まろ.やか"
+  ],
+  "meanings": [
+   "circle",
+   "yen",
+   "round"
+  ],
+  "on": [
+   "エン"
+  ],
+  "strokes": 4
+ },
+ "出": {
+  "grade": 1,
+  "kun": [
+   "で.る",
+   "-で",
+   "だ.す",
+   "-だ.す",
+   "い.でる",
+   "い.だす"
+  ],
+  "meanings": [
+   "exit",
+   "leave",
+   "go out",
+   "come out",
+   "put out",
+   "protrude"
+  ],
+  "on": [
+   "シュツ",
+   "スイ"
+  ],
+  "strokes": 5
+ },
+ "切": {
+  "grade": 2,
+  "kun": [
+   "き.る",
+   "-き.る",
+   "き.り",
+   "-き.り",
+   "-ぎ.り",
+   "き.れる",
+   "-き.れる",
+   "き.れ",
+   "-き.れ",
+   "-ぎ.れ"
+  ],
+  "meanings": [
+   "cut",
+   "cutoff",
+   "be sharp"
+  ],
+  "on": [
+   "セツ",
+   "サイ"
+  ],
+  "strokes": 4
+ },
+ "券": {
+  "grade": 6,
+  "kun": [],
+  "meanings": [
+   "ticket"
+  ],
+  "on": [
+   "ケン"
+  ],
+  "strokes": 8
+ },
+ "口": {
+  "grade": 1,
+  "kun": [
+   "くち"
+  ],
+  "meanings": [
+   "mouth"
+  ],
+  "on": [
+   "コウ",
+   "ク"
+  ],
+  "strokes": 3
+ },
+ "常": {
+  "grade": 5,
+  "kun": [
+   "つね",
+   "とこ-"
+  ],
+  "meanings": [
+   "usual",
+   "ordinary",
+   "normal",
+   "common",
+   "regular",
+   "continually",
+   "always",
+   "long-lasting"
+  ],
+  "on": [
+   "ジョウ"
+  ],
+  "strokes": 11
+ },
+ "時": {
+  "grade": 2,
+  "kun": [
+   "とき",
+   "-どき"
+  ],
+  "meanings": [
+   "time",
+   "hour"
+  ],
+  "on": [
+   "ジ"
+  ],
+  "strokes": 10
+ },
+ "構": {
+  "grade": 5,
+  "kun": [
+   "かま.える",
+   "かま.う"
+  ],
+  "meanings": [
+   "posture",
+   "stance",
+   "appearance",
+   "build",
+   "set up"
+  ],
+  "on": [
+   "コウ"
+  ],
+  "strokes": 14
+ },
+ "機": {
+  "grade": 4,
+  "kun": [
+   "はた"
+  ],
+  "meanings": [
+   "loom",
+   "mechanism",
+   "machine",
+   "airplane",
+   "opportunity",
+   "potency",
+   "efficacy",
+   "occasion"
+  ],
+  "on": [
+   "キ"
+  ],
+  "strokes": 16
+ },
+ "水": {
+  "grade": 1,
+  "kun": [
+   "みず",
+   "みず-"
+  ],
+  "meanings": [
+   "water"
+  ],
+  "on": [
+   "スイ"
+  ],
+  "strokes": 4
+ },
+ "煙": {
+  "grade": 8,
+  "kun": [
+   "けむ.る",
+   "けむり",
+   "けむ.い"
+  ],
+  "meanings": [
+   "smoke"
+  ],
+  "on": [
+   "エン"
+  ],
+  "strokes": 13
+ },
+ "番": {
+  "grade": 2,
+  "kun": [
+   "つが.い"
+  ],
+  "meanings": [
+   "turn",
+   "number in a series"
+  ],
+  "on": [
+   "バン"
+  ],
+  "strokes": 12
+ },
+ "禁": {
+  "grade": 5,
+  "kun": [],
+  "meanings": [
+   "prohibition",
+   "ban",
+   "forbid"
+  ],
+  "on": [
+   "キン"
+  ],
+  "strokes": 13
+ },
+ "符": {
+  "grade": 8,
+  "kun": [],
+  "meanings": [
+   "token",
+   "sign",
+   "mark",
+   "tally",
+   "charm"
+  ],
+  "on": [
+   "フ"
+  ],
+  "strokes": 11
+ },
+ "算": {
+  "grade": 2,
+  "kun": [
+   "そろ"
+  ],
+  "meanings": [
+   "calculate",
+   "divining",
+   "number",
+   "abacus",
+   "probability"
+  ],
+  "on": [
+   "サン"
+  ],
+  "strokes": 14
+ },
+ "精": {
+  "grade": 5,
+  "kun": [
+   "しら.げる",
+   "くわ.しい"
+  ],
+  "meanings": [
+   "refined",
+   "ghost",
+   "fairy",
+   "energy",
+   "vitality",
+   "semen",
+   "excellence",
+   "purity",
+   "skill"
+  ],
+  "on": [
+   "セイ",
+   "ショウ"
+  ],
+  "strokes": 14
+ },
+ "結": {
+  "grade": 4,
+  "kun": [
+   "むす.ぶ",
+   "ゆ.う",
+   "ゆ.わえる"
+  ],
+  "meanings": [
+   "tie",
+   "bind",
+   "contract",
+   "join",
+   "organize",
+   "do up hair",
+   "fasten"
+  ],
+  "on": [
+   "ケツ",
+   "ケチ"
+  ],
+  "strokes": 12
+ },
+ "茶": {
+  "grade": 2,
+  "kun": [],
+  "meanings": [
+   "tea"
+  ],
+  "on": [
+   "チャ",
+   "サ"
+  ],
+  "strokes": 9
+ },
+ "車": {
+  "grade": 1,
+  "kun": [
+   "くるま"
+  ],
+  "meanings": [
+   "car"
+  ],
+  "on": [
+   "シャ"
+  ],
+  "strokes": 7
+ },
+ "非": {
+  "grade": 5,
+  "kun": [
+   "あら.ず"
+  ],
+  "meanings": [
+   "un-",
+   "mistake",
+   "negative",
+   "injustice",
+   "non-"
+  ],
+  "on": [
+   "ヒ"
+  ],
+  "strokes": 8
+ },
+ "飯": {
+  "grade": 4,
+  "kun": [
+   "めし"
+  ],
+  "meanings": [
+   "meal",
+   "boiled rice"
+  ],
+  "on": [
+   "ハン"
+  ],
+  "strokes": 12
+ }
+}

@@ -1,0 +1,6 @@
+# Test fixture without mistakes.
+# name-ja: かんばん
+# name-en: signs
+# kind: word
+id	prompt	reading	accent	accepted	gloss	note	level	source
+sign-deguchi	出口	でぐち	1		exit		2	JMdict

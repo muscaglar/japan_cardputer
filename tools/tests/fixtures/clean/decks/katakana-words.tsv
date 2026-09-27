@@ -1,7 +1,8 @@
 # Test fixture without mistakes.
-# name-ja: カタカナ
+# name-ja: カタカナご
 # name-en: katakana words
 # kind: word
+# stage: 3
 id	prompt	reading	accent	accepted	gloss	note	level	source
 kata-koohii	コーヒー	コーヒー			coffee		1	JMdict
 kata-hoteru	ホテル	ホテル	1		hotel		1	JMdict

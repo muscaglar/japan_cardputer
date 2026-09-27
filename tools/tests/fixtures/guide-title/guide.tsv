@@ -1,0 +1,7 @@
+# Test fixture with deliberate mistakes. This is not content.
+id	title	body	clips
+guide-beats	Beats, not syllables	きっぷ has three beats.	きっぷ
+guide-long	Long and short vowels	A long vowel has two beats.	
+guide-n	ん before other sounds	ん is a beat of its own.	ん
+guide-tsu	The small っ, a beat	The small っ is a beat too.	
+guide-pitch		Japanese has high and low	

@@ -1,0 +1,7 @@
+# Test fixture without mistakes.
+# name-ja: かんばん
+# name-en: signs
+# kind: word
+id	prompt	reading	accent	accepted	gloss	note	level	source
+sign-iriguchi	入口	いりぐち	0		entrance		2	JMdict
+sign-kouban	交番	こうばん	0		police box		2	JMdict

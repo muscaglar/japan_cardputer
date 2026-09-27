@@ -1,0 +1,11 @@
+# Test fixture with deliberate mistakes. This is not content.
+kanji	meaning	basis	words
+出	Go out	go out	出口
+口	opening	mouth	出口 入口 非常口
+入	go  in	enter	入口
+非	not-	un-	非常口
+常		usual	非常口
+禁	is forbidden	forbid	禁煙
+煙	tobacco smoke	smoke	禁煙
+切	cut-off	cutoff	切符
+符	token 1	token	切符

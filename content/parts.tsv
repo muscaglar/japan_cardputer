@@ -5,13 +5,15 @@
 # prompt: the prompt of the card in decks/signs.tsv, exactly.
 # parts: the line to show instead, in the same form, at most 54 letters wide (a Japanese character counts as 2).
 #        Kanji that form a word inside the word may stand together. Every kanji must occur in the prompt.
+#        A line of the screen holds 27 letters: no piece between two double spaces may be wider, or it is cut off.
+#        "普通 ordinary: one word" is for a word that its kanji do not explain even in groups.
 #        EMPTY: the card shows no line.
 # reason: why the line from kanji.tsv was not kept.
 # Rows stand in the order of the deck. A line that is only rough stays as it is: a row is for a line that
 # sends the learner the wrong way or tells nothing.
 prompt	parts	reason
 駅	EMPTY	One kanji is the whole word: the line would repeat the meaning.
-普通	普通 ordinary: a word of its own	通 pass through misleads: this train stops at every station.
+普通	普通 ordinary: one word	通 pass through misleads: this train stops at every station.
 自由席	自由 freedom  席 seat	自 self and 由 reason do not add up to 自由, freedom.
 指定席	指定 assigned  席 seat	指 point and 定 fix are far from a seat with a number; 指定 is assignment.
 優先席	優先 priority  席 seat	優 superior and 先 ahead read like a better seat; 優先 is priority.
@@ -27,7 +29,7 @@ prompt	parts	reason
 食べ放題	食 eat  放題 as you like	放 set free and 題 topic mislead; 放題 is a word: as one pleases.
 飲み放題	飲 drink  放題 as you like	放 set free and 題 topic mislead; 放題 is a word: as one pleases.
 お通し	EMPTY	通 pass through says nothing about a dish, and JMdict has the word only whole.
-運転	運転 running: a word of its own	運 transport and 転 turn do not explain a machine that is on.
+運転	運転 running: one word	運 transport and 転 turn do not explain a machine that is on.
 大	EMPTY	One kanji is the whole word: the line would repeat the meaning.
 小	EMPTY	One kanji is the whole word: the line would repeat the meaning.
 化粧室	化粧 make-up  室 room	化 change reads like a changing room; 化粧 is make-up.
@@ -35,5 +37,5 @@ prompt	parts	reason
 女	EMPTY	One kanji is the whole word: the line would repeat the meaning.
 露天風呂	露天 open air  風呂 bath	風呂 is spelt for sound: 風 wind and 呂 spine mislead.
 足元	足 foot  元 base	元 origin tells nothing here; もと is also the base of a thing (JMdict 元).
-交番	交番 police box: a word of its own	交 alternate and 番 number say nothing about the police.
+交番	交 alternate  番 guard	番 is a watch kept, a guard (JMdict 番), here in turns; number misleads.
 案内所	案内 information  所 place	案 plan and 内 inside mislead; 案内 is guidance, information.

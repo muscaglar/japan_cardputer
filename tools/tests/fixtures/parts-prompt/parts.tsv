@@ -1,0 +1,7 @@
+# Test fixture with deliberate mistakes. This is not content.
+prompt	parts	reason
+交番	交 take turns  番 watch	one meaning for each kanji gives "alternate number"
+出入口	出 go out  入 enter  口 opening	shown as one word
+交番		the kanji do not explain the word
+	出 go out	no word is named
+こうばん		the reading in place of the prompt

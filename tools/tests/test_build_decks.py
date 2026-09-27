@@ -37,7 +37,13 @@ E = "error"
 W = "warning"
 SIGNS = "decks/signs.tsv"
 BUDDY = "buddy.tsv"
+KANJI = "kanji.tsv"
+PARTS = "parts.tsv"
+GUIDE = "guide.tsv"
 OFFLINE_NOTE = "the dictionary checks were skipped"
+KANJIDIC_NOTE = "was not compared with KANJIDIC"
+# the tables beside the deck folder: file, the word that starts its summary line, what it counts
+TABLES = [(BUDDY, "buddy", "line"), (KANJI, "kanji", "row"), (PARTS, "parts", "row"), (GUIDE, "guide", "page")]
 
 # folder -> (dictionary, exit code, findings, notes)
 #   dictionary: False runs with --offline, True with the excerpt in fixtures/cache
@@ -79,6 +85,14 @@ CASES = {
     "names-below-header": (False, 1, [
         (SIGNS, 4, E, "name-en must stand above the header row"),
         (SIGNS, 5, E, "kind must stand above the header row"),
+    ], []),
+    "stage-wrong": (False, 1, [
+        ("decks/counters.tsv", 5, E, "stage \"0\" is not a number from 1 to 9"),
+        ("decks/food.tsv", 5, E, "stage \"10\" is not a number from 1 to 9"),
+        ("decks/katakana-words.tsv", 5, E, "stage \"1.5\" is not a number from 1 to 9"),
+        ("decks/numbers.tsv", 5, E, "stage \"two\" is not a number from 1 to 9"),
+        ("decks/replies.tsv", 5, E, "stage \"\" is not a number from 1 to 9"),
+        (SIGNS, 6, E, "stage is given twice"),
     ], []),
     "file-name": (False, 1, [
         ("decks/Bad_Name.tsv", 1, E, "the deck id Bad_Name must be lower case"),
@@ -169,9 +183,9 @@ CASES = {
         (SIGNS, 7, E, "gloss is 33 characters long, at most 32 fit"),
     ], []),
     "note-long": (False, 1, [
-        (SIGNS, 6, E, "note is 40 letters wide, at most 38 fit"),
-        (SIGNS, 7, E, "note is 39 letters wide, at most 38 fit"),
-        (SIGNS, 9, E, "note is 40 letters wide, at most 38 fit"),
+        (SIGNS, 6, E, "note is 60 letters wide, at most 52 fit"),
+        (SIGNS, 7, E, "note is 53 letters wide, at most 52 fit"),
+        (SIGNS, 9, E, "note is 54 letters wide, at most 52 fit"),
     ], []),
     "level-wrong": (False, 1, [
         (SIGNS, 6, E, "level \"0\" is not 1, 2 or 3"),
@@ -259,21 +273,146 @@ CASES = {
     "buddy-header": (False, 1, [
         (BUDDY, 2, E, "header row must be: id mood ja en"),
     ], []),
+    # what each kanji means
+    "kanji-not-one": (False, 1, [
+        (KANJI, 5, E, "kanji \"出口\" is not one kanji"),
+        (KANJI, 6, E, "kanji \"で\" is not one kanji"),
+        (KANJI, 7, E, "kanji \"x\" is not one kanji"),
+        (KANJI, 8, E, "kanji \"\" is not one kanji"),
+    ], []),
+    "kanji-twice": (False, 1, [
+        (KANJI, 6, E, "口 is given twice: first in line 4"),
+    ], []),
+    "kanji-meaning": (False, 1, [
+        (KANJI, 3, E, "meaning \"Go out\" must be lower case words with one space or hyphen between them"),
+        (KANJI, 5, E, "meaning \"go  in\" must be lower case words"),
+        (KANJI, 6, E, "meaning \"not-\" must be lower case words"),
+        (KANJI, 7, E, "meaning is empty"),
+        (KANJI, 9, E, "meaning \"tobacco smoke\" is 13 letters long, at most 12 fit"),
+        (KANJI, 11, E, "meaning \"token 1\" must be lower case words"),
+        (SIGNS, 8, W, "常 in 非常口 has no meaning in tools/tests/fixtures/kanji-meaning/kanji.tsv"),
+    ], []),
+    "kanji-basis": (True, 1, [
+        (KANJI, 4, E, "basis \"opening\" is not a KANJIDIC meaning of 口 (mouth)"),
+        (KANJI, 5, E, "basis is empty"),
+        (KANJI, 6, E, "basis \"Cut\" is not a KANJIDIC meaning of 切 (cut, cutoff, be sharp)"),
+        (KANJI, 8, E, "basis \"JMdict: 出口\" names a word without 交"),
+        (KANJI, 11, E, "basis \"jmdict: 乗車券\" is not a KANJIDIC meaning of 車 (car)"),
+        (KANJI, 12, E, "basis \"JMdict: 一日乗車券\": 一日乗車券 is not a JMdict headword"),
+    ], []),
+    "kanji-no-row": (False, 0, [
+        (SIGNS, 6, W, "口 in 出口 has no meaning in tools/tests/fixtures/kanji-no-row/kanji.tsv"),
+        (SIGNS, 8, W, "非 in 非常口 has no meaning in"),
+        (SIGNS, 8, W, "常 in 非常口 has no meaning in"),
+    ], []),
+    "kanji-line-wide": (False, 0, [
+        (SIGNS, 7, W, "the meanings of the kanji of 遺失物取扱所 are 60 letters wide, 54 fit: the end will be cut off"),
+    ], []),
+    "kanji-words": (False, 0, [
+        (KANJI, 3, W, "words: 出発 is not a prompt of a deck"),
+        (KANJI, 4, W, "words: 入場 is written without 口"),
+        (KANJI, 6, W, "words: 禁煙 is not a prompt of a deck"),
+        (KANJI, 6, W, "no prompt of a deck is written with 煙: the row is not used"),
+        (KANJI, 7, W, "no prompt of a deck is written with 禁: the row is not used"),
+    ], []),
+    "kanji-header": (False, 1, [
+        (KANJI, 2, E, "header row must be: kanji meaning basis words"),
+    ], []),
+    # the lines about kanji that are written by hand
+    "parts-prompt": (False, 1, [
+        (PARTS, 4, E, "出入口 is not a prompt of a deck"),
+        (PARTS, 5, E, "交番 is given twice: first in line 3"),
+        (PARTS, 6, E, "prompt is empty"),
+        (PARTS, 7, E, "こうばん is not a prompt of a deck"),
+    ], []),
+    "parts-kanji": (False, 1, [
+        (PARTS, 3, E, "parts: 出 is not a kanji of 入口"),
+        (PARTS, 4, E, "parts: 所 is not a kanji of 交番"),
+    ], []),
+    "parts-long": (False, 1, [
+        (PARTS, 4, E, "parts is 55 letters wide, at most 54 fit"),
+        (PARTS, 6, E, "parts is 55 letters wide, at most 54 fit"),
+    ], []),
+    "parts-reason": (False, 1, [
+        (PARTS, 3, E, "reason is empty"),
+        (PARTS, 4, E, "reason is empty"),
+    ], []),
+    "parts-glyph": (False, 1, [
+        (PARTS, 3, E, "parts: no glyph for ✔ in efontJA_16, ✔ in efontJA_12"),
+    ], []),
+    "parts-header": (False, 1, [
+        (PARTS, 2, E, "header row must be: prompt parts reason"),
+    ], []),
+    # the guide
+    "guide-id": (False, 1, [
+        (GUIDE, 4, E, "id \"Guide 2\" must be lower case letters, digits and hyphens"),
+        (GUIDE, 5, E, "id guide-vowels is already used at tools/tests/fixtures/guide-id/guide.tsv:3"),
+        (GUIDE, 6, E, "id sign-kippu is already used at tools/tests/fixtures/guide-id/decks/signs.tsv:6"),
+        (GUIDE, 7, E, "id buddy-greeting-01 is already used at tools/tests/fixtures/guide-id/buddy.tsv:3"),
+        (GUIDE, 8, E, "id \"\" must be lower case"),
+    ], []),
+    "guide-title": (False, 1, [
+        (GUIDE, 4, E, "title is 21 letters wide, at most 20 fit"),
+        (GUIDE, 5, E, "title is 22 letters wide, at most 20 fit"),
+        (GUIDE, 7, E, "title is empty"),
+    ], []),
+    "guide-line-wide": (False, 1, [
+        (GUIDE, 3, E, "the line \"a i u e o do not ever change\" is 28 letters wide, at most 27 fit"),
+        (GUIDE, 4, E, "the line \"おばあさん is a grandmother.\" is 28 letters wide, at most 27 fit"),
+    ], []),
+    "guide-lines": (False, 1, [
+        (GUIDE, 4, E, "body has 6 lines, at most 5 fit"),
+        (GUIDE, 5, E, "body is empty"),
+        (GUIDE, 6, E, "body is empty"),
+    ], []),
+    "guide-clips": (False, 1, [
+        (GUIDE, 3, E, "clips: aiueo is not kana only (aiueo)"),
+        (GUIDE, 4, E, "clips: 雨 is not kana only (雨)"),
+        (GUIDE, 5, E, "clips: あめ です is not kana only (a space)"),
+        (GUIDE, 6, E, "clips: an empty clip"),
+        (GUIDE, 7, E, "clips: an empty clip"),
+        (GUIDE, 8, W, "clips: あ is given twice"),
+    ], []),
+    "guide-glyph": (False, 1, [
+        (GUIDE, 3, E, "title: no glyph for ✔ in efontJA_16, ✔ in efontJA_12"),
+        (GUIDE, 4, E, "body: no glyph for 𠮟 in efontJA_16, 𠮟 in efontJA_12"),
+        (GUIDE, 5, E, "clips: no glyph for ゖ in efontJA_16, ゖ in efontJA_12"),
+    ], []),
+    "guide-header": (False, 1, [
+        (GUIDE, 2, E, "header row must be: id title body clips"),
+    ], []),
 }
 
-# What the clean fixture must come out as. Accents marked * are not in the deck: the tool fills them in.
-CLEAN_DECKS = ["kana", "katakana-words", "signs", "counters", "numbers", "food", "replies"]
+# What the clean fixture must come out as: the decks in the order of the course, then the others by name.
+CLEAN_DECKS = ["hiragana", "katakana", "numbers", "counters", "katakana-words", "signs", "food", "replies"]
+# food has no "# stage" line
+CLEAN_STAGES = {"hiragana": 1, "katakana": 2, "numbers": 2, "counters": 2, "katakana-words": 3, "signs": 3,
+                "food": 1, "replies": 9}
 CLEAN_ACCENTS = {
     "kata-koohii": 3, "kata-hoteru": 1, "kata-konbini": 0, "kata-paatii": 1, "kata-takushii": 1,
     "sign-deguchi": 1, "sign-iriguchi": 0, "sign-hijouguchi": 2, "sign-kinen": 0, "sign-kippu": 0,
-    "food-mizu": 0, "food-ocha": 0, "food-gohan": 1, "reply-kekkou": 1, "reply-daijoubu": 3,
+    "sign-kouban": 0, "food-mizu": 0, "food-ocha": 0, "food-gohan": 1, "reply-kekkou": 1, "reply-daijoubu": 3,
 }
-CLEAN_FILLED = ["kata-koohii", "kata-konbini", "kata-paatii", "sign-deguchi", "sign-kinen", "food-mizu", "food-gohan",
-                "reply-daijoubu"]
+# these accents are not in the deck: the tool fills them in
+CLEAN_FILLED = ["kata-koohii", "kata-konbini", "kata-paatii", "sign-deguchi", "sign-kinen", "sign-kouban",
+                "food-mizu", "food-gohan", "reply-daijoubu"]
+# The line about the kanji of a prompt. That of 交番 is written in parts.tsv. 大丈夫 has none, because
+# parts.tsv says so; the other items have none, because their prompts have no kanji.
+CLEAN_PARTS = {
+    "num-300-yen": "円 yen", "num-9-ji": "時 hour",
+    "sign-deguchi": "出 go out  口 opening", "sign-iriguchi": "入 enter  口 opening",
+    "sign-hijouguchi": "非 not  常 usual  口 opening", "sign-kinen": "禁 forbid  煙 smoke",
+    "sign-kippu": "切 cut  符 token", "sign-seisanki": "精 exact  算 calculate  機 machine",
+    "sign-kouban": "交 take turns  番 watch",
+    "food-mizu": "水 water", "food-ocha": "茶 tea", "food-gohan": "飯 meal",
+    "reply-kekkou": "結 tie  構 build",
+}
+CLEAN_ITEMS = 29
 KIND_NUMBER = {"kana": 0, "word": 1, "counter": 2, "number": 3}
 
 DUMP = r"""
-// Prints the compiled tables back, one line per deck, item and buddy line, fields separated by tabs.
+// Prints the compiled tables back, one line per deck, item, buddy line and page of the guide, fields
+// separated by tabs. The lines of a page are printed with | between them, as the table has them.
 #include <cstdio>
 #include "deck.h"
 
@@ -284,20 +423,30 @@ int main()
 {
     for (size_t d = 0; d < deck::count(); ++d) {
         const deck::Deck& k = deck::at(d);
-        std::printf("deck\t%s\t%s\t%s\t%u\n", k.id, k.nameJa, k.nameEn, static_cast<unsigned>(k.count));
+        std::printf("deck\t%s\t%s\t%s\t%u\t%u\t%s\n", k.id, k.nameJa, k.nameEn, static_cast<unsigned>(k.count),
+                    static_cast<unsigned>(k.stage), deck::find(k.id) == &k ? "found" : "lost");
         for (unsigned i = 0; i < k.count; ++i) {
             const deck::Item& it = k.items[i];
-            std::printf("item\t%s\t%s\t%s\t%s\t%s\t%s\t%d\t%u\t%u\t%08x\t%s\n", it.id, it.prompt, it.reading,
-                        it.accepted, it.gloss, it.note, static_cast<int>(it.accent), static_cast<unsigned>(it.level),
-                        static_cast<unsigned>(it.kind), static_cast<unsigned>(deck::key(it.id)),
-                        deck::findItem(it.id) == &it ? "found" : "lost");
+            std::printf("item\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%d\t%u\t%u\t%08x\t%s\n", it.id, it.prompt, it.reading,
+                        it.accepted, it.gloss, it.note, it.parts, static_cast<int>(it.accent),
+                        static_cast<unsigned>(it.level), static_cast<unsigned>(it.kind),
+                        static_cast<unsigned>(deck::key(it.id)), deck::findItem(it.id) == &it ? "found" : "lost");
         }
     }
     for (size_t b = 0; b < kBuddyLineCount; ++b) {
         std::printf("buddy\t%s\t%s\t%s\t%s\n", kBuddyLines[b].id, kBuddyLines[b].mood, kBuddyLines[b].ja,
                     kBuddyLines[b].en);
     }
-    std::printf("end\t%u\t%u\n", static_cast<unsigned>(deck::count()), static_cast<unsigned>(kBuddyLineCount));
+    for (size_t g = 0; g < deck::guidePageCount(); ++g) {
+        const deck::GuidePage& page = deck::guidePage(g);
+        std::printf("guide\t%s\t%s\t", page.id, page.title);
+        for (const char* p = page.body; *p; ++p) {
+            std::putchar(*p == '\n' ? '|' : *p);
+        }
+        std::printf("\t%s\n", page.clips);
+    }
+    std::printf("end\t%u\t%u\t%u\n", static_cast<unsigned>(deck::count()), static_cast<unsigned>(kBuddyLineCount),
+                static_cast<unsigned>(deck::guidePageCount()));
     return 0;
 }
 """
@@ -424,6 +573,17 @@ def check_case(name):
                          % (re.escape(file_name[:-4]), deck_errors, len(mine) - deck_errors), output, re.M),
                "no summary line for %s with %d errors, %d warnings:\n%s"
                % (file_name, deck_errors, len(mine) - deck_errors, output))
+    for file_name, word, unit in TABLES:
+        mine = [f for f in want_findings if f[0] == file_name]
+        table_errors = sum(1 for f in mine if f[2] == E)
+        if os.path.exists(os.path.join(folder, file_name)):
+            expect(re.search(r"^%s: \d+ %ss?, %d errors?, %d warnings?$"
+                             % (word, unit, table_errors, len(mine) - table_errors), output, re.M),
+                   "no summary line for %s with %d errors, %d warnings:\n%s"
+                   % (file_name, table_errors, len(mine) - table_errors, output))
+        else:
+            expect(not re.search(r"^%s: " % word, output, re.M),
+                   "a summary line for %s, which the fixture does not have:\n%s" % (file_name, output))
 
     if want_code == 0:
         expect(os.path.exists(out), "no errors, but the C++ file was not written")
@@ -448,39 +608,63 @@ def test_clean_builds():
     same(code, 0, "exit code\n" + output)
     same(findings_of(output), [], "findings")
     lines = output.splitlines()
-    summary = ["kana: 6 rows, 0 errors, 0 warnings", "katakana-words: 5 rows, 0 errors, 0 warnings",
-               "signs: 7 rows, 0 errors, 0 warnings", "counters: 2 rows, 0 errors, 0 warnings",
-               "numbers: 3 rows, 0 errors, 0 warnings", "food: 3 rows, 0 errors, 0 warnings",
-               "replies: 2 rows, 0 errors, 0 warnings", "buddy: 4 lines, 0 errors, 0 warnings"]
+    summary = ["hiragana: 4 rows, 0 errors, 0 warnings", "katakana: 2 rows, 0 errors, 0 warnings",
+               "numbers: 3 rows, 0 errors, 0 warnings", "counters: 2 rows, 0 errors, 0 warnings",
+               "katakana-words: 5 rows, 0 errors, 0 warnings", "signs: 8 rows, 0 errors, 0 warnings",
+               "food: 3 rows, 0 errors, 0 warnings", "replies: 2 rows, 0 errors, 0 warnings",
+               "buddy: 4 lines, 0 errors, 0 warnings", "kanji: 21 rows, 0 errors, 0 warnings",
+               "parts: 2 rows, 0 errors, 0 warnings", "guide: 3 pages, 0 errors, 0 warnings"]
     same(lines[:len(summary)], summary, "summary lines")
-    expect("total: 7 decks, 28 rows, 0 errors, 0 warnings" in lines, "total line\n" + output)
-    expect("wrote build/test_build_decks/clean/deck_data.cpp: 7 decks, 28 items, 4 buddy lines" in lines, output)
-    expect("wrote build/test_build_decks/clean/ids.txt: 28 ids, 25 new" in lines, output)
+    expect("total: 8 decks, 29 rows, 0 errors, 0 warnings" in lines, "total line\n" + output)
+    expect("wrote build/test_build_decks/clean/deck_data.cpp: 8 decks, 29 items, 4 buddy lines, 3 guide pages"
+           in lines, output)
+    expect("wrote build/test_build_decks/clean/ids.txt: 29 ids, 26 new" in lines, output)
 
     notes = notes_of(output)
     filled = " ".join(n for n in notes if "filled in from the accent list" in n)
     same(sorted(re.findall(r"([a-z0-9-]+) (\d+)(?:,|$| )", filled.replace(" filled in from the accent list:", ""))),
          sorted((name, str(CLEAN_ACCENTS[name])) for name in CLEAN_FILLED), "accents reported as filled in")
+    same([n for n in notes if "filled in from the accent list" not in n], [], "other notes")
 
     source = read(os.path.join(work, "deck_data.cpp"))
     expect(source.startswith("// Written by tools/build_decks.py"), "first line")
     head = source[:source.index("#include")]
-    for words in ("Do not edit by hand", "JMdict", "Electronic Dictionary Research and", "Kanjium", "CC BY-SA 4.0"):
+    for words in ("Do not edit by hand", "JMdict", "KANJIDIC", "Electronic Dictionary Research and", "Kanjium",
+                  "CC BY-SA 4.0"):
         expect(words in head, "the comment at the top does not mention: " + words)
     expect(all(line.startswith("//") for line in head.strip().split("\n")), "the top of the file is not all comment")
-    same(re.findall(r'^    \{"([a-z-]+)", "[^"]*", "[^"]*", kItems_', source, re.M), CLEAN_DECKS, "order of the decks")
+    same(re.findall(r'^    \{"([a-z-]+)", "[^"]*", "[^"]*", kItems_[a-z_]+, \d+, \d\},$', source, re.M), CLEAN_DECKS,
+         "order of the decks")
     for wanted in (
-            '    {"sign-deguchi", "出口", "でぐち", "", "exit (\\"way out\\")", "", 1, 2, deck::Kind::Word},',
-            '    {"sign-iriguchi", "入口", "いりぐち", "いりくち|はいりぐち", "entrance", "also written 入り口", 0, 2, deck::Kind::Word},',
-            '    {"sign-seisanki", "精算機", "せいさんき", "", "fare adjustment machine", "", -1, 3, deck::Kind::Word},',
-            '    {"num-300-yen", "300円", "さんびゃくえん", "", "300 yen", "a typed \\\\ can show as ¥", -1, 2, deck::Kind::Number},',
-            '    {"kana-a", "あ", "あ", "", "a", "", -1, 1, deck::Kind::Kana},',
-            '    {"count-biiru-3", "ビール × 3", "さんぼん", "みっつ", "three beers", "bottles ほん, any thing つ", -1, 1, deck::Kind::Counter},',
+            '    {"sign-deguchi", "出口", "でぐち", "", "exit (\\"way out\\")", "", "出 go out  口 opening", 1, 2, '
+            'deck::Kind::Word},',
+            '    {"sign-iriguchi", "入口", "いりぐち", "いりくち|はいりぐち", "entrance", "also written 入り口", '
+            '"入 enter  口 opening", 0, 2, deck::Kind::Word},',
+            '    {"sign-seisanki", "精算機", "せいさんき", "", "fare adjustment machine", "", '
+            '"精 exact  算 calculate  機 machine", -1, 3, deck::Kind::Word},',
+            # written in parts.tsv: not "交 alternate  番 number", which kanji.tsv would give
+            '    {"sign-kouban", "交番", "こうばん", "", "police box", "", "交 take turns  番 watch", 0, 2, '
+            'deck::Kind::Word},',
+            # parts.tsv gives an empty line
+            '    {"reply-daijoubu", "大丈夫", "だいじょうぶ", "", "all right; OK", "", "", 3, 2, deck::Kind::Word},',
+            '    {"num-300-yen", "300円", "さんびゃくえん", "", "300 yen", "a typed \\\\ can show as ¥", "円 yen", -1, 2, '
+            'deck::Kind::Number},',
+            '    {"kana-a", "あ", "あ", "", "a", "", "", -1, 1, deck::Kind::Kana},',
+            '    {"count-biiru-3", "ビール × 3", "さんぼん", "みっつ", "three beers", "bottles ほん, any thing つ", "", '
+            '-1, 1, deck::Kind::Counter},',
+            '    {"hiragana", "ひらがな", "hiragana", kItems_hiragana, 4, 1},',
+            '    {"katakana-words", "カタカナご", "katakana words", kItems_katakana_words, 5, 3},',
+            '    {"food", "たべもの", "food", kItems_food, 3, 1},',
+            '    {"replies", "へんじ", "replies", kItems_replies, 2, 9},',
             '    {"buddy-start-02", "start", "じゅんびは いい？", "Are you ready?\\?"},',
+            '    {"guide-vowels", "Five vowels", "a i u e o, always the same.\\nあ い う え お", "あ|い|う|え|お"},',
+            '    {"guide-pitch", "Pitch", "Japanese has high and low\\nbeats, not loud and soft.", ""},',
             "extern const deck::Deck kDeckTable[] = {",
             "extern const size_t kDeckTableSize = sizeof(kDeckTable) / sizeof(kDeckTable[0]);",
             "extern const deck::BuddyLine kBuddyLines[] = {",
-            "extern const size_t kBuddyLineCount = 4;"):
+            "extern const size_t kBuddyLineCount = 4;",
+            "extern const deck::GuidePage kGuidePages[] = {",
+            "extern const size_t kGuidePageCount = 3;"):
         expect(wanted in source.split("\n"), "line not in the C++ file: " + wanted)
     source.encode("utf-8")
     expect("\t" not in source and "\r" not in source, "tabs or carriage returns in the C++ file")
@@ -489,7 +673,7 @@ def test_clean_builds():
     wanted = sorted(row[0] for name in CLEAN_DECKS
                     for row in table(os.path.join(FIXTURES, "clean", "decks", name + ".tsv")))
     same(ids, wanted, "the list of ids")
-    same(len(ids), 28, "number of ids")
+    same(len(ids), CLEAN_ITEMS, "number of ids")
 
 
 def test_clean_builds_the_same_twice():
@@ -500,7 +684,7 @@ def test_clean_builds_the_same_twice():
                             "--out", os.path.join(work, "deck_data.cpp"), "--ids", os.path.join(work, "ids.txt"),
                             "--cache", FIXTURE_CACHE)
     same(code, 0, "exit code of the second build\n" + output)
-    expect("ids.txt: 28 ids, 0 new" in output, "the second build found new ids:\n" + output)
+    expect("ids.txt: %d ids, 0 new" % CLEAN_ITEMS in output, "the second build found new ids:\n" + output)
     same((read(os.path.join(work, "deck_data.cpp")), read(os.path.join(work, "ids.txt"))), first, "the second build")
 
 
@@ -529,10 +713,26 @@ def test_offline_fills_in_nothing():
     expect(any(OFFLINE_NOTE in note for note in notes_of(output)), "no note about --offline")
     expect(not any("filled in" in note and OFFLINE_NOTE not in note for note in notes_of(output)), output)
     source = read(os.path.join(work, "deck_data.cpp"))
-    expect('    {"sign-deguchi", "出口", "でぐち", "", "exit (\\"way out\\")", "", -1, 2, deck::Kind::Word},' in source,
-           "offline, the accent of sign-deguchi must stay unknown")
-    expect('    {"kata-hoteru", "ホテル", "ホテル", "", "hotel", "", 1, 1, deck::Kind::Word},' in source,
+    expect('    {"sign-deguchi", "出口", "でぐち", "", "exit (\\"way out\\")", "", "出 go out  口 opening", -1, 2, '
+           'deck::Kind::Word},' in source, "offline, the accent of sign-deguchi must stay unknown")
+    expect('    {"kata-hoteru", "ホテル", "ホテル", "", "hotel", "", "", 1, 1, deck::Kind::Word},' in source,
            "offline, an accent given by the deck is kept")
+    # apart from the accents, the dictionaries change nothing of what is written
+    online = read(os.path.join(build_clean("offline-compared", "--cache", FIXTURE_CACHE)[0], "deck_data.cpp"))
+    accents = re.compile(r"-?\d+(, \d, deck::Kind::)")
+    same([accents.sub(r"?\1", line) for line in source.split("\n")],
+         [accents.sub(r"?\1", line) for line in online.split("\n")], "the C++ file without the accents")
+
+
+def test_offline_checks_what_it_can_of_the_basis():
+    """Without the dictionaries a basis is not looked up, but it still has to be there and to fit."""
+    code, output = run_tool("--check", "--offline", "--decks", os.path.join(FIXTURES, "kanji-basis", "decks"))
+    same(code, 1, "exit code\n" + output)
+    shown = "tools/tests/fixtures/kanji-basis/kanji.tsv"
+    same(findings_of(output), [
+        (shown, 5, E, "basis is empty"),
+        (shown, 8, E, "basis \"JMdict: 出口\" names a word without 交"),
+    ], "findings")
 
 
 def test_offline_needs_no_dictionary():
@@ -546,23 +746,35 @@ def test_offline_needs_no_dictionary():
     expect("jmdict_index.json not found" in output and "--offline" in output, output)
 
 
+def real_cache():
+    """Returns (whether local/cache holds JMdict and the accent list, whether it holds KANJIDIC)."""
+    return (all(os.path.exists(os.path.join(REAL_CACHE, name)) for name in ("jmdict_index.json", "accents.txt")),
+            os.path.exists(os.path.join(REAL_CACHE, "kanjidic_index.json")))
+
+
 def test_real_dictionary_agrees_with_the_excerpt():
-    if not (os.path.exists(os.path.join(REAL_CACHE, "jmdict_index.json")) and
-            os.path.exists(os.path.join(REAL_CACHE, "accents.txt"))):
+    dictionary, kanjidic = real_cache()
+    if not dictionary:
         return "SKIPPED: local/cache holds no dictionary"
     excerpt, code, output = build_clean("excerpt", "--cache", FIXTURE_CACHE)
     same(code, 0, "exit code with the excerpt\n" + output)
     real, code, real_output = build_clean("real", "--cache", REAL_CACHE)
     same(code, 0, "exit code with the real dictionary\n" + real_output)
     same(read(os.path.join(real, "deck_data.cpp")), read(os.path.join(excerpt, "deck_data.cpp")), "the C++ file")
-    same(notes_of(real_output), notes_of(output), "notes")
+    same([n for n in notes_of(real_output) if kanjidic or KANJIDIC_NOTE not in n], notes_of(output), "notes")
     # and the mistakes are found in the real dictionary too
+    left_out = []
     for name in sorted(CASES):
         if CASES[name][0]:
+            if not kanjidic and os.path.exists(os.path.join(FIXTURES, name, KANJI)):
+                left_out.append(name)
+                continue
             decks = os.path.join(FIXTURES, name, "decks")
             code, real_output = run_tool("--check", "--decks", decks, "--cache", REAL_CACHE)
             _, output = run_tool("--check", "--decks", decks, "--cache", FIXTURE_CACHE)
             same(real_output, output, "output for %s with the real dictionary" % name)
+    if left_out:
+        return "local/cache holds no KANJIDIC: %s left out" % ", ".join(left_out)
     return None
 
 
@@ -571,8 +783,18 @@ def test_excerpt_is_a_true_copy():
     import json
     real_index = os.path.join(REAL_CACHE, "jmdict_index.json")
     real_accents = os.path.join(REAL_CACHE, "accents.txt")
-    if not (os.path.exists(real_index) and os.path.exists(real_accents)):
+    real_kanji = os.path.join(REAL_CACHE, "kanjidic_index.json")
+    dictionary, kanjidic = real_cache()
+    if not dictionary:
         return "SKIPPED: local/cache holds no dictionary"
+    with open(os.path.join(FIXTURE_CACHE, "kanjidic_index.json"), encoding="utf-8") as handle:
+        excerpt = json.load(handle)
+    expect(excerpt, "the excerpt of KANJIDIC is empty")
+    if kanjidic:
+        with open(real_kanji, encoding="utf-8") as handle:
+            index = json.load(handle)
+        for kanji, entry in excerpt.items():
+            same(entry, index.get(kanji), "KANJIDIC entry for " + kanji)
     with open(real_index, encoding="utf-8") as handle:
         index = json.load(handle)
     with open(os.path.join(FIXTURE_CACHE, "jmdict_index.json"), encoding="utf-8") as handle:
@@ -591,26 +813,142 @@ def test_excerpt_is_a_true_copy():
     for line in lines:
         if line.split("\t")[0] in words:
             expect(line in copied, "accent line left out: " + line)
+    if not kanjidic:
+        return "local/cache holds no KANJIDIC: that excerpt was not compared"
     return None
 
 
-def test_without_buddy_file():
-    work = workspace("no-buddy")
+KIPPU = '    {"sign-kippu", "切符", "きっぷ", "", "ticket", "", "%s", 0, 2, deck::Kind::Word},'
+
+
+def test_without_the_tables_beside_the_decks():
+    """A deck folder alone builds: no buddy, no guide, no line about the kanji, stage 1."""
+    work = workspace("decks-alone")
     out = os.path.join(work, "deck_data.cpp")
     code, output = run_tool("--decks", os.path.join(FIXTURES, "first-build", "decks"), "--out", out,
                             "--ids", os.path.join(work, "ids.txt"), "--cache", FIXTURE_CACHE)
     same(code, 0, "exit code\n" + output)
-    expect(not any(line.startswith("buddy:") for line in output.splitlines()), "a buddy line without a buddy file")
-    source = read(out)
-    expect("extern const size_t kBuddyLineCount = 0;" in source, "kBuddyLineCount is not 0")
-    expect("extern const deck::BuddyLine kBuddyLines[] = {" in source, "kBuddyLines is not defined")
+    same(findings_of(output), [], "findings")
+    same(notes_of(output), [], "notes")
+    for _, word, _ in TABLES:
+        expect(not any(line.startswith(word + ":") for line in output.splitlines()),
+               "a summary line for %s without such a file" % word)
+    source = read(out).split("\n")
+    for wanted in (KIPPU % "",
+                   '    {"signs", "かんばん", "signs", kItems_signs, 1, 1},',
+                   "extern const deck::BuddyLine kBuddyLines[] = {",
+                   "extern const size_t kBuddyLineCount = 0;",
+                   "extern const deck::GuidePage kGuidePages[] = {",
+                   "extern const size_t kGuidePageCount = 0;"):
+        expect(wanted in source, "line not in the C++ file: " + wanted)
     expect("ids.txt: 1 id, 1 new" in output, output)
-    # --buddy names a file elsewhere
-    code, output = run_tool("--decks", os.path.join(FIXTURES, "first-build", "decks"), "--out", out,
-                            "--ids", os.path.join(work, "ids.txt"), "--cache", FIXTURE_CACHE,
-                            "--buddy", os.path.join(FIXTURES, "clean", "buddy.tsv"))
-    same(code, 0, "exit code with --buddy\n" + output)
-    expect("extern const size_t kBuddyLineCount = 4;" in read(out), "kBuddyLineCount is not 4 with --buddy")
+    expect("deck_data.cpp: 1 deck, 1 item, 0 buddy lines, 0 guide pages" in output, output)
+
+
+def test_tables_named_by_an_option():
+    """--buddy, --kanji, --parts and --guide name a file elsewhere."""
+    work = workspace("options")
+    out = os.path.join(work, "deck_data.cpp")
+    write(os.path.join(work, "elsewhere", "meanings.tsv"),
+          "kanji\tmeaning\tbasis\twords\n切\tcut\tcut\t切符\n符\ttoken\ttoken\t切符\n")
+    write(os.path.join(work, "elsewhere", "by-hand.tsv"),
+          "prompt\tparts\treason\n切符\t切 cut  符 token, a slip of paper\tthe token is of paper\n")
+    write(os.path.join(work, "elsewhere", "pages.tsv"),
+          "id\ttitle\tbody\tclips\nguide-tsu\tThe small っ\tきっぷ has three beats.\tきっぷ\n")
+    options = {
+        "--buddy": os.path.join(FIXTURES, "clean", "buddy.tsv"),
+        "--kanji": os.path.join(work, "elsewhere", "meanings.tsv"),
+        "--parts": os.path.join(work, "elsewhere", "by-hand.tsv"),
+        "--guide": os.path.join(work, "elsewhere", "pages.tsv"),
+    }
+
+    def build(*names):
+        arguments = [part for name in names for part in (name, options[name])]
+        code, output = run_tool("--decks", os.path.join(FIXTURES, "first-build", "decks"), "--out", out,
+                                "--ids", os.path.join(work, "ids.txt"), "--cache", FIXTURE_CACHE, *arguments)
+        same(code, 0, "exit code with %s\n%s" % (" ".join(names), output))
+        same(findings_of(output), [], "findings with " + " ".join(names))
+        for option, (_, word, _) in zip(("--buddy", "--kanji", "--parts", "--guide"), TABLES):
+            same(any(line.startswith(word + ":") for line in output.splitlines()), option in names,
+                 "whether there is a summary line for %s with %s" % (word, " ".join(names)))
+        return read(out).split("\n")
+
+    source = build("--buddy")
+    expect("extern const size_t kBuddyLineCount = 4;" in source, "kBuddyLineCount is not 4 with --buddy")
+    expect(KIPPU % "" in source, "a line about the kanji without --kanji")
+    source = build("--kanji")
+    expect(KIPPU % "切 cut  符 token" in source, "the line about the kanji with --kanji")
+    # the line written by hand needs no kanji.tsv, and wins over it
+    source = build("--parts")
+    expect(KIPPU % "切 cut  符 token, a slip of paper" in source, "the line about the kanji with --parts")
+    source = build("--kanji", "--parts")
+    expect(KIPPU % "切 cut  符 token, a slip of paper" in source, "the line about the kanji with --kanji and --parts")
+    source = build("--guide")
+    expect("extern const size_t kGuidePageCount = 1;" in source, "kGuidePageCount is not 1 with --guide")
+    expect('    {"guide-tsu", "The small っ", "きっぷ has three beats.", "きっぷ"},' in source, "the page of the guide")
+    # a table may be absent, but not one that is named
+    for option in options:
+        code, output = run_tool("--check", "--offline", "--decks", os.path.join(FIXTURES, "first-build", "decks"),
+                                option, os.path.join(work, "elsewhere", "nothing.tsv"))
+        same(code, 2, "exit code with %s and no such file\n%s" % (option, output))
+        expect("build/test_build_decks/options/elsewhere/nothing.tsv not found" in output, output)
+
+
+def test_without_kanjidic():
+    """Where KANJIDIC is not at hand, a note says so, and what is written stays the same."""
+    import json
+    work = workspace("no-kanjidic")
+    cache = os.path.join(work, "cache")
+    os.makedirs(cache)
+    for name in ("jmdict_index.json", "accents.txt"):
+        shutil.copy(os.path.join(FIXTURE_CACHE, name), os.path.join(cache, name))
+    decks = os.path.join(FIXTURES, "clean", "decks")
+    arguments = ["--decks", decks, "--out", os.path.join(work, "deck_data.cpp"), "--ids", os.path.join(work, "ids.txt")]
+    code, output = run_tool("--cache", cache, *arguments)
+    same(code, 0, "exit code\n" + output)
+    same(findings_of(output), [], "findings")
+    same([n for n in notes_of(output) if KANJIDIC_NOTE in n],
+         ["tools/tests/fixtures/clean/kanji.tsv was not compared with KANJIDIC: "
+          "build/test_build_decks/no-kanjidic/cache/kanjidic_index.json not found"], "the note about KANJIDIC")
+    full, code, _ = build_clean("with-kanjidic", "--cache", FIXTURE_CACHE)
+    same(read(os.path.join(work, "deck_data.cpp")), read(os.path.join(full, "deck_data.cpp")), "the C++ file")
+    # no note where there is no kanji.tsv to compare
+    code, output = run_tool("--check", "--decks", os.path.join(FIXTURES, "first-build", "decks"), "--cache", cache)
+    same((code, notes_of(output)), (0, []), "exit code and notes without kanji.tsv\n" + output)
+    # the mistakes that need KANJIDIC are not found then, the others are
+    code, output = run_tool("--check", "--decks", os.path.join(FIXTURES, "kanji-basis", "decks"), "--cache", cache)
+    same(code, 1, "exit code for kanji-basis\n" + output)
+    same([f[1] for f in findings_of(output)], [5, 8, 12], "lines of the findings for kanji-basis")
+    # a file that is there and cannot be read stops the tool
+    for text in ("{", "[]", json.dumps({"口": ["mouth"]})):
+        write(os.path.join(cache, "kanjidic_index.json"), text)
+        code, output = run_tool("--check", "--decks", decks, "--cache", cache)
+        same(code, 2, "exit code with a KANJIDIC file that holds %s\n%s" % (text, output))
+        expect("kanjidic_index.json cannot be read" in output and "Traceback" not in output, output)
+
+
+def test_a_deck_that_cannot_be_read_is_reported_once():
+    """The tables beside the decks are then not compared with the decks: every row would be a finding."""
+    work = workspace("deck-unread")
+    for name in (KANJI, PARTS):
+        shutil.copy(os.path.join(FIXTURES, "clean", name), os.path.join(work, name))
+    shown = "build/test_build_decks/deck-unread/decks/signs.tsv"
+    good = read(os.path.join(FIXTURES, "clean", "decks", "signs.tsv"))
+    for text, line, words in ((good.replace("\tprompt\t", "\tword\t"), 6, "header row must be"),
+                              (good.replace("\t出口\t", "\t出口\t\t"), 7, "10 columns, expected 9"),
+                              ("", 1, "the file is empty")):
+        write(os.path.join(work, "decks", "signs.tsv"), text)
+        code, output = run_tool("--check", "--offline", "--decks", os.path.join(work, "decks"))
+        same(code, 1, "exit code\n" + output)
+        found = findings_of(output)
+        same([f[:3] for f in found], [(shown, line, E)], "findings\n" + output)
+        expect(words in found[0][3], output)
+    # and with the deck as it should be, the tables are compared with it: most of their rows are of other decks
+    write(os.path.join(work, "decks", "signs.tsv"), good)
+    code, output = run_tool("--check", "--offline", "--decks", os.path.join(work, "decks"))
+    same(code, 1, "exit code with the deck as it should be\n" + output)
+    same([f[3] for f in findings_of(output) if f[2] == E], ["大丈夫 is not a prompt of a deck"], "errors")
+    same(len([f for f in findings_of(output) if "the row is not used" in f[3]]), 7, "rows that are not used")
 
 
 def test_fixture_folder_is_never_the_default_target():
@@ -632,21 +970,35 @@ def test_not_utf8():
 
 
 def test_windows_line_ends_and_byte_order_mark():
+    """In the decks and in every table beside them."""
     work = workspace("crlf")
-    for name in ("signs", "kana"):
-        text = read(os.path.join(FIXTURES, "clean", "decks", name + ".tsv"))
-        write(os.path.join(work, "decks", name + ".tsv"), "\ufeff" + text.replace("\n", "\r\n"))
+    names = ["decks/katakana.tsv", "decks/signs.tsv", "decks/replies.tsv", BUDDY, KANJI, PARTS, GUIDE]
+    for name in names:
+        text = read(os.path.join(FIXTURES, "clean", name))
+        if name == KANJI:
+            # only the kanji of these three decks
+            text = "".join(line + "\n" for line in text.split("\n") if line and line[0] not in "円時水茶飯")
+        write(os.path.join(work, name), "\ufeff" + text.replace("\n", "\r\n"))
     out = os.path.join(work, "deck_data.cpp")
     code, output = run_tool("--decks", os.path.join(work, "decks"), "--out", out,
                             "--ids", os.path.join(work, "ids.txt"), "--cache", FIXTURE_CACHE)
     same(code, 0, "exit code\n" + output)
-    same([f[:3] + (f[3].split(";")[0],) for f in findings_of(output)],
-         [("build/test_build_decks/crlf/decks/%s.tsv" % name, 1, W, words) for name in ("kana", "signs")
-          for words in ("byte order mark at the start of the file", "the line ends with a carriage return")],
+    same(sorted(f[:3] + (f[3].split(";")[0],) for f in findings_of(output)),
+         sorted(("build/test_build_decks/crlf/" + name, 1, W, words) for name in names
+                for words in ("byte order mark at the start of the file", "the line ends with a carriage return")),
          "findings")
     source = read(out)
     expect("\r" not in source and "\ufeff" not in source, "carriage return or byte order mark in the C++ file")
-    expect('    {"kana-kata-shi", "シ", "シ", "", "shi", "not ツ (tsu)", -1, 1, deck::Kind::Kana},' in source, source)
+    for wanted in (
+            '    {"kana-kata-shi", "シ", "シ", "", "shi", "not ツ (tsu)", "", -1, 1, deck::Kind::Kana},',
+            '    {"sign-kippu", "切符", "きっぷ", "", "ticket", "", "切 cut  符 token", 0, 2, deck::Kind::Word},',
+            '    {"sign-kouban", "交番", "こうばん", "", "police box", "", "交 take turns  番 watch", 0, 2, '
+            'deck::Kind::Word},',
+            '    {"katakana", "カタカナ", "katakana", kItems_katakana, 2, 2},',
+            '    {"replies", "へんじ", "replies", kItems_replies, 2, 9},',
+            '    {"buddy-right-01", "right", "せいかい！", "Correct!"},',
+            '    {"guide-pitch", "Pitch", "Japanese has high and low\\nbeats, not loud and soft.", ""},'):
+        expect(wanted in source.split("\n"), "line not in the C++ file: %s\n%s" % (wanted, source))
 
 
 def test_old_line_ends():
@@ -659,7 +1011,7 @@ def test_old_line_ends():
                             "--ids", os.path.join(work, "ids.txt"), "--offline")
     same(code, 0, "exit code\n" + output)
     same([f[:3] for f in findings_of(output)], [("build/test_build_decks/cr/decks/signs.tsv", 1, W)], "findings")
-    expect('    {"sign-kippu", "切符", "きっぷ", "", "ticket", "", 0, 2, deck::Kind::Word},' in read(out), read(out))
+    expect(KIPPU % "" in read(out).split("\n"), read(out))
 
 
 def test_invisible_characters():
@@ -838,9 +1190,39 @@ def test_columns_and_kanji():
 
 def test_moods_are_the_documented_ten():
     same(len(build_decks.MOODS), 10, "number of moods")
-    documented = re.search(r"^Moods: (.*)$", read(os.path.join(TESTS, "README.md")), re.M)
-    expect(documented, "tools/tests/README.md has no line starting with \"Moods: \"")
-    same([m.strip(" `.") for m in documented.group(1).split(",")], build_decks.MOODS, "moods in the README")
+    for path in (os.path.join(TESTS, "README.md"), os.path.join(ROOT, "content", "README.md")):
+        documented = re.search(r"^Moods: (.*)$", read(path), re.M)
+        expect(documented, "%s has no line starting with \"Moods: \"" % build_decks.display(path))
+        same([m.strip(" `.") for m in documented.group(1).split(",")], build_decks.MOODS,
+             "moods in " + build_decks.display(path))
+
+
+def test_readme_describes_every_table():
+    """content/README.md has a section for each table, with a row for each column and the limits the tool keeps."""
+    text = read(os.path.join(ROOT, "content", "README.md"))
+    sections = dict((part.split("\n", 1)[0].strip(), part) for part in text.split("\n## ")[1:])
+    tables = {
+        "Deck files": (build_decks.COLUMNS, [build_decks.GLOSS_COLUMNS, build_decks.NOTE_COLUMNS]),
+        "buddy.tsv": (build_decks.BUDDY_COLUMNS, [build_decks.BUDDY_JA_LENGTH, build_decks.BUDDY_EN_LENGTH]),
+        "kanji.tsv": (build_decks.KANJI_COLUMNS, [build_decks.KANJI_MEANING_LENGTH, build_decks.PARTS_COLUMNS]),
+        "parts.tsv": (build_decks.PARTS_FILE_COLUMNS, [build_decks.PARTS_COLUMNS]),
+        "guide.tsv": (build_decks.GUIDE_COLUMNS, [build_decks.GUIDE_TITLE_COLUMNS, build_decks.GUIDE_LINES,
+                                                  build_decks.GUIDE_LINE_COLUMNS]),
+    }
+    for title, (columns, limits) in tables.items():
+        expect(title in sections, "content/README.md has no section \"%s\"" % title)
+        rows = re.findall(r"^\| `([a-z-]+)` \|", sections[title], re.M)
+        names = ["name-ja", "name-en", "kind", "stage"] if title == "Deck files" else []
+        same(rows, names + columns, "the rows of the tables in the section \"%s\"" % title)
+        for limit in limits:
+            expect(re.search(r"at most %d\b" % limit, sections[title]),
+                   "the section \"%s\" does not say: at most %d" % (title, limit))
+    for kind in build_decks.KINDS:
+        expect("`%s`" % kind in sections["Deck files"], "the section on deck files does not name the kind " + kind)
+    expect(", ".join(build_decks.DECK_ORDER) in " ".join(sections["Deck files"].split()),
+           "the section on deck files does not give the order of the decks")
+    for words in ("JMdict", "KANJIDIC", "Electronic Dictionary Research and Development", "Kanjium", "CC BY-SA 4.0"):
+        expect(words in " ".join(sections["Licences"].split()), "the licences do not mention: " + words)
 
 
 # ---------------------------------------------------------------------------------------------
@@ -878,16 +1260,23 @@ def test_cpp_is_valid():
                                    include, os.path.join(work, "deck_data.cpp")], env)
             same((code, text), (0, ""), "em++ -std=%s -fsyntax-only on the %s build" % (standard, name))
             checked += 1
-    work = workspace("cpp-no-buddy")
-    out = os.path.join(work, "deck_data.cpp")
-    code, output = run_tool("--decks", os.path.join(FIXTURES, "first-build", "decks"), "--out", out,
-                            "--ids", os.path.join(work, "ids.txt"), "--cache", FIXTURE_CACHE)
-    same(code, 0, "exit code\n" + output)
-    for standard in ("gnu++17", "c++11"):
-        code, text = compiler(["-std=" + standard, "-fsyntax-only", "-Wall", "-Wextra", "-Wtrigraphs", "-Werror",
-                               include, out], env)
-        same((code, text), (0, ""), "em++ -std=%s -fsyntax-only on a build without buddy" % standard)
-        checked += 1
+    # without buddy and guide the two arrays hold one empty entry, and with warnings the file is written too
+    for name in ("first-build", "kanji-no-row", "kanji-line-wide"):
+        work = workspace("cpp-" + name)
+        out = os.path.join(work, "deck_data.cpp")
+        code, output = run_tool("--decks", os.path.join(FIXTURES, name, "decks"), "--out", out,
+                                "--ids", os.path.join(work, "ids.txt"), "--offline")
+        same(code, 0, "exit code\n" + output)
+        for standard in ("gnu++17", "c++11"):
+            code, text = compiler(["-std=" + standard, "-fsyntax-only", "-Wall", "-Wextra", "-Wtrigraphs",
+                                   "-Werror", include, out], env)
+            same((code, text), (0, ""), "em++ -std=%s -fsyntax-only on the build of %s" % (standard, name))
+            checked += 1
+    # the file must define what lib/core/deck.cpp asks for
+    asked = re.findall(r"^extern const ([^;]+);$", read(os.path.join(ROOT, "lib", "core", "deck.cpp")), re.M)
+    expect(len(asked) >= 4, "lib/core/deck.cpp no longer names what it takes from deck_data.cpp")
+    for name in asked:
+        expect("extern const %s = " % name in read(out), "deck_data.cpp does not define: " + name)
     # the compiler does find a mistake in such a file
     broken = os.path.join(work, "broken.cpp")
     write(broken, read(out).replace("deck::Kind::Word}", "deck::Kind::Verb}"))
@@ -915,29 +1304,39 @@ def test_cpp_holds_what_the_decks_say():
 
     want = []
     items = 0
+    with_parts = []
     for name in CLEAN_DECKS:
         path = os.path.join(FIXTURES, "clean", "decks", name + ".tsv")
-        names = dict(re.findall(r"^# (name-ja|name-en|kind): (.*)$", read(path), re.M))
+        names = dict(re.findall(r"^# (name-ja|name-en|kind|stage): (.*)$", read(path), re.M))
         rows = table(path)
-        want.append("deck\t%s\t%s\t%s\t%d" % (name, names["name-ja"], names["name-en"], len(rows)))
+        same(int(names.get("stage", 1)), CLEAN_STAGES[name], "stage of %s in the fixture and in this script" % name)
+        want.append("deck\t%s\t%s\t%s\t%d\t%d\tfound" % (name, names["name-ja"], names["name-en"], len(rows),
+                                                         CLEAN_STAGES[name]))
         for row in rows:
             accent = CLEAN_ACCENTS.get(row[0], -1)
             if row[3]:
                 same(int(row[3]), accent, "accent of %s in the fixture and in this script" % row[0])
             else:
                 same(row[0] in CLEAN_FILLED, accent >= 0, "whether %s is filled in" % row[0])
-            want.append("item\t%s\t%s\t%s\t%s\t%s\t%s\t%d\t%s\t%d\t%08x\tfound" % (
-                row[0], row[1], row[2], row[4], row[5], row[6], accent, row[7], KIND_NUMBER[names["kind"]],
-                build_decks.fnv1a(row[0])))
+            if row[0] in CLEAN_PARTS:
+                with_parts.append(row[0])
+            want.append("item\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%d\t%s\t%d\t%08x\tfound" % (
+                row[0], row[1], row[2], row[4], row[5], row[6], CLEAN_PARTS.get(row[0], ""), accent, row[7],
+                KIND_NUMBER[names["kind"]], build_decks.fnv1a(row[0])))
             items += 1
-    buddy = table(os.path.join(FIXTURES, "clean", "buddy.tsv"))
+    same(sorted(with_parts), sorted(CLEAN_PARTS), "the items that have a line about their kanji")
+    buddy = table(os.path.join(FIXTURES, "clean", BUDDY))
     for row in buddy:
         want.append("buddy\t" + "\t".join(row))
-    want += ["end\t%d\t%d" % (len(CLEAN_DECKS), len(buddy)), ""]
+    guide = table(os.path.join(FIXTURES, "clean", GUIDE))
+    for row in guide:
+        want.append("guide\t" + "\t".join(row))
+    want += ["end\t%d\t%d\t%d" % (len(CLEAN_DECKS), len(buddy), len(guide)), ""]
     same(len(got), len(want), "number of lines printed")
     for got_line, want_line in zip(got, want):
         same(got_line, want_line, "line printed by the compiled tables")
-    return "%d decks, %d items, %d buddy lines read back" % (len(CLEAN_DECKS), items, len(buddy))
+    return "%d decks, %d items, %d buddy lines, %d pages of the guide read back" % (len(CLEAN_DECKS), items,
+                                                                                   len(buddy), len(guide))
 
 
 # ---------------------------------------------------------------------------------------------

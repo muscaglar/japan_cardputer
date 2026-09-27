@@ -1,0 +1,6 @@
+# Test fixture: 口, 非 and 常 have no row. Warning only, once for each kanji.
+kanji	meaning	basis	words
+出	go out	go out	出口
+入	enter	enter	入口
+切	cut	cut	切符
+符	token	token	切符

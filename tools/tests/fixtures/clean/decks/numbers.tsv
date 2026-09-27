@@ -2,6 +2,7 @@
 # name-ja: すうじ
 # name-en: numbers
 # kind: number
+# stage: 2
 id	prompt	reading	accent	accepted	gloss	note	level	source
 num-100	100	ひゃく			one hundred		1	JMdict
 num-300-yen	300円	さんびゃくえん			300 yen	a typed \ can show as ¥	2	JMdict

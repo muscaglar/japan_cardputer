@@ -1,0 +1,23 @@
+# Test fixture without mistakes.
+kanji	meaning	basis	words
+出	go out	go out	出口
+口	opening	mouth	出口 入口 非常口
+入	enter	enter	入口
+非	not	un-	非常口
+常	usual	usual	非常口
+禁	forbid	forbid	禁煙
+煙	smoke	smoke	禁煙
+切	cut	cut	切符
+符	token	token	切符
+精	exact	JMdict: 精算機	精算機
+算	calculate	calculate	精算機
+機	machine	machine	精算機
+交	alternate	JMdict: 交番	交番
+番	number	number in a series	交番
+円	yen	yen	300円
+時	hour	hour	9時
+水	water	water	水
+茶	tea	tea	お茶
+飯	meal	meal	ご飯
+結	tie	tie	結構
+構	build	build	結構

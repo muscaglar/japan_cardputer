@@ -1,0 +1,8 @@
+# Test fixture without mistakes.
+# name-ja: カタカナ
+# name-en: katakana
+# kind: kana
+# stage: 2
+id	prompt	reading	accent	accepted	gloss	note	level	source
+kana-kata-a	ア	ア			a	katakana	1	
+kana-kata-shi	シ	シ			shi	not ツ (tsu)	1	

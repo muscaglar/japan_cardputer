@@ -640,6 +640,34 @@
    ]
   }
  ],
+ "乗車券": [
+  {
+   "common": true,
+   "gloss": [
+    "ticket (for bus, train, etc.)",
+    "passenger ticket",
+    "basic fare ticket (not valid on limited express trains without a supplemental express ticket)"
+   ],
+   "kana": [
+    "じょうしゃけん"
+   ]
+  }
+ ],
+ "交番": [
+  {
+   "common": true,
+   "gloss": [
+    "police box",
+    "koban",
+    "small neighborhood police station",
+    "alternation",
+    "alternating (current, stress, etc.)"
+   ],
+   "kana": [
+    "こうばん"
+   ]
+  }
+ ],
  "入口": [
   {
    "common": true,

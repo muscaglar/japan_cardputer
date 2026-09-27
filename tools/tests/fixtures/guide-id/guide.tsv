@@ -1,0 +1,8 @@
+# Test fixture with deliberate mistakes. This is not content.
+id	title	body	clips
+guide-vowels	Five vowels	a i u e o, always the same.	あ|い|う|え|お
+Guide 2	Long vowels	A long vowel has two beats.	
+guide-vowels	Five vowels again	あ い う え お	
+sign-kippu	The small tsu	きっぷ has three beats.	きっぷ
+buddy-greeting-01	Greeting	こんにちは has five beats.	こんにちは
+	No id	A page without an id.	

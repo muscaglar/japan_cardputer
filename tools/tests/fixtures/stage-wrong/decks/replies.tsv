@@ -1,0 +1,7 @@
+# Test fixture with deliberate mistakes. This is not content.
+# name-ja: へんじ
+# name-en: replies
+# kind: word
+# stage: 
+id	prompt	reading	accent	accepted	gloss	note	level	source
+reply-daijoubu	大丈夫	だいじょうぶ	3		all right; OK		2	JMdict
