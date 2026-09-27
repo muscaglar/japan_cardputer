@@ -54,8 +54,12 @@ Before the first flash of a device, keep its factory firmware:
 `pio pkg exec -p tool-esptoolpy -- esptool.py --chip esp32s3 --port PORT read_flash 0x0 0x800000 local/backup/factory.bin`
 (about two minutes; `local/` is not tracked).
 
+`$PY tools/console_check.py` asks two hundred times and counts late answers; expect none.
+
 Exercised on 2026-09-27 on a Cardputer ADV: flash, report (`Cardputer ADV`, no PSRAM, 267 KB
-free, 122 GB card mounted). The pages of the hardware check were not yet confirmed by a person.
+free, 122 GB card mounted), console check (200 of 200 prompt), `cards_check.py --device` (567
+checks, under two minutes) and `kana_round_check.py --device` (52 checks). The lowest free memory
+ever seen was 283 KB. The pages of the hardware check were not yet confirmed by a person.
 
 What only a person at the device can judge: whether text is large enough to read. On
 27 September 2026 the owner found 12 px text too small on the device and controls in kana too
